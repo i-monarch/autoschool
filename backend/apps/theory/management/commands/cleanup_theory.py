@@ -7,7 +7,6 @@ from apps.theory.models import TheoryChapter, TheorySection
 
 BASE = 'https://pdr-online.com.ua'
 
-# Map source URL patterns to our internal routes
 SECTION_SLUG_MAP = {
     'pravila-dorozhnogo-ruhu': 'pravila-dorozhnogo-ruhu',
     'dorozhni-znaki': 'dorozhni-znaki',
@@ -17,41 +16,64 @@ SECTION_SLUG_MAP = {
     'shtrafi': 'shtrafi',
 }
 
+PARAM_MAP = {
+    'pravila-dorozhnogo-ruhu': 'chapter',
+    'dorozhni-znaki': 'signs',
+    'dorozhnya-rozmitka': 'marking',
+    'svitlofor': 'light',
+    'regulyuvalnik': 'reg',
+    'shtrafi': 'fine',
+}
+
+# Built at runtime — maps (section_slug, chapter_number) -> chapter_slug
+_chapter_slug_cache = {}
+
+
+def build_chapter_cache():
+    _chapter_slug_cache.clear()
+    for ch in TheoryChapter.objects.select_related('section').all():
+        key = (ch.section.slug, ch.number)
+        _chapter_slug_cache[key] = ch.slug
+
 
 def convert_link(match):
-    full_tag = match.group(0)
     href = match.group(1)
     inner = match.group(2)
 
-    # Internal theory links — convert to our routes
-    # /teoriya-pdr/dorozhni-znaki/ -> /theory/dorozhni-znaki
-    # /teoriya-pdr/dorozhni-znaki/?signs=3 -> /theory/dorozhni-znaki
-    # /teoriya-pdr/pravila-dorozhnogo-ruhu/?chapter=5 -> /theory/pravila-dorozhnogo-ruhu
+    # Internal theory links with chapter/signs params
     for src_slug, our_slug in SECTION_SLUG_MAP.items():
-        if f'teoriya-pdr/{src_slug}' in href or f'teoriya-pdr/{src_slug}' in href.replace(BASE, ''):
-            return f'<a href="/theory/{our_slug}">{inner}</a>'
+        if f'teoriya-pdr/{src_slug}' not in href and f'teoriya-pdr/{src_slug}' not in href.replace(BASE, ''):
+            continue
+
+        param = PARAM_MAP.get(src_slug)
+        if param:
+            num_match = re.search(rf'{param}=(\d+)', href)
+            if num_match:
+                num = int(num_match.group(1))
+                ch_slug = _chapter_slug_cache.get((our_slug, num))
+                if ch_slug:
+                    return f'<a href="/theory/{our_slug}/{ch_slug}" class="text-primary hover:underline">{inner}</a>'
+
+        # No param or chapter not found — link to section
+        return f'<a href="/theory/{our_slug}" class="text-primary hover:underline">{inner}</a>'
 
     # Link to main theory page
-    if href.rstrip('/').endswith('teoriya-pdr') or href.rstrip('/') == f'{BASE}/teoriya-pdr':
-        return f'<a href="/theory">{inner}</a>'
+    if href.rstrip('/').endswith('teoriya-pdr'):
+        return f'<a href="/theory" class="text-primary hover:underline">{inner}</a>'
 
     # Links to tests on source site -> our tests
-    if 'testi' in href and 'pdr-online' in href:
-        return f'<a href="/tests">{inner}</a>'
+    if 'testi' in href and ('pdr-online' in href or href.startswith('/')):
+        return f'<a href="/tests" class="text-primary hover:underline">{inner}</a>'
 
-    # Links to their online learning -> strip (we don't have this)
+    # Their promo links -> strip
     if 'onlajn-navchannya' in href or 'fastlearning' in href or 'premium' in href:
         return inner
 
-    # External links (wikipedia, zakon.rada, etc) — strip href, keep text
+    # External links -> text only
     if href.startswith('http') or href.startswith('//'):
         return inner
 
-    # Anchor links (#) — keep text only
-    if href.startswith('#'):
-        return inner
-
-    # Anything else — keep text only
+    # Anchors, unknown -> text only
     return inner
 
 
@@ -62,15 +84,17 @@ def clean_content(content):
 
     # Remove data-pagespeed attributes
     content = re.sub(r'\s*data-pagespeed-[a-z-]+="[^"]*"', '', content)
+    content = re.sub(r'\s*data-pagespeed-url-hash="[^"]*"', '', content)
 
-    # Remove pagespeed_static images entirely
+    # Remove pagespeed_static images
     content = re.sub(r'<img[^>]*pagespeed_static[^>]*/?\s*>', '', content)
 
     # Remove pagespeed scripts
     content = re.sub(r'<script[^>]*pagespeed[^>]*>.*?</script>', '', content, flags=re.DOTALL)
 
-    # Fix broken joined URL: com.uaassets -> com.ua/assets
+    # Fix broken joined URL
     content = content.replace(f'{BASE}assets/', f'{BASE}/assets/')
+    content = content.replace(f'{BASE}//', f'{BASE}/')
 
     # Clean pagespeed from image filenames
     def fix_pagespeed_url(match):
@@ -82,13 +106,13 @@ def clean_content(content):
 
     content = re.sub(r'src="([^"]*pagespeed[^"]*)"', fix_pagespeed_url, content)
 
-    # Fix remaining relative image URLs
+    # Fix relative image URLs
     content = re.sub(r'src="(/assets/)', f'src="{BASE}\\1', content)
 
-    # Remove garbage gif references
+    # Remove garbage gif
     content = re.sub(r'<img[^>]*JiBnMqyl6S[^>]*/?\s*>', '', content)
 
-    # Convert links: internal -> our routes, external -> text only
+    # Convert links
     content = re.sub(r'<a\s+[^>]*href="([^"]*)"[^>]*>(.*?)</a>', convert_link, content, flags=re.DOTALL)
 
     return content
@@ -98,6 +122,9 @@ class Command(BaseCommand):
     help = 'Clean up scraped theory HTML content'
 
     def handle(self, *args, **options):
+        build_chapter_cache()
+        self.stdout.write(f'Chapter cache: {len(_chapter_slug_cache)} entries')
+
         chapters = TheoryChapter.objects.all()
         total = chapters.count()
         fixed = 0
