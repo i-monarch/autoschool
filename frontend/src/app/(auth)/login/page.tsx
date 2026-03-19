@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, LogIn } from 'lucide-react'
+import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { useAuthStore } from '@/stores/auth'
@@ -30,9 +30,21 @@ export default function LoginPage() {
       await login(data)
       router.push('/dashboard')
     } catch {
-      // error handled by store
+      // error is set in store, displayed below
     }
   }
+
+  const togglePassword = (
+    <button
+      type="button"
+      className="text-base-content/40 hover:text-base-content/70 transition-colors"
+      onClick={() => setShowPassword(!showPassword)}
+      tabIndex={-1}
+      aria-label={showPassword ? 'Hide password' : 'Show password'}
+    >
+      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+    </button>
+  )
 
   return (
     <div>
@@ -42,9 +54,16 @@ export default function LoginPage() {
       </p>
 
       {error && (
-        <div className="alert alert-error mb-6">
-          <span>{error}</span>
-          <button className="btn btn-ghost btn-xs" onClick={clearError}>x</button>
+        <div className="alert alert-error mb-6 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span className="flex-1">{error}</span>
+          <button
+            className="btn btn-ghost btn-xs btn-circle"
+            onClick={clearError}
+            aria-label="Close"
+          >
+            x
+          </button>
         </div>
       )}
 
@@ -57,24 +76,15 @@ export default function LoginPage() {
           {...register('username')}
         />
 
-        <div className="relative">
-          <Input
-            label="Пароль"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Мінімум 8 символів"
-            autoComplete="current-password"
-            error={errors.password?.message}
-            {...register('password')}
-          />
-          <button
-            type="button"
-            className="absolute right-3 top-[42px] text-base-content/40 hover:text-base-content/70"
-            onClick={() => setShowPassword(!showPassword)}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-          >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-          </button>
-        </div>
+        <Input
+          label="Пароль"
+          type={showPassword ? 'text' : 'password'}
+          placeholder="Мінімум 8 символів"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          rightIcon={togglePassword}
+          {...register('password')}
+        />
 
         <div className="flex justify-end">
           <Link

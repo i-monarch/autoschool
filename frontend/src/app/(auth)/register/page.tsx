@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, AlertCircle } from 'lucide-react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { useAuthStore } from '@/stores/auth'
@@ -37,17 +37,27 @@ export default function RegisterPage() {
       await signUp(data)
       router.push('/dashboard')
     } catch {
-      // error handled by store
+      // error displayed from store
     }
   }
+
+  const togglePassword = (
+    <button
+      type="button"
+      className="text-base-content/40 hover:text-base-content/70 transition-colors"
+      onClick={() => setShowPassword(!showPassword)}
+      tabIndex={-1}
+      aria-label={showPassword ? 'Hide password' : 'Show password'}
+    >
+      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+    </button>
+  )
 
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold mb-2">Реєстрація</h2>
       <p className="text-base-content/60 mb-6">
-        {step === 1
-          ? 'Розкажіть про себе'
-          : 'Придумайте логін та пароль'}
+        {step === 1 ? 'Розкажіть про себе' : 'Придумайте логін та пароль'}
       </p>
 
       {/* Progress steps */}
@@ -57,9 +67,16 @@ export default function RegisterPage() {
       </div>
 
       {error && (
-        <div className="alert alert-error mb-6">
-          <span>{error}</span>
-          <button className="btn btn-ghost btn-xs" onClick={clearError}>x</button>
+        <div className="alert alert-error mb-6 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span className="flex-1">{error}</span>
+          <button
+            className="btn btn-ghost btn-xs btn-circle"
+            onClick={clearError}
+            aria-label="Close"
+          >
+            x
+          </button>
         </div>
       )}
 
@@ -119,24 +136,15 @@ export default function RegisterPage() {
               {...register('username')}
             />
 
-            <div className="relative">
-              <Input
-                label="Пароль"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Мінімум 8 символів"
-                autoComplete="new-password"
-                error={errors.password?.message}
-                {...register('password')}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-[42px] text-base-content/40 hover:text-base-content/70"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <Input
+              label="Пароль"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Мінімум 8 символів"
+              autoComplete="new-password"
+              error={errors.password?.message}
+              rightIcon={togglePassword}
+              {...register('password')}
+            />
 
             <Input
               label="Підтвердження паролю"
@@ -144,6 +152,7 @@ export default function RegisterPage() {
               placeholder="Повторіть пароль"
               autoComplete="new-password"
               error={errors.password_confirm?.message}
+              rightIcon={togglePassword}
               {...register('password_confirm')}
             />
 

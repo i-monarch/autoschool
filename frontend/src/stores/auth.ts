@@ -68,8 +68,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 function extractError(err: unknown): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
-    const response = (err as { response?: { data?: { message?: string } } }).response
-    return response?.data?.message || 'Unexpected error'
+    const axiosErr = err as { response?: { data?: { message?: string; detail?: string }; status?: number } }
+    const data = axiosErr.response?.data
+    const status = axiosErr.response?.status
+
+    if (data?.message) return data.message
+    if (data?.detail) return data.detail
+    if (status === 401) return 'Невірний логін або пароль'
+    if (status === 400) return 'Перевірте введені дані'
+    if (status === 429) return 'Забагато спроб. Спробуйте пізніше'
+    if (status && status >= 500) return 'Помилка сервера. Спробуйте пізніше'
+    return 'Щось пішло не так'
   }
-  return 'Network error'
+  return 'Немає з\'єднання з сервером'
 }

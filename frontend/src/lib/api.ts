@@ -8,10 +8,18 @@ const api = axios.create({
   },
 })
 
+const AUTH_URLS = ['/auth/login/', '/auth/register/', '/auth/refresh/']
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    const url = originalRequest?.url || ''
+
+    // Don't intercept auth endpoints — let them handle errors themselves
+    if (AUTH_URLS.some((u) => url.includes(u))) {
+      return Promise.reject(error)
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
@@ -24,7 +32,9 @@ api.interceptors.response.use(
         )
         return api(originalRequest)
       } catch {
-        window.location.href = '/login'
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login'
+        }
         return Promise.reject(error)
       }
     }
