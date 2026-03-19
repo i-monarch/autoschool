@@ -309,7 +309,7 @@ class Command(BaseCommand):
                 time.sleep(1.5)  # rate limit
 
                 content = extract_chapter_content(ch['url'])
-                ch_slug = slugify(ch['title'][:80], allow_unicode=True) or f'chapter-{ch["number"]}'
+                ch_slug = slugify(ch['title'][:60], allow_unicode=True)[:190] or f'chapter-{ch["number"]}'
 
                 TheoryChapter.objects.update_or_create(
                     section=section,

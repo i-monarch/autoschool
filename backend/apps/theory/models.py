@@ -19,7 +19,7 @@ class TheorySection(models.Model):
 class TheoryChapter(models.Model):
     section = models.ForeignKey(TheorySection, on_delete=models.CASCADE, related_name='chapters')
     title = models.CharField(max_length=300)
-    slug = models.SlugField(max_length=300)
+    slug = models.SlugField(max_length=200)
     number = models.PositiveIntegerField(default=0)
     content = models.TextField(help_text='HTML content')
     order = models.PositiveIntegerField(default=0)
