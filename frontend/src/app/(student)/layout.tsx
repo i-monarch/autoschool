@@ -185,7 +185,7 @@ export default function StudentLayout({
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-4 lg:p-6 xl:p-8">
+        <main className="flex-1 p-4 pb-20 lg:pb-6 lg:p-6 xl:p-8">
           <div className="max-w-6xl mx-auto">
             {children}
           </div>
@@ -193,17 +193,19 @@ export default function StudentLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="btm-nav btm-nav-sm lg:hidden bg-base-100 border-t border-base-300/60 z-30">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-base-100 border-t border-base-300/60 flex justify-around items-center h-16 pb-[env(safe-area-inset-bottom)]">
         {navItems.slice(0, 5).map((item) => {
           const active = isActive(item.href)
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={active ? 'active text-primary' : 'text-base-content/50'}
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
+                active ? 'text-primary' : 'text-base-content/40'
+              }`}
             >
               <item.icon className="w-5 h-5" />
-              <span className="btm-nav-label text-[10px]">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           )
         })}
