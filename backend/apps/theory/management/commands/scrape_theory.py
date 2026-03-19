@@ -104,10 +104,14 @@ def extract_chapters_from_section_page(html, param):
             match = re.search(rf'{param}=(\d+)', href)
             if match:
                 num = int(match.group(1))
-                title_el = link.find('span') or link.find('div', class_=True)
-                title = link.get_text(strip=True)
+                # Try to get short title from span/div first
+                title_el = link.find('span') or link.find('div')
+                title = title_el.get_text(strip=True) if title_el else link.get_text(strip=True)
                 # Clean: remove leading number if present
                 title = re.sub(r'^\s*"?\d+"?\s*', '', title).strip()
+                # Truncate long titles
+                if len(title) > 150:
+                    title = title[:147] + '...'
                 if not title:
                     title = f'Розділ {num}'
                 chapters.append({
