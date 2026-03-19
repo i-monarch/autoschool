@@ -37,6 +37,7 @@ export default function TestSessionPage() {
   const [loading, setLoading] = useState(true)
   const [finishing, setFinishing] = useState(false)
   const [showConfirmFinish, setShowConfirmFinish] = useState(false)
+  const [autoAdvance, setAutoAdvance] = useState(false)
 
   const [answered, setAnswered] = useState<Record<number, {
     selectedId: number | null
@@ -90,10 +91,8 @@ export default function TestSessionPage() {
         [questionId]: { selectedId: answerId, result: res.data },
       }))
 
-      // In training mode, stay on question to show result
-      // In exam mode, auto-advance to next question after short delay
-      if (isExamMode && currentIndex < questions.length - 1) {
-        setTimeout(() => setCurrentIndex(prev => prev + 1), 300)
+      if (autoAdvance && currentIndex < questions.length - 1) {
+        setTimeout(() => setCurrentIndex(prev => prev + 1), 400)
       }
     } catch {
       // handle error
@@ -182,6 +181,16 @@ export default function TestSessionPage() {
               Екзамен
             </div>
           )}
+
+          <label className="flex items-center gap-1.5 cursor-pointer flex-shrink-0" title="Автоперехід до наступного питання">
+            <span className="text-[10px] text-base-content/40">Авто</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-xs toggle-primary"
+              checked={autoAdvance}
+              onChange={(e) => setAutoAdvance(e.target.checked)}
+            />
+          </label>
 
           {secondsLeft !== null && (
             <div className={`flex items-center gap-1.5 text-sm font-mono ${secondsLeft < 120 ? 'text-error animate-pulse' : 'text-base-content/60'}`}>
