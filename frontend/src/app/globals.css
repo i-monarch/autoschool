@@ -9,25 +9,22 @@
   margin: 2px 4px;
   border-radius: 4px;
   box-shadow: none;
-  max-height: 2.5em;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
-.theory-content img[src*="/original/"] {
-  max-height: 3em;
-}
-
-.theory-content img[src*="/small/"] {
-  max-height: 2em;
-}
-
-/* Large standalone images (photos, schemas) */
+/* Large standalone images (info blocks, photos) */
 .theory-content img[src*="/info/"],
 .theory-content img[src*="/photo/"],
-.theory-content img[src*="/schema/"] {
+.theory-content img[src*="/schema/"],
+.theory-content img[src*="/icons/"] {
   display: block;
   margin: 1rem auto;
-  max-height: none;
+  width: auto;
+  height: auto;
   max-width: 100%;
+  max-height: 400px;
   border-radius: 0.75rem;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
