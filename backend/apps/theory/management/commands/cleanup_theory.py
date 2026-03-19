@@ -46,6 +46,9 @@ def clean_content(content):
     # Remove 1.JiBnMqyl6S.gif references
     content = re.sub(r'<img[^>]*JiBnMqyl6S[^>]*/?\s*>', '', content)
 
+    # Remove all external links — keep text only
+    content = re.sub(r'<a\s[^>]*>(.*?)</a>', r'\1', content, flags=re.DOTALL)
+
     return content
 
 
