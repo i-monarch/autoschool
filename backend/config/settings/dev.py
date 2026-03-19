@@ -30,3 +30,17 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+LOGGING = {  # noqa: F405
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
