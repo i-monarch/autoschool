@@ -222,13 +222,28 @@ def extract_chapter_content(url):
     for tag in main.find_all(class_=re.compile(r'ad|banner|promo|widget|social|share|related|sticky-header')):
         tag.decompose()
 
+    # Unwrap fancybox links — extract inline <img> from <a class="fancybox">
+    for a in main.find_all('a', class_='fancybox'):
+        img = a.find('img')
+        if img:
+            # Use the href (full image) as img src if it points to an image
+            href = a.get('href', '')
+            if href and any(href.endswith(ext) for ext in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp')):
+                if not href.startswith(('http', 'data:')):
+                    href = BASE + '/' + href.lstrip('/')
+                img['src'] = href
+            a.replace_with(img)
+        else:
+            a.unwrap()
+
     # Fix image URLs
     for img in main.find_all('img'):
         src = img.get('data-src') or img.get('src', '')
         if src and not src.startswith(('http', 'data:')):
-            src = BASE + src
+            src = BASE + '/' + src.lstrip('/')
         img['src'] = src
-        for attr in ['data-src', 'data-lazy', 'loading', 'srcset', 'data-srcset']:
+        for attr in ['data-src', 'data-lazy', 'loading', 'srcset', 'data-srcset',
+                      'onerror', 'data-pagespeed-url-hash']:
             if img.has_attr(attr):
                 del img[attr]
         if not img.get('alt'):
@@ -238,7 +253,7 @@ def extract_chapter_content(url):
     for a in main.find_all('a', href=True):
         href = a['href']
         if href and not href.startswith(('http', '#', 'mailto:', 'tel:')):
-            a['href'] = BASE + href
+            a['href'] = BASE + '/' + href.lstrip('/')
 
     content = str(main)
     content = re.sub(r'\n\s*\n', '\n', content)
