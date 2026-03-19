@@ -10,6 +10,26 @@ from .serializers import RegisterSerializer, UserDeviceSerializer, UserSerialize
 User = get_user_model()
 
 
+def _set_auth_cookies(response, refresh, request):
+    is_secure = request.scheme == 'https' or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https'
+    response.set_cookie(
+        'access_token',
+        str(refresh.access_token),
+        httponly=True,
+        secure=is_secure,
+        samesite='Lax',
+        max_age=15 * 60,
+    )
+    response.set_cookie(
+        'refresh_token',
+        str(refresh),
+        httponly=True,
+        secure=is_secure,
+        samesite='Lax',
+        max_age=7 * 24 * 60 * 60,
+    )
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -25,24 +45,8 @@ class RegisterView(generics.CreateAPIView):
             UserSerializer(user).data,
             status=status.HTTP_201_CREATED,
         )
-        self._set_auth_cookies(response, refresh)
+        _set_auth_cookies(response, refresh, request)
         return response
-
-    def _set_auth_cookies(self, response, refresh):
-        response.set_cookie(
-            'access_token',
-            str(refresh.access_token),
-            httponly=True,
-            samesite='Lax',
-            max_age=15 * 60,
-        )
-        response.set_cookie(
-            'refresh_token',
-            str(refresh),
-            httponly=True,
-            samesite='Lax',
-            max_age=7 * 24 * 60 * 60,
-        )
 
 
 class LoginView(APIView):
@@ -67,20 +71,7 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
         response = Response(UserSerializer(user).data)
-        response.set_cookie(
-            'access_token',
-            str(refresh.access_token),
-            httponly=True,
-            samesite='Lax',
-            max_age=15 * 60,
-        )
-        response.set_cookie(
-            'refresh_token',
-            str(refresh),
-            httponly=True,
-            samesite='Lax',
-            max_age=7 * 24 * 60 * 60,
-        )
+        _set_auth_cookies(response, refresh, request)
         return response
 
 
@@ -111,23 +102,13 @@ class RefreshTokenView(APIView):
             )
 
         try:
-            refresh = RefreshToken(token)
-            new_access = str(refresh.access_token)
+            old_refresh = RefreshToken(token)
+            user = User.objects.get(id=old_refresh['user_id'])
+            old_refresh.blacklist()
 
-            refresh.blacklist()
-            new_refresh = RefreshToken.for_user(
-                User.objects.get(id=refresh['user_id'])
-            )
-
+            new_refresh = RefreshToken.for_user(user)
             response = Response({'message': 'Token refreshed.'})
-            response.set_cookie(
-                'access_token', new_access,
-                httponly=True, samesite='Lax', max_age=15 * 60,
-            )
-            response.set_cookie(
-                'refresh_token', str(new_refresh),
-                httponly=True, samesite='Lax', max_age=7 * 24 * 60 * 60,
-            )
+            _set_auth_cookies(response, new_refresh, request)
             return response
         except Exception:
             return Response(

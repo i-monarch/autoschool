@@ -10,8 +10,8 @@ MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')  # noqa:
 
 INTERNAL_IPS = ['127.0.0.1', '172.0.0.0/8']
 
-# Less strict cookies in dev
-SIMPLE_JWT['AUTH_COOKIE_SECURE'] = False  # noqa: F405
+# Allow Django to detect HTTPS behind nginx proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Show browsable API in dev
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (  # noqa: F405
