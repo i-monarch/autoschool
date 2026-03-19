@@ -5,13 +5,14 @@ import { useRouter, usePathname } from 'next/navigation'
 import {
   Car, LogOut, User, BookOpen, ClipboardCheck,
   MessageCircle, Home, Calendar, CreditCard,
-  ChevronRight, Bell,
+  ChevronRight, Bell, GraduationCap,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
 
 const navItems = [
   { href: '/dashboard', label: 'Головна', icon: Home },
+  { href: '/theory', label: 'Теорія', icon: GraduationCap },
   { href: '/courses', label: 'Курси', icon: BookOpen },
   { href: '/tests', label: 'Тести', icon: ClipboardCheck },
   { href: '/schedule', label: 'Розклад', icon: Calendar },
