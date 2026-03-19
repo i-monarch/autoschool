@@ -32,10 +32,10 @@ def clean_content(content):
         url = match.group(1)
         # Remove leading dimension prefix like 36x36x
         url = re.sub(r'/\d+x\d+x', '/', url)
-        # Remove leading x prefix
+        # Remove leading x prefix before uppercase filename
         url = re.sub(r'/x([A-Z])', r'/\1', url)
-        # Remove .pagespeed.ic.HASH.ext suffix
-        url = re.sub(r'\.pagespeed\.\w+\.\w+\.\w+$', '', url)
+        # Remove .pagespeed.ic.HASH.ext suffix (keep original extension)
+        url = re.sub(r'(\.\w{2,4})\.pagespeed\.\w+\.[^."]+\.\w{2,4}$', r'\1', url)
         return f'src="{url}"'
 
     content = re.sub(r'src="([^"]*pagespeed[^"]*)"', fix_pagespeed_url, content)
