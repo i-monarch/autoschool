@@ -169,9 +169,7 @@ export default function TeacherLayout({
         </header>
 
         <main className="flex-1 p-4 pb-20 lg:pb-6 lg:p-6 xl:p-8">
-          <div className="max-w-6xl mx-auto">
-            {children}
-          </div>
+          {children}
         </main>
       </div>
 
