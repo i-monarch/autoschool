@@ -9,4 +9,5 @@ urlpatterns = [
     path('attempts/', views.AttemptListView.as_view()),
     path('attempts/<int:pk>/', views.AttemptDetailView.as_view()),
     path('stats/', views.TestStatsView.as_view()),
+    path('wrong-answers/', views.WrongAnswersView.as_view()),
 ]

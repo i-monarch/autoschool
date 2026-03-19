@@ -172,16 +172,22 @@ class TestStatsView(APIView):
             return Response({
                 'total_attempts': 0,
                 'total_correct': 0,
+                'total_wrong': 0,
                 'total_questions': 0,
                 'avg_percent': 0,
+                'passed_count': 0,
+                'failed_count': 0,
                 'by_category': [],
             })
 
         total_correct = sum(a.score for a in attempts)
         total_questions = sum(a.total for a in attempts)
+        total_wrong = total_questions - total_correct
         avg_percent = round(total_correct / total_questions * 100) if total_questions else 0
+        passed_count = attempts.filter(is_passed=True).count()
+        failed_count = total_attempts - passed_count
 
-        # Stats by category
+        # Stats by category — sorted weakest first
         category_stats = []
         categories = TestCategory.objects.filter(question_count__gt=0)
         for cat in categories:
@@ -189,19 +195,65 @@ class TestStatsView(APIView):
             if cat_attempts.exists():
                 cat_correct = sum(a.score for a in cat_attempts)
                 cat_total = sum(a.total for a in cat_attempts)
+                cat_wrong = cat_total - cat_correct
+                pct = round(cat_correct / cat_total * 100) if cat_total else 0
                 category_stats.append({
                     'category_id': cat.id,
                     'category_name': cat.name,
                     'attempts': cat_attempts.count(),
                     'correct': cat_correct,
+                    'wrong': cat_wrong,
                     'total': cat_total,
-                    'percent': round(cat_correct / cat_total * 100) if cat_total else 0,
+                    'percent': pct,
                 })
+
+        category_stats.sort(key=lambda x: x['percent'])
 
         return Response({
             'total_attempts': total_attempts,
             'total_correct': total_correct,
+            'total_wrong': total_wrong,
             'total_questions': total_questions,
             'avg_percent': avg_percent,
+            'passed_count': passed_count,
+            'failed_count': failed_count,
             'by_category': category_stats,
         })
+
+
+class WrongAnswersView(APIView):
+    """All wrong answers across user's attempts, grouped by question."""
+
+    def get(self, request):
+        wrong = AttemptAnswer.objects.filter(
+            attempt__user=request.user,
+            attempt__finished_at__isnull=False,
+            is_correct=False,
+            selected_answer__isnull=False,
+        ).select_related(
+            'question__category', 'selected_answer'
+        ).prefetch_related('question__answers').order_by('-attempt__finished_at')
+
+        # Deduplicate by question — keep latest attempt
+        seen = set()
+        results = []
+        for wa in wrong:
+            if wa.question_id in seen:
+                continue
+            seen.add(wa.question_id)
+            q = wa.question
+            results.append({
+                'question_id': q.id,
+                'question_number': q.number,
+                'question_text': q.text,
+                'question_image': q.image,
+                'explanation': q.explanation,
+                'category_name': q.category.name if q.category else None,
+                'selected_answer_id': wa.selected_answer_id,
+                'answers': [
+                    {'id': a.id, 'text': a.text, 'is_correct': a.is_correct}
+                    for a in q.answers.all()
+                ],
+            })
+
+        return Response({'count': len(results), 'results': results})
