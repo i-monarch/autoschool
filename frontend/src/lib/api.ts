@@ -10,13 +10,29 @@ const api = axios.create({
 
 const AUTH_URLS = ['/auth/login/', '/auth/register/', '/auth/refresh/']
 
+let isRefreshing = false
+let refreshQueue: Array<{
+  resolve: (value?: unknown) => void
+  reject: (reason?: unknown) => void
+}> = []
+
+function processQueue(error: unknown = null) {
+  refreshQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error)
+    } else {
+      resolve()
+    }
+  })
+  refreshQueue = []
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
     const url = originalRequest?.url || ''
 
-    // Don't intercept auth endpoints — let them handle errors themselves
     if (AUTH_URLS.some((u) => url.includes(u))) {
       return Promise.reject(error)
     }
@@ -24,18 +40,27 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          refreshQueue.push({ resolve, reject })
+        }).then(() => api(originalRequest))
+      }
+
+      isRefreshing = true
+
       try {
         await axios.post(
           `${api.defaults.baseURL}/auth/refresh/`,
           {},
           { withCredentials: true },
         )
+        processQueue()
         return api(originalRequest)
-      } catch {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login'
-        }
-        return Promise.reject(error)
+      } catch (refreshError) {
+        processQueue(refreshError)
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 

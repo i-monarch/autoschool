@@ -28,7 +28,14 @@ export default function LoginPage() {
     clearError()
     try {
       await login(data)
-      router.push('/dashboard')
+      const user = useAuthStore.getState().user
+      if (user?.role === 'admin') {
+        router.push('/admin/dashboard')
+      } else if (user?.role === 'teacher') {
+        router.push('/teacher/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
     } catch {
       // error is set in store, displayed below
     }
