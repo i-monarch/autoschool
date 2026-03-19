@@ -242,8 +242,8 @@ export default function AdminTestsPage() {
           </div>
 
           {/* Table */}
-          <div className="card bg-base-100 border border-base-300/60 overflow-x-auto">
-            <table className="table table-sm">
+          <div className="card bg-base-100 border border-base-300/60 overflow-hidden">
+            <table className="table table-sm table-fixed w-full">
               <thead>
                 <tr>
                   <th className="w-10">
@@ -254,13 +254,13 @@ export default function AdminTestsPage() {
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="w-16">#</th>
+                  <th className="w-14">#</th>
                   <th>Питання</th>
-                  <th className="w-28">Категорія</th>
-                  <th className="w-12 text-center">
+                  <th className="w-48 hidden md:table-cell">Категорія</th>
+                  <th className="w-10 text-center hidden sm:table-cell">
                     <Image className="w-4 h-4 mx-auto" />
                   </th>
-                  <th className="w-20" />
+                  <th className="w-16" />
                 </tr>
               </thead>
               <tbody>
@@ -288,15 +288,13 @@ export default function AdminTestsPage() {
                         />
                       </td>
                       <td className="font-mono text-xs">{q.number}</td>
-                      <td>
-                        <p className="truncate max-w-md text-sm">{q.text}</p>
-                      </td>
-                      <td>
-                        <span className="badge badge-ghost badge-sm truncate max-w-full">
+                      <td className="truncate text-sm">{q.text}</td>
+                      <td className="hidden md:table-cell">
+                        <span className="badge badge-ghost badge-sm truncate max-w-full block">
                           {q.category_name}
                         </span>
                       </td>
-                      <td className="text-center">
+                      <td className="text-center hidden sm:table-cell">
                         {q.has_image ? (
                           <Check className="w-4 h-4 text-success mx-auto" />
                         ) : (
