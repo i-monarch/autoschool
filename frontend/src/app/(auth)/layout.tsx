@@ -13,19 +13,19 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side - branding + support */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary text-primary-content flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-neutral text-neutral-content flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-primary-content/20 flex items-center justify-center">
-              <Car className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+              <Car className="w-7 h-7 text-white" />
             </div>
             <span className="text-2xl font-bold">AutoSchool</span>
           </div>
 
           <h1 className="text-4xl font-bold leading-tight mb-4">
-            Онлайн-автошкола нового покоління
+            Онлайн-автошкола<br />нового покоління
           </h1>
-          <p className="text-lg opacity-80 leading-relaxed max-w-md">
+          <p className="text-lg text-gray-400 leading-relaxed max-w-md">
             Вивчайте ПДР, проходьте тести та готуйтесь до іспиту
             у зручному форматі — з будь-якого пристрою, у будь-який час.
           </p>
@@ -39,30 +39,30 @@ export default function AuthLayout({
         </div>
 
         {/* Support block */}
-        <div className="mt-8 p-6 rounded-2xl bg-primary-content/10 backdrop-blur-sm">
+        <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10">
           <h3 className="font-semibold text-lg mb-3">Потрібна допомога?</h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <a
               href="tel:+380XXXXXXXXX"
-              className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity"
+              className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
             >
-              <Phone className="w-4 h-4" />
+              <Phone className="w-4 h-4 text-primary" />
               <span>+380 (XX) XXX-XX-XX</span>
             </a>
             <a
               href="mailto:support@autoschool.com.ua"
-              className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity"
+              className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
             >
-              <Mail className="w-4 h-4" />
+              <Mail className="w-4 h-4 text-primary" />
               <span>support@autoschool.com.ua</span>
             </a>
             <a
               href="https://t.me/autoschool_support"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity"
+              className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-4 h-4 text-primary" />
               <span>Telegram підтримка</span>
             </a>
           </div>
@@ -110,8 +110,8 @@ export default function AuthLayout({
 function Feature({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-2 h-2 rounded-full bg-primary-content/60" />
-      <span className="opacity-80">{text}</span>
+      <div className="w-2 h-2 rounded-full bg-primary" />
+      <span className="text-gray-300">{text}</span>
     </div>
   )
 }
