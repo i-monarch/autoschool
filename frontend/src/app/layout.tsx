@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="uk" data-theme="light">
+    <html lang="uk" data-theme="autoschool">
       <body className="min-h-screen bg-base-100">
         {children}
         <ToastContainer />
