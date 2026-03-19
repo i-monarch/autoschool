@@ -65,11 +65,10 @@ services:
 
   frontend:
     build: ./frontend
-    command: sh -c "npm run build && npm start"
+    command: npm start
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - /app/.next
     env_file: .env
 
   nginx:
