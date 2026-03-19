@@ -65,10 +65,6 @@ services:
 
   frontend:
     build: ./frontend
-    command: npm start
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     env_file: .env
 
   nginx:
