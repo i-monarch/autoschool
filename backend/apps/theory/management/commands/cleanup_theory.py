@@ -1,11 +1,58 @@
-"""Clean up scraped theory content — fix image URLs, remove pagespeed artifacts."""
+"""Clean up scraped theory content — fix image URLs, convert links, remove junk."""
 import re
 
 from django.core.management.base import BaseCommand
 
-from apps.theory.models import TheoryChapter
+from apps.theory.models import TheoryChapter, TheorySection
 
 BASE = 'https://pdr-online.com.ua'
+
+# Map source URL patterns to our internal routes
+SECTION_SLUG_MAP = {
+    'pravila-dorozhnogo-ruhu': 'pravila-dorozhnogo-ruhu',
+    'dorozhni-znaki': 'dorozhni-znaki',
+    'dorozhnya-rozmitka': 'dorozhnya-rozmitka',
+    'svitlofor': 'svitlofor',
+    'regulyuvalnik': 'regulyuvalnik',
+    'shtrafi': 'shtrafi',
+}
+
+
+def convert_link(match):
+    full_tag = match.group(0)
+    href = match.group(1)
+    inner = match.group(2)
+
+    # Internal theory links — convert to our routes
+    # /teoriya-pdr/dorozhni-znaki/ -> /theory/dorozhni-znaki
+    # /teoriya-pdr/dorozhni-znaki/?signs=3 -> /theory/dorozhni-znaki
+    # /teoriya-pdr/pravila-dorozhnogo-ruhu/?chapter=5 -> /theory/pravila-dorozhnogo-ruhu
+    for src_slug, our_slug in SECTION_SLUG_MAP.items():
+        if f'teoriya-pdr/{src_slug}' in href or f'teoriya-pdr/{src_slug}' in href.replace(BASE, ''):
+            return f'<a href="/theory/{our_slug}">{inner}</a>'
+
+    # Link to main theory page
+    if href.rstrip('/').endswith('teoriya-pdr') or href.rstrip('/') == f'{BASE}/teoriya-pdr':
+        return f'<a href="/theory">{inner}</a>'
+
+    # Links to tests on source site -> our tests
+    if 'testi' in href and 'pdr-online' in href:
+        return f'<a href="/tests">{inner}</a>'
+
+    # Links to their online learning -> strip (we don't have this)
+    if 'onlajn-navchannya' in href or 'fastlearning' in href or 'premium' in href:
+        return inner
+
+    # External links (wikipedia, zakon.rada, etc) — strip href, keep text
+    if href.startswith('http') or href.startswith('//'):
+        return inner
+
+    # Anchor links (#) — keep text only
+    if href.startswith('#'):
+        return inner
+
+    # Anything else — keep text only
+    return inner
 
 
 def clean_content(content):
@@ -25,29 +72,24 @@ def clean_content(content):
     # Fix broken joined URL: com.uaassets -> com.ua/assets
     content = content.replace(f'{BASE}assets/', f'{BASE}/assets/')
 
-    # Clean pagespeed from image filenames in src attributes
-    # Pattern: 36x36xFILE.png.pagespeed.ic.HASH.png -> FILE.png
-    # Pattern: xFILE.png.pagespeed.ic.HASH.png -> FILE.png
+    # Clean pagespeed from image filenames
     def fix_pagespeed_url(match):
         url = match.group(1)
-        # Remove leading dimension prefix like 36x36x
         url = re.sub(r'/\d+x\d+x', '/', url)
-        # Remove leading x prefix before uppercase filename
         url = re.sub(r'/x([A-Z])', r'/\1', url)
-        # Remove .pagespeed.ic.HASH.ext suffix (keep original extension)
         url = re.sub(r'(\.\w{2,4})\.pagespeed\.\w+\.[^."]+\.\w{2,4}$', r'\1', url)
         return f'src="{url}"'
 
     content = re.sub(r'src="([^"]*pagespeed[^"]*)"', fix_pagespeed_url, content)
 
-    # Fix remaining relative URLs
+    # Fix remaining relative image URLs
     content = re.sub(r'src="(/assets/)', f'src="{BASE}\\1', content)
 
-    # Remove 1.JiBnMqyl6S.gif references
+    # Remove garbage gif references
     content = re.sub(r'<img[^>]*JiBnMqyl6S[^>]*/?\s*>', '', content)
 
-    # Remove all external links — keep text only
-    content = re.sub(r'<a\s[^>]*>(.*?)</a>', r'\1', content, flags=re.DOTALL)
+    # Convert links: internal -> our routes, external -> text only
+    content = re.sub(r'<a\s+[^>]*href="([^"]*)"[^>]*>(.*?)</a>', convert_link, content, flags=re.DOTALL)
 
     return content
 
