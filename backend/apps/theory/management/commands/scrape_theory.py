@@ -44,7 +44,7 @@ SECTIONS = [
         'icon': 'Route',
         'description': 'Горизонтальна та вертикальна розмітка доріг',
         'url': '/teoriya-pdr/dorozhnya-rozmitka/',
-        'param': 'marking',
+        'param': 'markings',
     },
     {
         'title': 'Світлофор',

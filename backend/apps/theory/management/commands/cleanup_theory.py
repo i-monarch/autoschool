@@ -19,7 +19,7 @@ SECTION_SLUG_MAP = {
 PARAM_MAP = {
     'pravila-dorozhnogo-ruhu': 'chapter',
     'dorozhni-znaki': 'signs',
-    'dorozhnya-rozmitka': 'marking',
+    'dorozhnya-rozmitka': 'markings',
     'svitlofor': 'light',
     'regulyuvalnik': 'reg',
     'shtrafi': 'fine',
