@@ -104,9 +104,14 @@ def extract_chapters_from_section_page(html, param):
             match = re.search(rf'{param}=(\d+)', href)
             if match:
                 num = int(match.group(1))
-                # Try to get short title from span/div first
-                title_el = link.find('span') or link.find('div')
-                title = title_el.get_text(strip=True) if title_el else link.get_text(strip=True)
+                # Get title: prefer last span/div (first is usually the number)
+                spans = link.find_all('span') or link.find_all('div')
+                if len(spans) >= 2:
+                    title = spans[-1].get_text(strip=True)
+                elif spans:
+                    title = spans[0].get_text(strip=True)
+                else:
+                    title = link.get_text(strip=True)
                 # Clean: remove leading number if present
                 title = re.sub(r'^\s*"?\d+"?\s*', '', title).strip()
                 # Truncate long titles
