@@ -179,7 +179,7 @@ export default function AdminTestsPage() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Category sidebar */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="card bg-base-100 border border-base-300/60">
+          <div className="card bg-base-100 border border-base-300/60 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
             <div className="card-body p-3">
               <h3 className="font-semibold text-sm px-1 mb-2">Категорії</h3>
               <button

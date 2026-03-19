@@ -59,7 +59,7 @@ export default function StudentLayout({
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-base-200/40">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-base-100 border-r border-base-300/60 min-h-screen sticky top-0">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-base-100 border-r border-base-300/60 h-screen sticky top-0 overflow-y-auto">
         {/* Logo */}
         <div className="p-5 pb-2">
           <Link href="/dashboard" className="flex items-center gap-2.5">
