@@ -65,10 +65,11 @@ services:
 
   frontend:
     build: ./frontend
-    command: npm run dev
+    command: sh -c "npm run build && npm start"
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
     env_file: .env
 
   nginx:
@@ -77,6 +78,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./backend/media:/app/media:ro
     ports:
       - "80:80"
       - "443:443"
