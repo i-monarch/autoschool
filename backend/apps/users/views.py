@@ -55,13 +55,13 @@ class LoginView(APIView):
         user = User.objects.filter(username=username).first()
         if not user or not user.check_password(password):
             return Response(
-                {'error': 'invalid_credentials', 'message': 'Invalid username or password.'},
+                {'error': 'invalid_credentials', 'message': 'Невірний логін або пароль'},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         if not user.is_active:
             return Response(
-                {'error': 'account_disabled', 'message': 'Account is disabled.'},
+                {'error': 'account_disabled', 'message': 'Акаунт деактивовано'},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -106,7 +106,7 @@ class RefreshTokenView(APIView):
         token = request.COOKIES.get('refresh_token')
         if not token:
             return Response(
-                {'error': 'no_token', 'message': 'No refresh token.'},
+                {'error': 'no_token', 'message': 'Сесія закінчилась. Увійдіть знову'},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -131,7 +131,7 @@ class RefreshTokenView(APIView):
             return response
         except Exception:
             return Response(
-                {'error': 'invalid_token', 'message': 'Invalid or expired token.'},
+                {'error': 'invalid_token', 'message': 'Токен недійсний або закінчився'},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
