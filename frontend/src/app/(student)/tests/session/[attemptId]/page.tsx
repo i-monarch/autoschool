@@ -140,7 +140,7 @@ export default function TestSessionPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div>
       {/* Header bar */}
       <div className="sticky top-16 z-20 bg-base-200/80 backdrop-blur-md -mx-4 px-4 py-3 mb-4 border-b border-base-300/40">
         <div className="flex items-center justify-between gap-3">

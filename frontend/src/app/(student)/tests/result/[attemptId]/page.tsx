@@ -56,7 +56,7 @@ export default function TestResultPage() {
   const passed = result.is_passed
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div>
       {/* Result card */}
       <div className={`card border ${passed ? 'border-success/30 bg-success/5' : 'border-error/30 bg-error/5'} mb-6`}>
         <div className="card-body items-center text-center py-10">
