@@ -7,6 +7,7 @@ import type { User, LoginData, RegisterData } from '@/types/auth'
 interface AuthState {
   user: User | null
   loading: boolean
+  checked: boolean // true after fetchMe completed (regardless of result)
   error: string | null
   login: (data: LoginData) => Promise<void>
   register: (data: RegisterData) => Promise<void>
@@ -18,13 +19,14 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: false,
+  checked: false,
   error: null,
 
   login: async (data) => {
     set({ loading: true, error: null })
     try {
       const res = await api.post('/auth/login/', data)
-      set({ user: res.data, loading: false })
+      set({ user: res.data, loading: false, checked: true })
     } catch (err: unknown) {
       const message = extractError(err)
       set({ error: message, loading: false })
@@ -36,7 +38,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, error: null })
     try {
       const res = await api.post('/auth/register/', data)
-      set({ user: res.data, loading: false })
+      set({ user: res.data, loading: false, checked: true })
     } catch (err: unknown) {
       const message = extractError(err)
       set({ error: message, loading: false })
@@ -50,7 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // ignore
     }
-    set({ user: null })
+    set({ user: null, checked: true })
   },
 
   fetchMe: async () => {
@@ -58,9 +60,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true })
     try {
       const res = await api.get('/users/me/')
-      set({ user: res.data, loading: false })
-    } catch {
-      set({ user: null, loading: false })
+      set({ user: res.data, loading: false, checked: true })
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 401 || status === 403) {
+        // Auth failed — user not logged in
+        set({ user: null, loading: false, checked: true })
+      } else {
+        // Server error (502, 500, network) — don't logout user
+        set({ loading: false })
+      }
     }
   },
 

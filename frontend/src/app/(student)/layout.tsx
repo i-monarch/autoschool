@@ -24,7 +24,7 @@ export default function StudentLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading, fetchMe, logout } = useAuthStore()
+  const { user, loading, checked, fetchMe, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -33,12 +33,12 @@ export default function StudentLayout({
   }, [fetchMe])
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (checked && !user) {
       router.push('/login')
     }
-  }, [loading, user, router])
+  }, [checked, user, router])
 
-  if (loading || !user) {
+  if (!checked || loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg text-primary" />

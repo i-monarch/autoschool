@@ -23,7 +23,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading, fetchMe, logout } = useAuthStore()
+  const { user, loading, checked, fetchMe, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
@@ -34,19 +34,19 @@ export default function AdminLayout({
   }, [fetchMe])
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (checked && !user) {
       router.push('/login')
     }
-    if (!loading && user && user.role !== 'admin') {
+    if (checked && user && user.role !== 'admin') {
       router.push('/dashboard')
     }
-  }, [loading, user, router])
+  }, [checked, user, router])
 
   useEffect(() => {
     setMobileOpen(false)
   }, [pathname])
 
-  if (loading || !user) {
+  if (!checked || loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral">
         <span className="loading loading-spinner loading-lg text-primary" />

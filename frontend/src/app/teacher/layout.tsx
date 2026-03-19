@@ -22,7 +22,7 @@ export default function TeacherLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading, fetchMe, logout } = useAuthStore()
+  const { user, loading, checked, fetchMe, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -31,15 +31,15 @@ export default function TeacherLayout({
   }, [fetchMe])
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (checked && !user) {
       router.push('/login')
     }
-    if (!loading && user && user.role !== 'teacher' && user.role !== 'admin') {
+    if (checked && user && user.role !== 'teacher' && user.role !== 'admin') {
       router.push('/dashboard')
     }
-  }, [loading, user, router])
+  }, [checked, user, router])
 
-  if (loading || !user) {
+  if (!checked || loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg text-secondary" />
