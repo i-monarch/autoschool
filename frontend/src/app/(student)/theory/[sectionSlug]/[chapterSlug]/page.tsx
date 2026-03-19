@@ -90,11 +90,9 @@ export default function ChapterPage() {
           <div className="card bg-base-100 border border-base-300/60">
             <div className="card-body p-5 lg:p-8">
               <article
-                className="prose prose-sm lg:prose-base max-w-none
+                className="theory-content prose prose-sm lg:prose-base max-w-none
                   prose-headings:text-base-content prose-headings:font-bold
                   prose-p:text-base-content/80 prose-p:leading-relaxed
-                  prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                  prose-img:rounded-xl prose-img:shadow-md prose-img:mx-auto
                   prose-li:text-base-content/80
                   prose-strong:text-base-content
                   prose-table:text-sm

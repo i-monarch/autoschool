@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Theory content — inline sign/marking icons */
+.theory-content img {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 2px 4px;
+  border-radius: 4px;
+  box-shadow: none;
+  max-height: 2.5em;
+}
+
+.theory-content img[src*="/original/"] {
+  max-height: 3em;
+}
+
+.theory-content img[src*="/small/"] {
+  max-height: 2em;
+}
+
+/* Large standalone images (photos, schemas) */
+.theory-content img[src*="/info/"],
+.theory-content img[src*="/photo/"],
+.theory-content img[src*="/schema/"] {
+  display: block;
+  margin: 1rem auto;
+  max-height: none;
+  max-width: 100%;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
