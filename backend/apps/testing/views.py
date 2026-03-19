@@ -15,6 +15,7 @@ from .serializers import (
 class CategoryListView(generics.ListAPIView):
     serializer_class = TestCategorySerializer
     queryset = TestCategory.objects.filter(question_count__gt=0)
+    pagination_class = None
 
 
 class StartTestView(APIView):
@@ -145,6 +146,7 @@ class FinishTestView(APIView):
 
 class AttemptListView(generics.ListAPIView):
     serializer_class = TestAttemptSerializer
+    pagination_class = None
 
     def get_queryset(self):
         return TestAttempt.objects.filter(
