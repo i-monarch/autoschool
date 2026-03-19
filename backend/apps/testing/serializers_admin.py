@@ -80,7 +80,8 @@ class AdminQuestionDetailSerializer(serializers.ModelSerializer):
         question = Question.objects.create(**validated_data)
         for i, answer_data in enumerate(answers_data):
             answer_data.pop('id', None)
-            Answer.objects.create(question=question, order=i, **answer_data)
+            answer_data['order'] = i
+            Answer.objects.create(question=question, **answer_data)
         self._update_category_count(question.category)
         return question
 
