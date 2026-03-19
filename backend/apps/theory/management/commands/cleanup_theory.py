@@ -78,9 +78,11 @@ def convert_link(match):
 
 
 def clean_content(content):
-    # Remove onerror attributes
+    # Remove JS event handler attributes
     content = re.sub(r'\s*onerror="[^"]*"', '', content)
     content = re.sub(r"\s*onerror='[^']*'", '', content)
+    content = re.sub(r'\s*onload="[^"]*"', '', content)
+    content = re.sub(r'\s*onclick="[^"]*"', '', content)
 
     # Remove data-pagespeed attributes
     content = re.sub(r'\s*data-pagespeed-[a-z-]+="[^"]*"', '', content)
