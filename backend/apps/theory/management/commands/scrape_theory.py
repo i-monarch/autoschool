@@ -194,20 +194,27 @@ def extract_chapter_content(url):
     if not main:
         return ''
 
-    # Remove chapter list/navigation
-    for ul in main.find_all('ul'):
-        links = ul.find_all('a', href=True)
-        if links and any('chapter=' in (a.get('href', '') or '') for a in links):
-            ul.decompose()
-            continue
-        if links and any('signs=' in (a.get('href', '') or '') for a in links):
-            ul.decompose()
-            continue
-
-    # Remove breadcrumbs
-    for bc in main.find_all('ul'):
+    # Remove breadcrumbs (ul with link to /)
+    for bc in main.find_all('ul', class_='breadcrumbs'):
+        bc.decompose()
+    # Fallback: remove first ul if it has a link to home
+    for bc in main.find_all('ul', recursive=False):
         if bc.find('a', href='/'):
             bc.decompose()
+            break
+
+    # Remove chapter/section navigation lists (top-level only, not nested content)
+    container = main.find('div', class_='container') or main
+    for nav_div in container.find_all('div', recursive=False):
+        classes = nav_div.get('class', [])
+        # Skip content holders
+        if any(c in classes for c in ['road_sign_holder', 'content_holder',
+                                       'road_marking_holder', 'block']):
+            continue
+        links = nav_div.find_all('a', href=True)
+        if links and any(p in (a.get('href', '') or '') for a in links
+                         for p in ['chapter=', 'signs=', 'markings=', 'light=', 'reg=', 'fine=']):
+            nav_div.decompose()
 
     # Remove h1 (section title)
     h1 = main.find('h1')
