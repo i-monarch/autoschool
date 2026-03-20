@@ -9,7 +9,7 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 
-const PAID_SECTIONS = new Set(['regulyuvalnik'])
+const PAID_SECTIONS = new Set<string>()
 
 interface Section {
   id: number

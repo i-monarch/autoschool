@@ -7,7 +7,7 @@ from .serializers import (
     TheoryChapterDetailSerializer,
 )
 
-PAID_SECTIONS = {'regulyuvalnik'}
+PAID_SECTIONS: set[str] = set()
 
 
 class SectionListView(generics.ListAPIView):
