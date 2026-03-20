@@ -12,9 +12,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
-from django.utils.text import slugify
-
 from apps.theory.models import TheorySection, TheoryChapter
+from apps.theory.utils import transliterate_slug
 
 BASE = 'https://pdr-online.com.ua'
 HEADERS = {
@@ -135,54 +134,6 @@ def extract_chapters_from_section_page(html, param):
     return sorted(unique, key=lambda x: x['number'])
 
 
-def extract_content(html):
-    """Extract main article content as clean HTML."""
-    soup = BeautifulSoup(html, 'html.parser')
-
-    # Try common content containers
-    content_el = None
-    for selector in ['.theory-content', '.article-content', '.content-text',
-                     'article', '.entry-content']:
-        content_el = soup.select_one(selector)
-        if content_el:
-            break
-
-    if not content_el:
-        # Fallback: find main content area
-        main = soup.find('main')
-        if main:
-            # Get all text blocks after the chapter list
-            content_el = main
-
-    if not content_el:
-        return ''
-
-    # Clean up: remove scripts, styles, ads, nav elements
-    for tag in content_el.find_all(['script', 'style', 'iframe', 'noscript']):
-        tag.decompose()
-    for tag in content_el.find_all(class_=re.compile(r'ad|banner|promo|widget|social|share|related|footer|header|nav|breadcrumb|sticky')):
-        tag.decompose()
-
-    # Fix image URLs to absolute
-    for img in content_el.find_all('img'):
-        src = img.get('src', '')
-        if src and not src.startswith(('http', 'data:')):
-            img['src'] = BASE + src
-        # Remove lazy-load attributes that might break
-        for attr in ['data-src', 'data-lazy', 'loading']:
-            if img.has_attr(attr):
-                if attr == 'data-src' and img[attr]:
-                    img['src'] = img[attr] if img[attr].startswith('http') else BASE + img[attr]
-                del img[attr]
-
-    # Convert to string
-    content = str(content_el)
-
-    # Clean whitespace
-    content = re.sub(r'\n\s*\n', '\n', content)
-    return content.strip()
-
-
 def extract_chapter_content(url):
     """Fetch a chapter page and extract its content."""
     html = fetch(url)
@@ -209,7 +160,8 @@ def extract_chapter_content(url):
         classes = nav_div.get('class', [])
         # Skip content holders
         if any(c in classes for c in ['road_sign_holder', 'content_holder',
-                                       'road_marking_holder', 'block']):
+                                       'road_marking_holder', 'pdr_info_holder',
+                                       'block']):
             continue
         links = nav_div.find_all('a', href=True)
         if links and any(p in (a.get('href', '') or '') for a in links
@@ -352,7 +304,7 @@ class Command(BaseCommand):
                 time.sleep(1.5)  # rate limit
 
                 content = extract_chapter_content(ch['url'])
-                ch_slug = slugify(ch['title'][:60], allow_unicode=True)[:190] or f'chapter-{ch["number"]}'
+                ch_slug = transliterate_slug(ch['title'], fallback=f'chapter-{ch["number"]}')
 
                 TheoryChapter.objects.update_or_create(
                     section=section,
