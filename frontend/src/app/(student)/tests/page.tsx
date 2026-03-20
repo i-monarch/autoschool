@@ -8,6 +8,7 @@ import {
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
+import PaywallBanner from '@/components/ui/PaywallBanner'
 
 interface SavedQuestionItem {
   id: number
@@ -156,34 +157,46 @@ export default function TestsPage() {
         </div>
       </div>
 
-      {/* Tabs — only for paid users */}
-      {isPaid && (
-        <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-none">
-          <TabButton active={tab === 'modes'} onClick={() => handleTabChange('modes')} icon={<ClipboardCheck className="w-4 h-4" />} label="Тести" />
-          <TabButton
-            active={tab === 'stats'}
-            onClick={() => handleTabChange('stats')}
-            icon={<BarChart3 className="w-4 h-4" />}
-            label="Статистика"
-            badge={hasStats ? `${stats.avg_percent}%` : undefined}
-            badgeColor="badge-primary"
-          />
-          <TabButton
-            active={tab === 'mistakes'}
-            onClick={() => handleTabChange('mistakes')}
-            icon={<BookX className="w-4 h-4" />}
-            label="Помилки"
-            badge={hasStats && stats.total_wrong > 0 ? String(stats.total_wrong) : undefined}
-            badgeColor="badge-error"
-          />
-          <TabButton
-            active={tab === 'saved'}
-            onClick={() => handleTabChange('saved')}
-            icon={<Bookmark className="w-4 h-4" />}
-            label="Збережені"
-          />
-        </div>
-      )}
+      {/* Tabs */}
+      <div className="tabs tabs-bordered mb-6">
+        <button
+          className={`tab tab-lg ${tab === 'modes' ? 'tab-active' : ''}`}
+          onClick={() => handleTabChange('modes')}
+        >
+          <ClipboardCheck className="w-4 h-4 mr-2" />
+          Тести
+        </button>
+        <button
+          className={`tab tab-lg ${tab === 'stats' ? 'tab-active' : ''}`}
+          onClick={() => handleTabChange('stats')}
+        >
+          <BarChart3 className="w-4 h-4 mr-2" />
+          Статистика
+          {hasStats && (
+            <span className="badge badge-sm badge-primary ml-2">{stats.avg_percent}%</span>
+          )}
+          {!isPaid && <Lock className="w-3.5 h-3.5 ml-1 text-warning" />}
+        </button>
+        <button
+          className={`tab tab-lg ${tab === 'mistakes' ? 'tab-active' : ''}`}
+          onClick={() => handleTabChange('mistakes')}
+        >
+          <BookX className="w-4 h-4 mr-2" />
+          Помилки
+          {hasStats && stats.total_wrong > 0 && (
+            <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
+          )}
+          {!isPaid && <Lock className="w-3.5 h-3.5 ml-1 text-warning" />}
+        </button>
+        <button
+          className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
+          onClick={() => handleTabChange('saved')}
+        >
+          <Bookmark className="w-4 h-4 mr-2" />
+          Збережені
+          {!isPaid && <Lock className="w-3.5 h-3.5 ml-1 text-warning" />}
+        </button>
+      </div>
 
       {/* === TAB: Modes === */}
       {tab === 'modes' && (
@@ -310,7 +323,9 @@ export default function TestsPage() {
       {/* === TAB: Stats === */}
       {tab === 'stats' && (
         <>
-          {!hasStats ? (
+          {!isPaid ? (
+            <PaywallBanner message="Детальна статистика, аналітика по темах та прогрес доступні після оплати" />
+          ) : !hasStats ? (
             <div className="card bg-base-100 border border-base-300/60">
               <div className="card-body items-center text-center py-12">
                 <BarChart3 className="w-12 h-12 text-base-content/20 mb-3" />
@@ -420,7 +435,9 @@ export default function TestsPage() {
       {/* === TAB: Mistakes === */}
       {tab === 'mistakes' && (
         <>
-          {wrongLoading ? (
+          {!isPaid ? (
+            <PaywallBanner message="Робота над помилками доступна після оплати. Переглядайте свої помилки та проходьте їх повторно" />
+          ) : wrongLoading ? (
             <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />
             </div>
@@ -494,7 +511,9 @@ export default function TestsPage() {
       {/* === TAB: Saved === */}
       {tab === 'saved' && (
         <>
-          {savedLoading ? (
+          {!isPaid ? (
+            <PaywallBanner message="Зберігайте складні питання та повертайтесь до них пізніше. Доступно після оплати" />
+          ) : savedLoading ? (
             <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />
             </div>
@@ -570,37 +589,3 @@ export default function TestsPage() {
   )
 }
 
-function TabButton({
-  active,
-  onClick,
-  icon,
-  label,
-  badge,
-  badgeColor,
-}: {
-  active: boolean
-  onClick: () => void
-  icon: React.ReactNode
-  label: string
-  badge?: string
-  badgeColor?: string
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-        active
-          ? 'bg-primary text-primary-content shadow-sm'
-          : 'bg-base-100 border border-base-300/60 text-base-content/70 hover:bg-base-200'
-      }`}
-    >
-      {icon}
-      {label}
-      {badge && (
-        <span className={`badge badge-xs ${active ? 'badge-ghost bg-white/20 text-white border-0' : badgeColor}`}>
-          {badge}
-        </span>
-      )}
-    </button>
-  )
-}
