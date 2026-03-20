@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/v1/admin/tests/', include('apps.testing.urls_admin')),
     path('api/v1/theory/', include('apps.theory.urls')),
     path('api/v1/admin/theory/', include('apps.theory.urls_admin')),
+    path('api/v1/admin/courses/', include('apps.courses.urls_admin')),
     path('api/v1/admin/students/', include('apps.users.urls_admin')),
     path('api/v1/courses/', include('apps.courses.urls')),
     path('api/v1/routes/', include('apps.routes.urls')),
