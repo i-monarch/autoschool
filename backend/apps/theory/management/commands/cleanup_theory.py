@@ -40,6 +40,14 @@ def convert_link(match):
     href = match.group(1)
     inner = match.group(2)
 
+    # Block-level content inside <a> (sign/marking cards) — unwrap the link
+    if '<div' in inner or '<li' in inner or '<ul' in inner:
+        return inner
+
+    # Individual sign/marking detail links (marking=2.1.1, sign=1) — unwrap
+    if re.search(r'(?:marking|sign)=[\d.]+', href) and ('pdr-online' in href or href.startswith('/')):
+        return inner
+
     # Internal theory links with chapter/signs params
     for src_slug, our_slug in SECTION_SLUG_MAP.items():
         if f'teoriya-pdr/{src_slug}' not in href and f'teoriya-pdr/{src_slug}' not in href.replace(BASE, ''):
