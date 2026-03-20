@@ -74,16 +74,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const promises: Promise<unknown>[] = []
-    if (isPaid) {
-      promises.push(api.get('/tests/stats/').then(r => r.data).catch(() => null))
-      promises.push(api.get('/tests/attempts/').then(r => r.data).catch(() => []))
-    } else {
-      promises.push(Promise.resolve(null), Promise.resolve([]))
-    }
-    Promise.all(promises).then(([st, att]) => {
-      setStats(st as Stats | null)
-      setAttempts(att as Attempt[])
+    Promise.all([
+      api.get('/tests/stats/').then(r => r.data).catch(() => null),
+      api.get('/tests/attempts/').then(r => r.data).catch(() => []),
+    ]).then(([st, att]) => {
+      setStats(st)
+      setAttempts(att)
     }).finally(() => setLoading(false))
   }, [])
 

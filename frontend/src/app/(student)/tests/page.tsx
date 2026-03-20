@@ -8,7 +8,7 @@ import {
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
-import PaywallBanner from '@/components/ui/PaywallBanner'
+import { PaywallOverlay } from '@/components/ui/PaywallBanner'
 
 interface SavedQuestionItem {
   id: number
@@ -80,17 +80,12 @@ export default function TestsPage() {
   const [tab, setTab] = useState<Tab>('modes')
 
   useEffect(() => {
-    const promises: Promise<unknown>[] = [
+    Promise.all([
       api.get('/tests/categories/').then(r => r.data),
-    ]
-    if (isPaid) {
-      promises.push(api.get('/tests/stats/').then(r => r.data).catch(() => null))
-    } else {
-      promises.push(Promise.resolve(null))
-    }
-    Promise.all(promises).then(([cats, st]) => {
-      setCategories(cats as Category[])
-      setStats(st as Stats | null)
+      api.get('/tests/stats/').then(r => r.data).catch(() => null),
+    ]).then(([cats, st]) => {
+      setCategories(cats)
+      setStats(st)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -175,7 +170,6 @@ export default function TestsPage() {
           {hasStats && (
             <span className="badge badge-sm badge-primary ml-2">{stats.avg_percent}%</span>
           )}
-          {!isPaid && <Lock className="w-3.5 h-3.5 ml-1 text-warning" />}
         </button>
         <button
           className={`tab tab-lg ${tab === 'mistakes' ? 'tab-active' : ''}`}
@@ -186,7 +180,6 @@ export default function TestsPage() {
           {hasStats && stats.total_wrong > 0 && (
             <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
           )}
-          {!isPaid && <Lock className="w-3.5 h-3.5 ml-1 text-warning" />}
         </button>
         <button
           className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
@@ -194,7 +187,6 @@ export default function TestsPage() {
         >
           <Bookmark className="w-4 h-4 mr-2" />
           Збережені
-          {!isPaid && <Lock className="w-3.5 h-3.5 ml-1 text-warning" />}
         </button>
       </div>
 
@@ -323,9 +315,7 @@ export default function TestsPage() {
       {/* === TAB: Stats === */}
       {tab === 'stats' && (
         <>
-          {!isPaid ? (
-            <PaywallBanner message="Детальна статистика, аналітика по темах та прогрес доступні після оплати" />
-          ) : !hasStats ? (
+          {!hasStats ? (
             <div className="card bg-base-100 border border-base-300/60">
               <div className="card-body items-center text-center py-12">
                 <BarChart3 className="w-12 h-12 text-base-content/20 mb-3" />
@@ -333,6 +323,43 @@ export default function TestsPage() {
                 <p className="text-sm text-base-content/40">Пройдіть хоча б один тест, щоб побачити статистику</p>
               </div>
             </div>
+          ) : !isPaid ? (
+            <PaywallOverlay message="Доступно в платній версії">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                <div className="card bg-base-100 border border-base-300/60 p-4">
+                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-xs text-base-content/50">Тестів пройдено</p>
+                </div>
+                <div className="card bg-base-100 border border-base-300/60 p-4">
+                  <p className="text-2xl font-bold text-primary">78%</p>
+                  <p className="text-xs text-base-content/50">Середній результат</p>
+                </div>
+                <div className="card bg-base-100 border border-base-300/60 p-4">
+                  <p className="text-2xl font-bold text-success">186</p>
+                  <p className="text-xs text-base-content/50">Правильних</p>
+                </div>
+                <div className="card bg-base-100 border border-base-300/60 p-4">
+                  <p className="text-2xl font-bold text-error">54</p>
+                  <p className="text-xs text-base-content/50">Неправильних</p>
+                </div>
+              </div>
+              <div className="card bg-base-100 border border-base-300/60 p-5">
+                <h3 className="font-semibold text-sm mb-3">Результати за темами</h3>
+                <div className="space-y-3">
+                  {['Дорожні знаки', 'Проїзд перехресть', 'Швидкість руху'].map(name => (
+                    <div key={name}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm">{name}</span>
+                        <span className="text-sm font-semibold">75%</span>
+                      </div>
+                      <div className="w-full bg-base-300/50 rounded-full h-2 overflow-hidden">
+                        <div className="h-full bg-warning rounded-full" style={{ width: '75%' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PaywallOverlay>
           ) : (
             <>
               {/* Summary cards */}
@@ -436,7 +463,20 @@ export default function TestsPage() {
       {tab === 'mistakes' && (
         <>
           {!isPaid ? (
-            <PaywallBanner message="Робота над помилками доступна після оплати. Переглядайте свої помилки та проходьте їх повторно" />
+            <PaywallOverlay message="Доступно в платній версії">
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="card bg-base-100 border border-base-300/60 p-5">
+                    <p className="text-xs text-base-content/40 mb-1">Питання #{i * 7}</p>
+                    <p className="text-sm mb-3">Яка максимальна швидкість руху дозволена в населеному пункті?</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg bg-error/10 text-error">40 км/год</div>
+                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg bg-success/10 text-success">50 км/год</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </PaywallOverlay>
           ) : wrongLoading ? (
             <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />
@@ -512,7 +552,20 @@ export default function TestsPage() {
       {tab === 'saved' && (
         <>
           {!isPaid ? (
-            <PaywallBanner message="Зберігайте складні питання та повертайтесь до них пізніше. Доступно після оплати" />
+            <PaywallOverlay message="Доступно в платній версії">
+              <div className="space-y-4">
+                {[1, 2].map(i => (
+                  <div key={i} className="card bg-base-100 border border-base-300/60 p-5">
+                    <p className="text-xs text-base-content/40 mb-1">Питання #{i * 12}</p>
+                    <p className="text-sm mb-3">Де заборонено зупинку транспортних засобів?</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg bg-success/10 text-success">На пішохідному переході</div>
+                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg text-base-content/50">На узбіччі</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </PaywallOverlay>
           ) : savedLoading ? (
             <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg text-primary" />

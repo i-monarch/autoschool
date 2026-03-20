@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.permissions import IsPaid
 from .models import SavedQuestion, QuestionComment, Question, AttemptAnswer
 from .serializers_extra import (
     SavedQuestionSerializer,
@@ -14,7 +13,6 @@ from .serializers_extra import (
 
 
 class SavedQuestionToggleView(APIView):
-    permission_classes = [IsPaid]
 
     def post(self, request):
         ser = SavedQuestionToggleSerializer(data=request.data)
@@ -37,7 +35,6 @@ class SavedQuestionToggleView(APIView):
 
 
 class SavedQuestionListView(APIView):
-    permission_classes = [IsPaid]
 
     def get(self, request):
         saved = SavedQuestion.objects.filter(
@@ -48,7 +45,6 @@ class SavedQuestionListView(APIView):
 
 
 class QuestionCommentListCreateView(APIView):
-    permission_classes = [IsPaid]
 
     def get(self, request, question_id):
         comments = QuestionComment.objects.filter(
@@ -78,7 +74,6 @@ class QuestionCommentListCreateView(APIView):
 
 
 class LeaderboardView(APIView):
-    permission_classes = [IsPaid]
 
     def get(self, request):
         from django.conf import settings

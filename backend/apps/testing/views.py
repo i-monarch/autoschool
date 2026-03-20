@@ -171,8 +171,6 @@ class AttemptDetailView(generics.RetrieveAPIView):
 
 
 class TestStatsView(APIView):
-    permission_classes = [IsPaid]
-
     def get(self, request):
         attempts = TestAttempt.objects.filter(user=request.user, finished_at__isnull=False)
 
@@ -231,8 +229,6 @@ class TestStatsView(APIView):
 
 
 class WrongAnswersView(APIView):
-    permission_classes = [IsPaid]
-
     def get(self, request):
         wrong = AttemptAnswer.objects.filter(
             attempt__user=request.user,
