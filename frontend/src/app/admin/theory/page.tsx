@@ -202,8 +202,8 @@ export default function AdminTheoryPage() {
                   >
                     <BookOpen className="w-4 h-4 flex-shrink-0 opacity-50" />
                     <span className="flex-1 truncate">{section.title}</span>
-                    <span className="text-xs opacity-50">{section.chapters_count}</span>
-                    <div className="hidden group-hover:flex gap-0.5">
+                    <span className="text-xs opacity-50 group-hover:hidden">{section.chapters_count}</span>
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         className="btn btn-ghost btn-xs btn-square"
                         onClick={e => { e.stopPropagation(); setEditingSection(section) }}
@@ -287,7 +287,6 @@ export default function AdminTheoryPage() {
                       <tr>
                         <th className="w-14">#</th>
                         <th>Назва</th>
-                        <th className="w-40 hidden sm:table-cell">Slug</th>
                         <th className="w-20" />
                       </tr>
                     </thead>
@@ -296,11 +295,6 @@ export default function AdminTheoryPage() {
                         <tr key={chapter.id} className="hover">
                           <td className="font-mono text-xs">{chapter.number}</td>
                           <td className="font-medium">{chapter.title}</td>
-                          <td className="hidden sm:table-cell">
-                            <span className="badge badge-ghost badge-sm font-mono">
-                              {chapter.slug}
-                            </span>
-                          </td>
                           <td>
                             <div className="flex gap-1 justify-end">
                               <button
