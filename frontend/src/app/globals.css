@@ -6,31 +6,31 @@
    Theory content styles
    ============================================== */
 
-/* Default: inline sign/marking icons in text (p, a, etc.) stay small */
+/* Default: images display at natural size, constrained to container */
 .theory-content img {
+  display: block;
+  margin: 1rem auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+/* Inline small icons — signs/markings referenced inside text paragraphs.
+   These have natural size ~36-80px and sit inline with surrounding text. */
+.theory-content p img[src*="/znaky/"],
+.theory-content p img[src*="/signs/"],
+.theory-content p img[src*="/marking/"],
+.theory-content p img[src*="/markings/"],
+.theory-content p img[src*="/rozmitka/"],
+.theory-content .sign_description img,
+.theory-content .chapter_description img {
   display: inline-block;
   vertical-align: middle;
   margin: 2px 4px;
   border-radius: 4px;
-  box-shadow: none;
   width: 36px;
   height: 36px;
   object-fit: contain;
-}
-
-/* Large standalone images (info blocks, photos) */
-.theory-content img[src*="/info/"],
-.theory-content img[src*="/photo/"],
-.theory-content img[src*="/schema/"],
-.theory-content img[src*="/icons/"] {
-  display: block;
-  margin: 1rem auto;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 400px;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 /* --- Road sign / marking holder blocks --- */
