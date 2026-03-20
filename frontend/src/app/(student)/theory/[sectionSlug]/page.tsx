@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, ChevronRight, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
@@ -24,6 +24,7 @@ interface Section {
 
 export default function SectionPage() {
   const params = useParams()
+  const router = useRouter()
   const sectionSlug = params.sectionSlug as string
 
   const [chapters, setChapters] = useState<Chapter[]>([])
@@ -35,6 +36,11 @@ export default function SectionPage() {
       api.get(`/theory/sections/${sectionSlug}/chapters/`).then(r => r.data),
       api.get('/theory/sections/').then(r => r.data),
     ]).then(([ch, sec]) => {
+      // Single chapter — redirect directly
+      if (ch.length === 1) {
+        router.replace(`/theory/${sectionSlug}/${ch[0].slug}`)
+        return
+      }
       setChapters(ch)
       setSections(sec)
     }).catch(() => {})
