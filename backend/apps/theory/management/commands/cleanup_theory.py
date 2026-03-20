@@ -101,12 +101,28 @@ def clean_content(content):
     # Clean pagespeed from image filenames
     def fix_pagespeed_url(match):
         url = match.group(1)
-        url = re.sub(r'/\d+x\d+x', '/', url)
-        url = re.sub(r'/x([A-Z])', r'/\1', url)
+        # Strip pagespeed suffix: .jpg.pagespeed.ic.HASH.webp -> .jpg
         url = re.sub(r'(\.\w{2,4})\.pagespeed\.\w+\.[^."]+\.\w{2,4}$', r'\1', url)
+        # Strip pagespeed resize prefixes from filename:
+        #   /200x200xfilename -> /filename
+        #   /600xNxfilename -> /filename
+        url = re.sub(r'/\d+x\w+x', '/', url)
+        # Strip leading x from filename added by pagespeed:
+        #   /xsv-4.png -> /sv-4.png (lowercase too)
+        url = re.sub(r'/x([a-zA-Z])', r'/\1', url)
         return f'src="{url}"'
 
     content = re.sub(r'src="([^"]*pagespeed[^"]*)"', fix_pagespeed_url, content)
+
+    # Also fix URLs that were already partially cleaned by scraper
+    # but still have pagespeed resize prefixes (without .pagespeed. suffix)
+    def fix_pagespeed_prefix(match):
+        url = match.group(1)
+        url = re.sub(r'/\d+x\w+x', '/', url)
+        url = re.sub(r'/x([a-zA-Z])', r'/\1', url)
+        return f'src="{url}"'
+
+    content = re.sub(r'src="([^"]*(?:/\d+x\w+x|/x[a-z])[^"]*)"', fix_pagespeed_prefix, content)
 
     # Fix relative image URLs
     content = re.sub(r'src="(/assets/)', f'src="{BASE}\\1', content)

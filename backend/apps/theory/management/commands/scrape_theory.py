@@ -214,6 +214,12 @@ def extract_chapter_content(url):
             else:
                 img.decompose()
                 continue
+        # Strip pagespeed suffix: .jpg.pagespeed.ic.HASH.webp -> .jpg
+        src = re.sub(r'(\.\w{2,4})\.pagespeed\.\w+\.[^."]+\.\w{2,4}$', r'\1', src)
+        # Strip pagespeed resize prefixes: /600xNx, /200x200x, etc
+        src = re.sub(r'/\d+x\w+x', '/', src)
+        # Strip leading x from filename: /xsv-4.png -> /sv-4.png
+        src = re.sub(r'/x([a-zA-Z])', r'/\1', src)
         if src and not src.startswith(('http', 'data:')):
             src = BASE + '/' + src.lstrip('/')
         img['src'] = src
