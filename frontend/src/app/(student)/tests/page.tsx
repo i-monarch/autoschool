@@ -3,10 +3,24 @@
 import { useEffect, useState } from 'react'
 import {
   ClipboardCheck, Clock, Target, TrendingUp, ChevronRight, BookOpen,
-  CheckCircle, XCircle, AlertTriangle, BarChart3, BookX,
+  CheckCircle, XCircle, AlertTriangle, BarChart3, BookX, Bookmark, Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+
+interface SavedQuestionItem {
+  id: number
+  question: {
+    id: number
+    number: number
+    text: string
+    image: string | null
+    explanation: string | null
+    category_name: string | null
+    answers: Array<{ id: number; text: string; is_correct: boolean }>
+  }
+  created_at: string
+}
 
 interface Category {
   id: number
@@ -47,7 +61,7 @@ interface WrongAnswer {
   answers: Array<{ id: number; text: string; is_correct: boolean }>
 }
 
-type Tab = 'modes' | 'stats' | 'mistakes'
+type Tab = 'modes' | 'stats' | 'mistakes' | 'saved'
 
 export default function TestsPage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -55,6 +69,9 @@ export default function TestsPage() {
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([])
   const [wrongLoading, setWrongLoading] = useState(false)
   const [wrongLoaded, setWrongLoaded] = useState(false)
+  const [savedItems, setSavedItems] = useState<SavedQuestionItem[]>([])
+  const [savedLoading, setSavedLoading] = useState(false)
+  const [savedLoaded, setSavedLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('modes')
 
@@ -81,9 +98,30 @@ export default function TestsPage() {
       .finally(() => setWrongLoading(false))
   }
 
+  const loadSavedQuestions = () => {
+    if (savedLoaded) return
+    setSavedLoading(true)
+    api.get('/tests/saved/list/')
+      .then(res => {
+        setSavedItems(res.data.results)
+        setSavedLoaded(true)
+      })
+      .catch(() => {})
+      .finally(() => setSavedLoading(false))
+  }
+
+  const removeSaved = (questionId: number) => {
+    api.post('/tests/saved/', { question_id: questionId })
+      .then(() => {
+        setSavedItems(prev => prev.filter(s => s.question.id !== questionId))
+      })
+      .catch(() => {})
+  }
+
   const handleTabChange = (t: Tab) => {
     setTab(t)
     if (t === 'mistakes' && !wrongLoaded) loadWrongAnswers()
+    if (t === 'saved' && !savedLoaded) loadSavedQuestions()
   }
 
   if (loading) {
@@ -139,6 +177,13 @@ export default function TestsPage() {
             <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
           )}
         </button>
+        <button
+          className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
+          onClick={() => handleTabChange('saved')}
+        >
+          <Bookmark className="w-4 h-4 mr-2" />
+          Збережені
+        </button>
       </div>
 
       {/* === TAB: Modes === */}
@@ -181,6 +226,21 @@ export default function TestsPage() {
               </div>
             </Link>
           </div>
+
+          {/* Leaderboard link */}
+          <Link
+            href="/tests/leaderboard"
+            className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-warning/30 hover:bg-warning/5 transition-colors group mb-8"
+          >
+            <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+              <Trophy className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Рейтинг</p>
+              <p className="text-xs text-base-content/50">Топ-50 учнів за кількістю правильних відповідей</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-warning/60 transition-colors flex-shrink-0" />
+          </Link>
 
           {/* Topics */}
           <h2 className="text-lg font-semibold mb-4">За темами</h2>
@@ -388,6 +448,82 @@ export default function TestsPage() {
                     {wa.explanation && (
                       <div className="bg-base-200/50 rounded-lg p-3">
                         <p className="text-xs text-base-content/60 leading-relaxed">{wa.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* === TAB: Saved === */}
+      {tab === 'saved' && (
+        <>
+          {savedLoading ? (
+            <div className="flex justify-center py-12">
+              <span className="loading loading-spinner loading-lg text-primary" />
+            </div>
+          ) : savedItems.length === 0 ? (
+            <div className="card bg-base-100 border border-base-300/60">
+              <div className="card-body items-center text-center py-12">
+                <Bookmark className="w-12 h-12 text-base-content/20 mb-3" />
+                <p className="text-base-content/50 mb-1">Збережених питань немає</p>
+                <p className="text-sm text-base-content/40">Натисніть на закладку біля питання, щоб зберегти його</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-base-content/50 mb-4">
+                {savedItems.length} збережених питань
+              </p>
+              <div className="space-y-3">
+                {savedItems.map(item => (
+                  <div key={item.id} className="card bg-base-100 border border-primary/15 p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="text-xs font-mono text-base-content/30 mt-0.5">#{item.question.number}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium mb-1">{item.question.text}</p>
+                        {item.question.category_name && (
+                          <span className="badge badge-ghost badge-sm">{item.question.category_name}</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => removeSaved(item.question.id)}
+                        className="btn btn-ghost btn-xs"
+                        title="Прибрати з збережених"
+                      >
+                        <Bookmark className="w-4 h-4 fill-primary text-primary" />
+                      </button>
+                    </div>
+
+                    {item.question.image && (
+                      <img src={item.question.image} alt="" className="rounded-lg mb-3 max-h-48 object-contain" />
+                    )}
+
+                    <div className="space-y-1.5 mb-3">
+                      {item.question.answers.map(ans => {
+                        let cls = 'flex items-start gap-2 text-sm py-1.5 px-3 rounded-lg '
+                        if (ans.is_correct) cls += 'bg-success/10 text-success'
+                        else cls += 'text-base-content/50'
+
+                        return (
+                          <div key={ans.id} className={cls}>
+                            {ans.is_correct ? (
+                              <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <div className="w-4 h-4 flex-shrink-0" />
+                            )}
+                            <span>{ans.text}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {item.question.explanation && (
+                      <div className="bg-base-200/50 rounded-lg p-3">
+                        <p className="text-xs text-base-content/60 leading-relaxed">{item.question.explanation}</p>
                       </div>
                     )}
                   </div>

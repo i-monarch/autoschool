@@ -11,6 +11,8 @@ urlpatterns = [
     path('api/v1/admin/tests/', include('apps.testing.urls_admin')),
     path('api/v1/theory/', include('apps.theory.urls')),
     path('api/v1/admin/theory/', include('apps.theory.urls_admin')),
+    path('api/v1/routes/', include('apps.routes.urls')),
+    path('api/v1/admin/routes/', include('apps.routes.urls_admin')),
 ]
 
 if settings.DEBUG:

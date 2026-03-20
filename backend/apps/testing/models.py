@@ -88,3 +88,23 @@ class AttemptAnswer(models.Model):
 
     class Meta:
         unique_together = ['attempt', 'question']
+
+
+class SavedQuestion(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saved_questions')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='saved_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'question']
+        ordering = ['-created_at']
+
+
+class QuestionComment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question_comments')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']

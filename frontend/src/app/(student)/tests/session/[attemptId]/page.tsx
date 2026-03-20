@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Flag, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Flag, AlertCircle, Bookmark } from 'lucide-react'
 import api from '@/lib/api'
 
 interface AnswerOption {
@@ -43,6 +43,7 @@ export default function TestSessionPage() {
     selectedId: number | null
     result: AnswerResult | null
   }>>({})
+  const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set())
 
   const isExamMode = testType === 'exam'
 
@@ -59,7 +60,24 @@ export default function TestSessionPage() {
       setSecondsLeft(data.time_limit_minutes * 60)
     }
     setLoading(false)
+
+    api.get('/tests/saved/list/').then(res => {
+      const ids = new Set<number>(res.data.results.map((s: { question: { id: number } }) => s.question.id))
+      setSavedQuestions(ids)
+    }).catch(() => {})
   }, [attemptId, router])
+
+  const toggleSaveQuestion = async (questionId: number) => {
+    try {
+      const res = await api.post('/tests/saved/', { question_id: questionId })
+      setSavedQuestions(prev => {
+        const next = new Set(prev)
+        if (res.data.saved) next.add(questionId)
+        else next.delete(questionId)
+        return next
+      })
+    } catch {}
+  }
 
   // Timer
   useEffect(() => {
@@ -203,7 +221,16 @@ export default function TestSessionPage() {
 
       {/* Question */}
       <div className="mb-6">
-        <p className="text-xs text-base-content/40 mb-2">Питання #{currentQuestion.number}</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs text-base-content/40">Питання #{currentQuestion.number}</p>
+          <button
+            onClick={() => toggleSaveQuestion(currentQuestion.id)}
+            className="btn btn-ghost btn-xs gap-1"
+            title={savedQuestions.has(currentQuestion.id) ? 'Прибрати з збережених' : 'Зберегти питання'}
+          >
+            <Bookmark className={`w-4 h-4 ${savedQuestions.has(currentQuestion.id) ? 'fill-primary text-primary' : ''}`} />
+          </button>
+        </div>
         <h2 className="text-lg font-medium leading-relaxed">{currentQuestion.text}</h2>
       </div>
 

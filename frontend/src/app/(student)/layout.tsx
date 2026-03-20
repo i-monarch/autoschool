@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import {
   Car, LogOut, User, BookOpen, ClipboardCheck,
   MessageCircle, Home, Calendar, CreditCard,
-  ChevronRight, Bell, GraduationCap,
+  ChevronRight, Bell, GraduationCap, FileText, Navigation,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
@@ -15,6 +15,8 @@ const navItems = [
   { href: '/theory', label: 'Теорія', icon: GraduationCap },
   { href: '/courses', label: 'Курси', icon: BookOpen },
   { href: '/tests', label: 'Тести', icon: ClipboardCheck },
+  { href: '/europrotocol', label: 'Європротокол', icon: FileText },
+  { href: '/routes', label: 'Маршрути', icon: Navigation },
   { href: '/schedule', label: 'Розклад', icon: Calendar },
   { href: '/chat', label: 'Повідомлення', icon: MessageCircle },
   { href: '/payments', label: 'Оплата', icon: CreditCard },

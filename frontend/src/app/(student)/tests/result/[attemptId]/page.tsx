@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { CheckCircle, XCircle, RotateCcw, ArrowLeft, Trophy } from 'lucide-react'
+import { CheckCircle, XCircle, RotateCcw, ArrowLeft, Trophy, Bookmark, Send } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+
+interface QuestionCommentData {
+  id: number
+  user_name: string
+  text: string
+  created_at: string
+}
 
 interface AttemptResult {
   id: number
@@ -38,12 +45,56 @@ export default function TestResultPage() {
   const [result, setResult] = useState<AttemptResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [showDetails, setShowDetails] = useState(false)
+  const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set())
+  const [comments, setComments] = useState<Record<number, QuestionCommentData[]>>({})
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({})
+  const [submittingComment, setSubmittingComment] = useState<number | null>(null)
 
   useEffect(() => {
     api.get(`/tests/attempts/${attemptId}/`)
       .then(res => { setResult(res.data); setLoading(false) })
       .catch(() => { router.push('/tests'); })
+
+    api.get('/tests/saved/list/').then(res => {
+      const ids = new Set<number>(res.data.results.map((s: { question: { id: number } }) => s.question.id))
+      setSavedQuestions(ids)
+    }).catch(() => {})
   }, [attemptId, router])
+
+  const toggleSaveQuestion = async (questionId: number) => {
+    try {
+      const res = await api.post('/tests/saved/', { question_id: questionId })
+      setSavedQuestions(prev => {
+        const next = new Set(prev)
+        if (res.data.saved) next.add(questionId)
+        else next.delete(questionId)
+        return next
+      })
+    } catch {}
+  }
+
+  const loadComments = async (questionId: number) => {
+    if (comments[questionId]) return
+    try {
+      const res = await api.get(`/tests/questions/${questionId}/comments/`)
+      setComments(prev => ({ ...prev, [questionId]: res.data }))
+    } catch {}
+  }
+
+  const submitComment = async (questionId: number) => {
+    const text = commentInputs[questionId]?.trim()
+    if (!text) return
+    setSubmittingComment(questionId)
+    try {
+      const res = await api.post(`/tests/questions/${questionId}/comments/`, { text })
+      setComments(prev => ({
+        ...prev,
+        [questionId]: [res.data, ...(prev[questionId] || [])],
+      }))
+      setCommentInputs(prev => ({ ...prev, [questionId]: '' }))
+    } catch {}
+    setSubmittingComment(null)
+  }
 
   if (loading || !result) {
     return (
@@ -127,7 +178,14 @@ export default function TestResultPage() {
                   ? <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                   : <XCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
                 }
-                <p className="text-sm font-medium">{a.question.text}</p>
+                <p className="text-sm font-medium flex-1">{a.question.text}</p>
+                <button
+                  onClick={() => toggleSaveQuestion(a.question.id)}
+                  className="btn btn-ghost btn-xs"
+                  title={savedQuestions.has(a.question.id) ? 'Прибрати з збережених' : 'Зберегти питання'}
+                >
+                  <Bookmark className={`w-4 h-4 ${savedQuestions.has(a.question.id) ? 'fill-primary text-primary' : ''}`} />
+                </button>
               </div>
 
               {a.question.image && (
@@ -156,6 +214,55 @@ export default function TestResultPage() {
                   {a.question.explanation}
                 </p>
               )}
+
+              {/* Comments section */}
+              <div className="mt-3 ml-7 border-t border-base-300/40 pt-3">
+                <button
+                  onClick={() => loadComments(a.question.id)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {comments[a.question.id] ? `Коментарі (${comments[a.question.id].length})` : 'Показати коментарі'}
+                </button>
+
+                {comments[a.question.id] && (
+                  <div className="mt-2 space-y-2">
+                    {/* Add comment */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        className="input input-bordered input-xs flex-1"
+                        placeholder="Написати коментар..."
+                        value={commentInputs[a.question.id] || ''}
+                        onChange={e => setCommentInputs(prev => ({ ...prev, [a.question.id]: e.target.value }))}
+                        onKeyDown={e => { if (e.key === 'Enter') submitComment(a.question.id) }}
+                      />
+                      <button
+                        onClick={() => submitComment(a.question.id)}
+                        disabled={submittingComment === a.question.id || !commentInputs[a.question.id]?.trim()}
+                        className="btn btn-primary btn-xs"
+                      >
+                        <Send className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    {/* Comment list */}
+                    {comments[a.question.id].length === 0 && (
+                      <p className="text-xs text-base-content/40">Коментарів ще немає</p>
+                    )}
+                    {comments[a.question.id].map(c => (
+                      <div key={c.id} className="bg-base-200/50 rounded-lg p-2">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-xs font-medium">{c.user_name}</span>
+                          <span className="text-[10px] text-base-content/30">
+                            {new Date(c.created_at).toLocaleDateString('uk-UA')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-base-content/70">{c.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
