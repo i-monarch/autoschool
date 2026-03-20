@@ -170,7 +170,7 @@ export default function AdminStudentsPage() {
                 <th className="text-center">Оплата</th>
                 <th className="hidden lg:table-cell text-center">Тестів</th>
                 <th className="hidden lg:table-cell">Реєстрація</th>
-                <th className="w-32" />
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -230,7 +230,7 @@ export default function AdminStudentsPage() {
                     </td>
                     <td>
                       <button
-                        className={`btn btn-sm gap-2 ${s.is_paid ? 'btn-outline btn-error' : 'btn-success'}`}
+                        className={`btn btn-sm gap-2 whitespace-nowrap ${s.is_paid ? 'btn-outline btn-error' : 'btn-success'}`}
                         onClick={() => togglePayment(s)}
                         disabled={togglingId === s.id}
                       >
