@@ -2,9 +2,26 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import {
-  Plus, Pencil, Trash2, ChevronRight, Video,
-  BookOpen, Eye, EyeOff, ArrowLeft, Clock,
+  Plus, Pencil, Trash2, Video,
+  BookOpen, Eye, EyeOff, ArrowLeft, Clock, GripVertical,
 } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
 import CourseModal from './CourseModal'
@@ -50,6 +67,199 @@ function formatDuration(seconds: number): string {
   return sec > 0 ? `${min}:${sec.toString().padStart(2, '0')}` : `${min} хв`
 }
 
+// --- Sortable Course Item ---
+function SortableCourseItem({
+  course,
+  isSelected,
+  onSelect,
+  onToggleActive,
+  onEdit,
+  onDelete,
+}: {
+  course: AdminCourse
+  isSelected: boolean
+  onSelect: () => void
+  onToggleActive: () => void
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: course.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.5 : undefined,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-1.5 px-2 py-2.5 rounded-lg text-sm transition-colors cursor-pointer ${
+        isSelected
+          ? 'bg-primary/10 text-primary font-medium'
+          : 'hover:bg-base-200'
+      } ${!course.is_active ? 'opacity-50' : ''}`}
+      onClick={onSelect}
+    >
+      <button
+        className="cursor-grab active:cursor-grabbing touch-none text-base-content/30 hover:text-base-content/60 flex-shrink-0"
+        {...attributes}
+        {...listeners}
+        onClick={e => e.stopPropagation()}
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <BookOpen className="w-4 h-4 flex-shrink-0 opacity-50" />
+      <div className="flex-1 min-w-0">
+        <span className="truncate block">{course.title}</span>
+        <span className="text-xs opacity-50">
+          {course.lessons_count} уроків
+          {!course.is_active && ' (прихований)'}
+        </span>
+      </div>
+      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          className="btn btn-ghost btn-xs btn-square"
+          onClick={e => { e.stopPropagation(); onToggleActive() }}
+          title={course.is_active ? 'Приховати' : 'Активувати'}
+        >
+          {course.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+        </button>
+        <button
+          className="btn btn-ghost btn-xs btn-square"
+          onClick={e => { e.stopPropagation(); onEdit() }}
+          title="Редагувати"
+        >
+          <Pencil className="w-3 h-3" />
+        </button>
+        <button
+          className="btn btn-ghost btn-xs btn-square text-error"
+          onClick={e => { e.stopPropagation(); onDelete() }}
+          title="Видалити"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// --- Sortable Lesson Row ---
+function SortableLessonRow({
+  lesson,
+  index,
+  onEdit,
+  onDelete,
+  onToggleFree,
+  onToggleActive,
+}: {
+  lesson: AdminLesson
+  index: number
+  onEdit: () => void
+  onDelete: () => void
+  onToggleFree: () => void
+  onToggleActive: () => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lesson.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.5 : undefined,
+  }
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={`hover ${!lesson.is_active ? 'opacity-40' : ''} ${isDragging ? 'bg-base-200' : ''}`}
+    >
+      <td className="w-8">
+        <button
+          className="cursor-grab active:cursor-grabbing touch-none text-base-content/30 hover:text-base-content/60"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+      </td>
+      <td className="font-mono text-xs w-10">{index + 1}</td>
+      <td>
+        <div>
+          <span className="font-medium">{lesson.title}</span>
+          {lesson.description && (
+            <p className="text-xs text-base-content/50 line-clamp-1">{lesson.description}</p>
+          )}
+        </div>
+      </td>
+      <td className="text-xs text-base-content/60">
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {formatDuration(lesson.duration_seconds)}
+        </span>
+      </td>
+      <td className="text-center">
+        <input
+          type="checkbox"
+          className="toggle toggle-success toggle-xs"
+          checked={lesson.is_free}
+          onChange={onToggleFree}
+        />
+      </td>
+      <td className="text-center">
+        <input
+          type="checkbox"
+          className="toggle toggle-primary toggle-xs"
+          checked={lesson.is_active}
+          onChange={onToggleActive}
+        />
+      </td>
+      <td className="text-center">
+        {lesson.video_url ? (
+          <span className="badge badge-sm badge-success badge-outline">Є</span>
+        ) : (
+          <span className="badge badge-sm badge-ghost">Немає</span>
+        )}
+      </td>
+      <td>
+        <div className="flex gap-1 justify-end">
+          <button
+            className="btn btn-ghost btn-xs btn-square"
+            onClick={onEdit}
+            title="Редагувати"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            className="btn btn-ghost btn-xs btn-square text-error"
+            onClick={onDelete}
+            title="Видалити"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
+}
+
 export default function AdminCoursesPage() {
   const toast = useToast()
 
@@ -64,6 +274,11 @@ export default function AdminCoursesPage() {
   const [creatingCourse, setCreatingCourse] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState<number | null>(null)
   const [creatingLesson, setCreatingLesson] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   const fetchStats = useCallback(async () => {
     try {
@@ -110,6 +325,45 @@ export default function AdminCoursesPage() {
       fetchLessons(selectedCourse.id)
     }
   }, [selectedCourse])
+
+  // --- DnD handlers ---
+  const handleCoursesDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = courses.findIndex(c => c.id === active.id)
+    const newIndex = courses.findIndex(c => c.id === over.id)
+    const reordered = arrayMove(courses, oldIndex, newIndex)
+    setCourses(reordered)
+
+    try {
+      await api.post('/admin/courses/courses/reorder/', {
+        ordered_ids: reordered.map(c => c.id),
+      })
+    } catch {
+      toast.add('Помилка зміни порядку', 'error')
+      fetchCourses()
+    }
+  }
+
+  const handleLessonsDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = lessons.findIndex(l => l.id === active.id)
+    const newIndex = lessons.findIndex(l => l.id === over.id)
+    const reordered = arrayMove(lessons, oldIndex, newIndex)
+    setLessons(reordered)
+
+    try {
+      await api.post('/admin/courses/lessons/reorder/', {
+        ordered_ids: reordered.map(l => l.id),
+      })
+    } catch {
+      toast.add('Помилка зміни порядку', 'error')
+      if (selectedCourse) fetchLessons(selectedCourse.id)
+    }
+  }
 
   const handleDeleteCourse = async (course: AdminCourse) => {
     if (!confirm(`Видалити курс "${course.title}" та всі його уроки? Цю дію не можна скасувати.`)) return
@@ -240,49 +494,28 @@ export default function AdminCoursesPage() {
                   Немає курсів
                 </p>
               ) : (
-                courses.map(course => (
-                  <div
-                    key={course.id}
-                    className={`group flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors cursor-pointer ${
-                      selectedCourse?.id === course.id
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'hover:bg-base-200'
-                    } ${!course.is_active ? 'opacity-50' : ''}`}
-                    onClick={() => setSelectedCourse(course)}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleCoursesDragEnd}
+                >
+                  <SortableContext
+                    items={courses.map(c => c.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <BookOpen className="w-4 h-4 flex-shrink-0 opacity-50" />
-                    <div className="flex-1 min-w-0">
-                      <span className="truncate block">{course.title}</span>
-                      <span className="text-xs opacity-50">
-                        {course.lessons_count} уроків
-                        {!course.is_active && ' (прихований)'}
-                      </span>
-                    </div>
-                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        className="btn btn-ghost btn-xs btn-square"
-                        onClick={e => { e.stopPropagation(); handleToggleCourseActive(course) }}
-                        title={course.is_active ? 'Приховати' : 'Активувати'}
-                      >
-                        {course.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-xs btn-square"
-                        onClick={e => { e.stopPropagation(); setEditingCourse(course) }}
-                        title="Редагувати"
-                      >
-                        <Pencil className="w-3 h-3" />
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-xs btn-square text-error"
-                        onClick={e => { e.stopPropagation(); handleDeleteCourse(course) }}
-                        title="Видалити"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))
+                    {courses.map(course => (
+                      <SortableCourseItem
+                        key={course.id}
+                        course={course}
+                        isSelected={selectedCourse?.id === course.id}
+                        onSelect={() => setSelectedCourse(course)}
+                        onToggleActive={() => handleToggleCourseActive(course)}
+                        onEdit={() => setEditingCourse(course)}
+                        onDelete={() => handleDeleteCourse(course)}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
               )}
             </div>
           </div>
@@ -345,81 +578,44 @@ export default function AdminCoursesPage() {
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="table table-sm">
-                      <thead>
-                        <tr>
-                          <th className="w-10">#</th>
-                          <th>Назва</th>
-                          <th className="w-24">Тривалість</th>
-                          <th className="w-20 text-center">Безкоштовно</th>
-                          <th className="w-20 text-center">Активний</th>
-                          <th className="w-24 text-center">Відео</th>
-                          <th className="w-20" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {lessons.map((lesson, idx) => (
-                          <tr key={lesson.id} className={`hover ${!lesson.is_active ? 'opacity-40' : ''}`}>
-                            <td className="font-mono text-xs">{idx + 1}</td>
-                            <td>
-                              <div>
-                                <span className="font-medium">{lesson.title}</span>
-                                {lesson.description && (
-                                  <p className="text-xs text-base-content/50 line-clamp-1">{lesson.description}</p>
-                                )}
-                              </div>
-                            </td>
-                            <td className="text-xs text-base-content/60">
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatDuration(lesson.duration_seconds)}
-                              </span>
-                            </td>
-                            <td className="text-center">
-                              <input
-                                type="checkbox"
-                                className="toggle toggle-success toggle-xs"
-                                checked={lesson.is_free}
-                                onChange={() => handleToggleLessonFree(lesson)}
-                              />
-                            </td>
-                            <td className="text-center">
-                              <input
-                                type="checkbox"
-                                className="toggle toggle-primary toggle-xs"
-                                checked={lesson.is_active}
-                                onChange={() => handleToggleLessonActive(lesson)}
-                              />
-                            </td>
-                            <td className="text-center">
-                              {lesson.video_url ? (
-                                <span className="badge badge-sm badge-success badge-outline">Є</span>
-                              ) : (
-                                <span className="badge badge-sm badge-ghost">Немає</span>
-                              )}
-                            </td>
-                            <td>
-                              <div className="flex gap-1 justify-end">
-                                <button
-                                  className="btn btn-ghost btn-xs btn-square"
-                                  onClick={() => setEditingLessonId(lesson.id)}
-                                  title="Редагувати"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  className="btn btn-ghost btn-xs btn-square text-error"
-                                  onClick={() => handleDeleteLesson(lesson)}
-                                  title="Видалити"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleLessonsDragEnd}
+                    >
+                      <table className="table table-sm">
+                        <thead>
+                          <tr>
+                            <th className="w-8" />
+                            <th className="w-10">#</th>
+                            <th>Назва</th>
+                            <th className="w-24">Тривалість</th>
+                            <th className="w-20 text-center">Безкоштовно</th>
+                            <th className="w-20 text-center">Активний</th>
+                            <th className="w-24 text-center">Відео</th>
+                            <th className="w-20" />
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <SortableContext
+                          items={lessons.map(l => l.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <tbody>
+                            {lessons.map((lesson, idx) => (
+                              <SortableLessonRow
+                                key={lesson.id}
+                                lesson={lesson}
+                                index={idx}
+                                onEdit={() => setEditingLessonId(lesson.id)}
+                                onDelete={() => handleDeleteLesson(lesson)}
+                                onToggleFree={() => handleToggleLessonFree(lesson)}
+                                onToggleActive={() => handleToggleLessonActive(lesson)}
+                              />
+                            ))}
+                          </tbody>
+                        </SortableContext>
+                      </table>
+                    </DndContext>
                   </div>
                 )}
               </div>
