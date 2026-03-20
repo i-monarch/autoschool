@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, ClipboardCheck, Users,
   CreditCard, LogOut, User, Settings, Bell,
-  ChevronLeft, Menu,
+  ChevronLeft, Menu, GraduationCap,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/auth'
 const navItems = [
   { href: '/admin/dashboard', label: 'Дашборд', icon: LayoutDashboard },
   { href: '/admin/content', label: 'Контент', icon: BookOpen },
+  { href: '/admin/theory', label: 'Теорія', icon: GraduationCap },
   { href: '/admin/tests', label: 'Тести', icon: ClipboardCheck },
   { href: '/admin/students', label: 'Учні', icon: Users },
   { href: '/admin/payments', label: 'Платежі', icon: CreditCard },

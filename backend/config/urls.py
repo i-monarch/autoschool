@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/v1/tests/', include('apps.testing.urls')),
     path('api/v1/admin/tests/', include('apps.testing.urls_admin')),
     path('api/v1/theory/', include('apps.theory.urls')),
+    path('api/v1/admin/theory/', include('apps.theory.urls_admin')),
 ]
 
 if settings.DEBUG:
