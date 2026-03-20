@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Flag, AlertCircle, Bookmark } from 'lucide-react'
 import api from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 
 interface AnswerOption {
   id: number
@@ -44,7 +45,10 @@ export default function TestSessionPage() {
     result: AnswerResult | null
   }>>({})
   const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set())
+  const [savingQuestion, setSavingQuestion] = useState<number | null>(null)
 
+  const user = useAuthStore(s => s.user)
+  const isPaid = user?.is_paid ?? false
   const isExamMode = testType === 'exam'
 
   useEffect(() => {
@@ -61,13 +65,17 @@ export default function TestSessionPage() {
     }
     setLoading(false)
 
-    api.get('/tests/saved/list/').then(res => {
-      const ids = new Set<number>(res.data.results.map((s: { question: { id: number } }) => s.question.id))
-      setSavedQuestions(ids)
-    }).catch(() => {})
+    if (isPaid) {
+      api.get('/tests/saved/list/').then(res => {
+        const ids = new Set<number>(res.data.results.map((s: { question: { id: number } }) => s.question.id))
+        setSavedQuestions(ids)
+      }).catch(() => {})
+    }
   }, [attemptId, router])
 
   const toggleSaveQuestion = async (questionId: number) => {
+    if (!isPaid) return
+    setSavingQuestion(questionId)
     try {
       const res = await api.post('/tests/saved/', { question_id: questionId })
       setSavedQuestions(prev => {
@@ -76,7 +84,9 @@ export default function TestSessionPage() {
         else next.delete(questionId)
         return next
       })
-    } catch {}
+    } catch {} finally {
+      setSavingQuestion(null)
+    }
   }
 
   // Timer
@@ -223,13 +233,25 @@ export default function TestSessionPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-base-content/40">Питання #{currentQuestion.number}</p>
-          <button
-            onClick={() => toggleSaveQuestion(currentQuestion.id)}
-            className="btn btn-ghost btn-xs gap-1"
-            title={savedQuestions.has(currentQuestion.id) ? 'Прибрати з збережених' : 'Зберегти питання'}
-          >
-            <Bookmark className={`w-4 h-4 ${savedQuestions.has(currentQuestion.id) ? 'fill-primary text-primary' : ''}`} />
-          </button>
+          {isPaid && (
+            <button
+              onClick={() => toggleSaveQuestion(currentQuestion.id)}
+              disabled={savingQuestion === currentQuestion.id}
+              className={`btn btn-sm gap-1.5 transition-all ${
+                savedQuestions.has(currentQuestion.id)
+                  ? 'btn-primary btn-outline'
+                  : 'btn-ghost'
+              }`}
+              title={savedQuestions.has(currentQuestion.id) ? 'Прибрати з збережених' : 'Зберегти питання'}
+            >
+              {savingQuestion === currentQuestion.id ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : (
+                <Bookmark className={`w-4 h-4 ${savedQuestions.has(currentQuestion.id) ? 'fill-current' : ''}`} />
+              )}
+              {savedQuestions.has(currentQuestion.id) ? 'Збережено' : 'Зберегти'}
+            </button>
+          )}
         </div>
         <h2 className="text-lg font-medium leading-relaxed">{currentQuestion.text}</h2>
       </div>
