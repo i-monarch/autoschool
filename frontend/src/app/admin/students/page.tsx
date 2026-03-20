@@ -230,14 +230,14 @@ export default function AdminStudentsPage() {
                     </td>
                     <td>
                       <button
-                        className={`btn btn-xs gap-1 ${s.is_paid ? 'btn-outline btn-error' : 'btn-success'}`}
+                        className={`btn btn-sm gap-2 ${s.is_paid ? 'btn-outline btn-error' : 'btn-success'}`}
                         onClick={() => togglePayment(s)}
                         disabled={togglingId === s.id}
                       >
                         {togglingId === s.id ? (
                           <span className="loading loading-spinner loading-xs" />
                         ) : (
-                          <CreditCard className="w-3 h-3" />
+                          <CreditCard className="w-4 h-4" />
                         )}
                         {s.is_paid ? 'Скасувати' : 'Оплатити'}
                       </button>
