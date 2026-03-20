@@ -156,36 +156,34 @@ export default function TestsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-none">
-        <TabButton active={tab === 'modes'} onClick={() => handleTabChange('modes')} icon={<ClipboardCheck className="w-4 h-4" />} label="Тести" />
-        {isPaid && (
-          <>
-            <TabButton
-              active={tab === 'stats'}
-              onClick={() => handleTabChange('stats')}
-              icon={<BarChart3 className="w-4 h-4" />}
-              label="Статистика"
-              badge={hasStats ? `${stats.avg_percent}%` : undefined}
-              badgeColor="badge-primary"
-            />
-            <TabButton
-              active={tab === 'mistakes'}
-              onClick={() => handleTabChange('mistakes')}
-              icon={<BookX className="w-4 h-4" />}
-              label="Помилки"
-              badge={hasStats && stats.total_wrong > 0 ? String(stats.total_wrong) : undefined}
-              badgeColor="badge-error"
-            />
-            <TabButton
-              active={tab === 'saved'}
-              onClick={() => handleTabChange('saved')}
-              icon={<Bookmark className="w-4 h-4" />}
-              label="Збережені"
-            />
-          </>
-        )}
-      </div>
+      {/* Tabs — only for paid users */}
+      {isPaid && (
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-none">
+          <TabButton active={tab === 'modes'} onClick={() => handleTabChange('modes')} icon={<ClipboardCheck className="w-4 h-4" />} label="Тести" />
+          <TabButton
+            active={tab === 'stats'}
+            onClick={() => handleTabChange('stats')}
+            icon={<BarChart3 className="w-4 h-4" />}
+            label="Статистика"
+            badge={hasStats ? `${stats.avg_percent}%` : undefined}
+            badgeColor="badge-primary"
+          />
+          <TabButton
+            active={tab === 'mistakes'}
+            onClick={() => handleTabChange('mistakes')}
+            icon={<BookX className="w-4 h-4" />}
+            label="Помилки"
+            badge={hasStats && stats.total_wrong > 0 ? String(stats.total_wrong) : undefined}
+            badgeColor="badge-error"
+          />
+          <TabButton
+            active={tab === 'saved'}
+            onClick={() => handleTabChange('saved')}
+            icon={<Bookmark className="w-4 h-4" />}
+            label="Збережені"
+          />
+        </div>
+      )}
 
       {/* === TAB: Modes === */}
       {tab === 'modes' && (
