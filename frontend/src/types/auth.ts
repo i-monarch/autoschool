@@ -9,6 +9,8 @@ export interface User {
   avatar: string | null
   language: string
   is_phone_verified: boolean
+  is_paid: boolean
+  paid_until: string | null
   created_at: string
 }
 

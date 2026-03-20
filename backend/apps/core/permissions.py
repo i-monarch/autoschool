@@ -16,8 +16,10 @@ class IsAdmin(BasePermission):
         return request.user.is_authenticated and request.user.role == 'admin'
 
 
-class IsSubscriptionActive(BasePermission):
+class IsPaid(BasePermission):
+    message = 'Потрібна оплата для доступу до цього контенту.'
+
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
-        return request.user.subscriptions.filter(is_active=True).exists()
+        return request.user.is_paid

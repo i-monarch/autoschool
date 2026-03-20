@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import {
   ClipboardCheck, Clock, Target, TrendingUp, ChevronRight, BookOpen,
-  CheckCircle, XCircle, AlertTriangle, BarChart3, BookX, Bookmark, Trophy,
+  CheckCircle, XCircle, AlertTriangle, BarChart3, BookX, Bookmark, Trophy, Lock,
 } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 
 interface SavedQuestionItem {
   id: number
@@ -64,6 +65,8 @@ interface WrongAnswer {
 type Tab = 'modes' | 'stats' | 'mistakes' | 'saved'
 
 export default function TestsPage() {
+  const user = useAuthStore(s => s.user)
+  const isPaid = user?.is_paid ?? false
   const [categories, setCategories] = useState<Category[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([])
@@ -76,12 +79,17 @@ export default function TestsPage() {
   const [tab, setTab] = useState<Tab>('modes')
 
   useEffect(() => {
-    Promise.all([
+    const promises: Promise<unknown>[] = [
       api.get('/tests/categories/').then(r => r.data),
-      api.get('/tests/stats/').then(r => r.data).catch(() => null),
-    ]).then(([cats, st]) => {
-      setCategories(cats)
-      setStats(st)
+    ]
+    if (isPaid) {
+      promises.push(api.get('/tests/stats/').then(r => r.data).catch(() => null))
+    } else {
+      promises.push(Promise.resolve(null))
+    }
+    Promise.all(promises).then(([cats, st]) => {
+      setCategories(cats as Category[])
+      setStats(st as Stats | null)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -157,33 +165,37 @@ export default function TestsPage() {
           <ClipboardCheck className="w-4 h-4 mr-2" />
           Тести
         </button>
-        <button
-          className={`tab tab-lg ${tab === 'stats' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('stats')}
-        >
-          <BarChart3 className="w-4 h-4 mr-2" />
-          Статистика
-          {hasStats && (
-            <span className="badge badge-sm badge-primary ml-2">{stats.avg_percent}%</span>
-          )}
-        </button>
-        <button
-          className={`tab tab-lg ${tab === 'mistakes' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('mistakes')}
-        >
-          <BookX className="w-4 h-4 mr-2" />
-          Помилки
-          {hasStats && stats.total_wrong > 0 && (
-            <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
-          )}
-        </button>
-        <button
-          className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('saved')}
-        >
-          <Bookmark className="w-4 h-4 mr-2" />
-          Збережені
-        </button>
+        {isPaid && (
+          <>
+            <button
+              className={`tab tab-lg ${tab === 'stats' ? 'tab-active' : ''}`}
+              onClick={() => handleTabChange('stats')}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Статистика
+              {hasStats && (
+                <span className="badge badge-sm badge-primary ml-2">{stats.avg_percent}%</span>
+              )}
+            </button>
+            <button
+              className={`tab tab-lg ${tab === 'mistakes' ? 'tab-active' : ''}`}
+              onClick={() => handleTabChange('mistakes')}
+            >
+              <BookX className="w-4 h-4 mr-2" />
+              Помилки
+              {hasStats && stats.total_wrong > 0 && (
+                <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
+              )}
+            </button>
+            <button
+              className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
+              onClick={() => handleTabChange('saved')}
+            >
+              <Bookmark className="w-4 h-4 mr-2" />
+              Збережені
+            </button>
+          </>
+        )}
       </div>
 
       {/* === TAB: Modes === */}
@@ -201,15 +213,27 @@ export default function TestsPage() {
               </div>
             </Link>
 
-            <Link href="/tests/marathon" className="card bg-base-100 border border-base-300/60 hover:border-accent/40 hover:shadow-md transition-all">
-              <div className="card-body p-5">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-2">
-                  <TrendingUp className="w-6 h-6" />
+            {isPaid ? (
+              <Link href="/tests/marathon" className="card bg-base-100 border border-base-300/60 hover:border-accent/40 hover:shadow-md transition-all">
+                <div className="card-body p-5">
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-2">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-semibold">Марафон</h3>
+                  <p className="text-sm text-base-content/60">Без обмежень часу. Тренування з поясненнями.</p>
                 </div>
-                <h3 className="font-semibold">Марафон</h3>
-                <p className="text-sm text-base-content/60">Без обмежень часу. Тренування з поясненнями.</p>
+              </Link>
+            ) : (
+              <div className="card bg-base-100 border border-base-300/60 opacity-60">
+                <div className="card-body p-5">
+                  <div className="w-12 h-12 rounded-xl bg-base-200 text-base-content/30 flex items-center justify-center mb-2">
+                    <Lock className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-semibold">Марафон</h3>
+                  <p className="text-sm text-base-content/60">Доступний після оплати</p>
+                </div>
               </div>
-            </Link>
+            )}
 
             <Link href="/tests/history" className="card bg-base-100 border border-base-300/60 hover:border-primary/40 hover:shadow-md transition-all">
               <div className="card-body p-5">
@@ -228,22 +252,37 @@ export default function TestsPage() {
           </div>
 
           {/* Leaderboard link */}
-          <Link
-            href="/tests/leaderboard"
-            className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-warning/30 hover:bg-warning/5 transition-colors group mb-8"
-          >
-            <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
-              <Trophy className="w-4 h-4" />
+          {isPaid ? (
+            <Link
+              href="/tests/leaderboard"
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-warning/30 hover:bg-warning/5 transition-colors group mb-8"
+            >
+              <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Рейтинг</p>
+                <p className="text-xs text-base-content/50">Топ-50 учнів за кількістю правильних відповідей</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-warning/60 transition-colors flex-shrink-0" />
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 opacity-60 mb-8">
+              <div className="w-9 h-9 rounded-lg bg-base-200 text-base-content/30 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Рейтинг</p>
+                <p className="text-xs text-base-content/50">Доступний після оплати</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">Рейтинг</p>
-              <p className="text-xs text-base-content/50">Топ-50 учнів за кількістю правильних відповідей</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-warning/60 transition-colors flex-shrink-0" />
-          </Link>
+          )}
 
           {/* Topics */}
-          <h2 className="text-lg font-semibold mb-4">За темами</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold">За темами</h2>
+            {!isPaid && <Lock className="w-4 h-4 text-warning" />}
+          </div>
           {categories.length === 0 ? (
             <div className="card bg-base-100 border border-base-300/60">
               <div className="card-body items-center text-center py-12">
@@ -252,24 +291,31 @@ export default function TestsPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/tests/topic/${cat.id}`}
-                  className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 hover:bg-primary/5 transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
-                    <Target className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{cat.name}</p>
-                    <p className="text-xs text-base-content/50">{cat.question_count} питань</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-primary/60 transition-colors flex-shrink-0" />
-                </Link>
-              ))}
-            </div>
+            <>
+              <div className={`space-y-1.5 ${!isPaid ? 'opacity-50 pointer-events-none' : ''}`}>
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/tests/topic/${cat.id}`}
+                    className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 hover:bg-primary/5 transition-colors group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      <Target className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{cat.name}</p>
+                      <p className="text-xs text-base-content/50">{cat.question_count} питань</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-primary/60 transition-colors flex-shrink-0" />
+                  </Link>
+                ))}
+              </div>
+              {!isPaid && (
+                <div className="mt-4 text-center">
+                  <Link href="/payments" className="btn btn-warning btn-sm">Оформити підписку</Link>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

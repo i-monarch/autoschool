@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react'
 import {
   BookOpen, SignpostBig, Route, CircleDot, UserCheck, Receipt,
-  ChevronRight, GraduationCap,
+  ChevronRight, GraduationCap, Lock,
 } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
+
+const PAID_SECTIONS = new Set(['regulyuvalnik'])
 
 interface Section {
   id: number
@@ -40,6 +43,8 @@ const borderColorMap: Record<string, string> = {
 }
 
 export default function TheoryPage() {
+  const user = useAuthStore(s => s.user)
+  const isPaid = user?.is_paid ?? false
   const [sections, setSections] = useState<Section[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -92,6 +97,27 @@ export default function TheoryPage() {
             const IconComponent = iconMap[sec.icon] || BookOpen
             const color = colorMap[sec.icon] || 'bg-primary/10 text-primary'
             const borderColor = borderColorMap[sec.icon] || 'hover:border-primary/40'
+            const isLocked = PAID_SECTIONS.has(sec.slug) && !isPaid
+
+            if (isLocked) {
+              return (
+                <div key={sec.id} className="card bg-base-100 border border-base-300/60 opacity-60">
+                  <div className="card-body p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-base-200 text-base-content/30 flex items-center justify-center flex-shrink-0">
+                        <Lock className="w-7 h-7" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-bold text-lg mb-1">{sec.title}</h2>
+                        <p className="text-sm text-base-content/50 mb-3">{sec.description}</p>
+                        <span className="text-xs text-warning font-medium">Доступний після оплати</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={sec.id}

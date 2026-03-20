@@ -4,6 +4,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.permissions import IsPaid
 from .models import TestCategory, Question, Answer, TestAttempt, AttemptAnswer
 from .serializers import (
     TestCategorySerializer, QuestionSerializer, QuestionWithExplanationSerializer,
@@ -25,6 +26,12 @@ class StartTestView(APIView):
 
         test_type = ser.validated_data['test_type']
         category_id = ser.validated_data.get('category_id')
+
+        if test_type in ('topic', 'marathon') and not request.user.is_paid:
+            return Response(
+                {'error': 'payment_required', 'message': 'Цей режим доступний лише для оплачених акаунтів'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         if test_type == 'topic':
             if not category_id:
@@ -164,6 +171,8 @@ class AttemptDetailView(generics.RetrieveAPIView):
 
 
 class TestStatsView(APIView):
+    permission_classes = [IsPaid]
+
     def get(self, request):
         attempts = TestAttempt.objects.filter(user=request.user, finished_at__isnull=False)
 
@@ -222,7 +231,7 @@ class TestStatsView(APIView):
 
 
 class WrongAnswersView(APIView):
-    """All wrong answers across user's attempts, grouped by question."""
+    permission_classes = [IsPaid]
 
     def get(self, request):
         wrong = AttemptAnswer.objects.filter(

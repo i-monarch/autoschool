@@ -68,17 +68,22 @@ function formatCurrentDate(): string {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
+  const isPaid = user?.is_paid ?? false
   const [stats, setStats] = useState<Stats | null>(null)
   const [attempts, setAttempts] = useState<Attempt[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      api.get('/tests/stats/').then(r => r.data).catch(() => null),
-      api.get('/tests/attempts/').then(r => r.data).catch(() => []),
-    ]).then(([st, att]) => {
-      setStats(st)
-      setAttempts(att)
+    const promises: Promise<unknown>[] = []
+    if (isPaid) {
+      promises.push(api.get('/tests/stats/').then(r => r.data).catch(() => null))
+      promises.push(api.get('/tests/attempts/').then(r => r.data).catch(() => []))
+    } else {
+      promises.push(Promise.resolve(null), Promise.resolve([]))
+    }
+    Promise.all(promises).then(([st, att]) => {
+      setStats(st as Stats | null)
+      setAttempts(att as Attempt[])
     }).finally(() => setLoading(false))
   }, [])
 
