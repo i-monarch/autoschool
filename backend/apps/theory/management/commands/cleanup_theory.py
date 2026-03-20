@@ -138,6 +138,18 @@ def clean_content(content):
     # Remove garbage gif
     content = re.sub(r'<img[^>]*JiBnMqyl6S[^>]*/?\s*>', '', content)
 
+    # Remove source promo blocks (info_holder: tests, learn signs, FAQ monkey)
+    content = re.sub(r'<div class="info_holder">.*?</div>\s*</div>\s*</div>', '', content, flags=re.DOTALL)
+
+    # Remove source SEO text blocks (content_holder with h2 articles)
+    content = re.sub(r'<div class="content_holder">.*?</div>\s*(?=</?(?:div|ul|main))', '', content, flags=re.DOTALL)
+
+    # Remove block_subtitle ("Теоретичний курс майбутнього водія")
+    content = re.sub(r'<div class="block_subtitle">[^<]*</div>', '', content)
+
+    # Convert chapter_number links to spans (not clickable)
+    content = re.sub(r'<a\s+class="chapter_number"[^>]*>(.*?)</a>', r'<span class="chapter_number">\1</span>', content, flags=re.DOTALL)
+
     # Convert links
     content = re.sub(r'<a\s+[^>]*href="([^"]*)"[^>]*>(.*?)</a>', convert_link, content, flags=re.DOTALL)
 

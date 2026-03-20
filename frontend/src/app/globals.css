@@ -154,10 +154,10 @@
   margin: 0.25rem 0;
 }
 
-/* Inline icons inside sign_description paragraphs — keep small */
+/* Inline icons inside sign_description paragraphs */
 .theory-content .sign_description img {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 /* --- Navigation block (section selector with SVG arrow) — hide --- */
@@ -284,13 +284,15 @@
   border-bottom: none;
 }
 
-.theory-content a.chapter_number {
+/* Chapter number labels (not clickable links) */
+.theory-content .chapter_number {
   display: inline-block;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.85rem;
-  color: oklch(0.5 0.12 250);
+  color: oklch(0.35 0.05 250);
   margin-bottom: 0.25rem;
   text-decoration: none;
+  pointer-events: none;
 }
 
 .theory-content .chapter_description {
@@ -301,9 +303,11 @@
   margin: 0.5rem 0;
 }
 
-/* --- Content holder blocks (general) --- */
+/* Hide source promo/SEO blocks */
+.theory-content .info_holder,
+.theory-content .block_subtitle,
 .theory-content .content_holder {
-  margin: 1rem 0;
+  display: none;
 }
 
 /* --- Tables --- */
