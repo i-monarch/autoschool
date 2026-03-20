@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import api from '@/lib/api'
+import { transliterateSlug } from '@/lib/slugify'
 import { useToast } from '@/components/ui/Toast'
 
 const RichTextEditor = dynamic(() => import('@/components/ui/RichTextEditor'), {
@@ -61,19 +62,10 @@ export default function ChapterModal({ chapterId, sectionId, onClose, onSaved }:
     }
   }, [chapterId])
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^a-z0-9а-яіїєґ\s-]/gi, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim()
-  }
-
   const handleTitleChange = (value: string) => {
     setTitle(value)
     if (!isEdit) {
-      setSlug(generateSlug(value))
+      setSlug(transliterateSlug(value))
     }
   }
 

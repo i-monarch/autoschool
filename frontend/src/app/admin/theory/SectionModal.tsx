@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import api from '@/lib/api'
+import { transliterateSlug } from '@/lib/slugify'
 import { useToast } from '@/components/ui/Toast'
 
 interface TheorySection {
@@ -40,19 +41,10 @@ export default function SectionModal({ section, onClose, onSaved }: SectionModal
     }
   }, [section])
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^a-z0-9а-яіїєґ\s-]/gi, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim()
-  }
-
   const handleTitleChange = (value: string) => {
     setTitle(value)
     if (!isEdit) {
-      setSlug(generateSlug(value))
+      setSlug(transliterateSlug(value))
     }
   }
 
