@@ -170,7 +170,7 @@ export default function AdminStudentsPage() {
                 <th className="text-center">Оплата</th>
                 <th className="hidden lg:table-cell text-center">Тестів</th>
                 <th className="hidden lg:table-cell">Реєстрація</th>
-                <th className="w-20" />
+                <th className="w-32" />
               </tr>
             </thead>
             <tbody>
