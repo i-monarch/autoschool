@@ -15,15 +15,15 @@
   border-radius: 0.5rem;
 }
 
-/* Inline small icons — signs/markings referenced inside text paragraphs.
-   These have natural size ~36-80px and sit inline with surrounding text. */
+/* Inline small icons — signs/markings referenced inside text paragraphs. */
 .theory-content p img[src*="/znaky/"],
 .theory-content p img[src*="/signs/"],
-.theory-content p img[src*="/marking/"],
-.theory-content p img[src*="/markings/"],
+.theory-content p img[src*="/marking"],
 .theory-content p img[src*="/rozmitka/"],
 .theory-content .sign_description img,
-.theory-content .chapter_description img {
+.theory-content .marking_description img,
+.theory-content .chapter_description img,
+.theory-content .road_sign_intro img {
   display: inline-block;
   vertical-align: middle;
   margin: 2px 4px;
@@ -165,10 +165,109 @@
   height: 28px;
 }
 
-/* --- Navigation image (category nav icon) — hide or keep small --- */
+/* --- Navigation block (section selector with SVG arrow) — hide --- */
+.theory-content .road_sign_block > a {
+  display: none;
+}
+
 .theory-content .road_sign_nav_img {
-  width: 40px;
-  height: 40px;
+  display: none;
+}
+
+/* --- Marking list grid (same as signs) --- */
+.theory-content ul.markings {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .theory-content ul.markings {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .theory-content ul.markings {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Individual marking card */
+.theory-content li.marking_item {
+  border: 1px solid oklch(0.85 0.01 250);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.theory-content li.marking_item:hover {
+  border-color: oklch(0.7 0.05 250);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
+}
+
+/* Marking image — larger than inline */
+.theory-content .marking_img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+}
+
+.theory-content .marking_img img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 120px;
+  max-height: 120px;
+  margin: 0;
+  border-radius: 0;
+}
+
+@media (min-width: 640px) {
+  .theory-content .marking_img img {
+    max-width: 150px;
+    max-height: 150px;
+  }
+}
+
+/* Marking number */
+.theory-content .marking_number {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: oklch(0.45 0.1 250);
+}
+
+/* Marking name */
+.theory-content .marking_name {
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Marking description — always visible (unlike signs) */
+.theory-content .marking_popup {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid oklch(0.9 0.01 250);
+}
+
+.theory-content .marking_description {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: oklch(0.4 0 0);
+}
+
+.theory-content .marking_description p {
+  margin: 0.25rem 0;
 }
 
 /* --- ПДР chapters (pravila-dorozhnogo-ruhu) --- */
