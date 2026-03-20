@@ -241,14 +241,26 @@ def extract_chapter_content(url):
         else:
             a.unwrap()
 
-    # Fix image URLs
+    # Fix image URLs — prioritize real src from lazy-load attributes
     for img in main.find_all('img'):
-        src = img.get('data-src') or img.get('src', '')
+        src = (img.get('data-pagespeed-lazy-src')
+               or img.get('data-src')
+               or img.get('data-original')
+               or img.get('src', ''))
+        # Skip pagespeed placeholder gifs
+        if 'pagespeed_static' in src or 'JiBnMqyl6S' in src:
+            real = img.get('data-pagespeed-lazy-src', '')
+            if real:
+                src = real
+            else:
+                img.decompose()
+                continue
         if src and not src.startswith(('http', 'data:')):
             src = BASE + '/' + src.lstrip('/')
         img['src'] = src
-        for attr in ['data-src', 'data-lazy', 'loading', 'srcset', 'data-srcset',
-                      'onerror', 'data-pagespeed-url-hash']:
+        for attr in ['data-src', 'data-lazy', 'data-original', 'data-pagespeed-lazy-src',
+                      'loading', 'srcset', 'data-srcset',
+                      'onerror', 'onload', 'data-pagespeed-url-hash']:
             if img.has_attr(attr):
                 del img[attr]
         if not img.get('alt'):
