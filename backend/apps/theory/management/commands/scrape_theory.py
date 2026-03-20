@@ -231,7 +231,7 @@ def extract_chapter_content(url):
     # Clean scripts, styles, ads
     for tag in main.find_all(['script', 'style', 'iframe', 'noscript']):
         tag.decompose()
-    for tag in main.find_all(class_=re.compile(r'ad|banner|promo|widget|social|share|related|sticky-header')):
+    for tag in main.find_all(class_=re.compile(r'banner|promo|widget|social-share|sticky-header')):
         tag.decompose()
 
     # Unwrap fancybox links — extract inline <img> from <a class="fancybox">
