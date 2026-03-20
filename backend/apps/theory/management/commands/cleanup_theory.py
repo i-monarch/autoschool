@@ -150,6 +150,9 @@ def clean_content(content):
     # Convert chapter_number links to spans (not clickable)
     content = re.sub(r'<a\s+class="chapter_number"[^>]*>(.*?)</a>', r'<span class="chapter_number">\1</span>', content, flags=re.DOTALL)
 
+    # Remove SVG arrows from source navigation
+    content = re.sub(r'<svg[^>]*>.*?</svg>', '', content, flags=re.DOTALL)
+
     # Convert links
     content = re.sub(r'<a\s+[^>]*href="([^"]*)"[^>]*>(.*?)</a>', convert_link, content, flags=re.DOTALL)
 
