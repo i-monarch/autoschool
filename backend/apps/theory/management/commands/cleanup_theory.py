@@ -117,7 +117,7 @@ def clean_content(content):
         url = re.sub(r'/\d+x\w+x', '/', url)
         # Strip leading x from filename added by pagespeed:
         #   /xsv-4.png -> /sv-4.png (lowercase too)
-        url = re.sub(r'/x([a-zA-Z])', r'/\1', url)
+        url = re.sub(r'/x([a-zA-Z0-9])', r'/\1', url)
         return f'src="{url}"'
 
     content = re.sub(r'src="([^"]*pagespeed[^"]*)"', fix_pagespeed_url, content)
@@ -127,10 +127,10 @@ def clean_content(content):
     def fix_pagespeed_prefix(match):
         url = match.group(1)
         url = re.sub(r'/\d+x\w+x', '/', url)
-        url = re.sub(r'/x([a-zA-Z])', r'/\1', url)
+        url = re.sub(r'/x([a-zA-Z0-9])', r'/\1', url)
         return f'src="{url}"'
 
-    content = re.sub(r'src="([^"]*(?:/\d+x\w+x|/x[a-z])[^"]*)"', fix_pagespeed_prefix, content)
+    content = re.sub(r'src="([^"]*(?:/\d+x\w+x|/x[a-z0-9])[^"]*)"', fix_pagespeed_prefix, content)
 
     # Fix relative image URLs
     content = re.sub(r'src="(/assets/)', f'src="{BASE}\\1', content)
