@@ -157,43 +157,32 @@ export default function TestsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="tabs tabs-bordered mb-6">
-        <button
-          className={`tab tab-lg ${tab === 'modes' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('modes')}
-        >
-          <ClipboardCheck className="w-4 h-4 mr-2" />
-          Тести
-        </button>
+      <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-none">
+        <TabButton active={tab === 'modes'} onClick={() => handleTabChange('modes')} icon={<ClipboardCheck className="w-4 h-4" />} label="Тести" />
         {isPaid && (
           <>
-            <button
-              className={`tab tab-lg ${tab === 'stats' ? 'tab-active' : ''}`}
+            <TabButton
+              active={tab === 'stats'}
               onClick={() => handleTabChange('stats')}
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Статистика
-              {hasStats && (
-                <span className="badge badge-sm badge-primary ml-2">{stats.avg_percent}%</span>
-              )}
-            </button>
-            <button
-              className={`tab tab-lg ${tab === 'mistakes' ? 'tab-active' : ''}`}
+              icon={<BarChart3 className="w-4 h-4" />}
+              label="Статистика"
+              badge={hasStats ? `${stats.avg_percent}%` : undefined}
+              badgeColor="badge-primary"
+            />
+            <TabButton
+              active={tab === 'mistakes'}
               onClick={() => handleTabChange('mistakes')}
-            >
-              <BookX className="w-4 h-4 mr-2" />
-              Помилки
-              {hasStats && stats.total_wrong > 0 && (
-                <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
-              )}
-            </button>
-            <button
-              className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
+              icon={<BookX className="w-4 h-4" />}
+              label="Помилки"
+              badge={hasStats && stats.total_wrong > 0 ? String(stats.total_wrong) : undefined}
+              badgeColor="badge-error"
+            />
+            <TabButton
+              active={tab === 'saved'}
               onClick={() => handleTabChange('saved')}
-            >
-              <Bookmark className="w-4 h-4 mr-2" />
-              Збережені
-            </button>
+              icon={<Bookmark className="w-4 h-4" />}
+              label="Збережені"
+            />
           </>
         )}
       </div>
@@ -580,5 +569,40 @@ export default function TestsPage() {
         </>
       )}
     </div>
+  )
+}
+
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  badge,
+  badgeColor,
+}: {
+  active: boolean
+  onClick: () => void
+  icon: React.ReactNode
+  label: string
+  badge?: string
+  badgeColor?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+        active
+          ? 'bg-primary text-primary-content shadow-sm'
+          : 'bg-base-100 border border-base-300/60 text-base-content/70 hover:bg-base-200'
+      }`}
+    >
+      {icon}
+      {label}
+      {badge && (
+        <span className={`badge badge-xs ${active ? 'badge-ghost bg-white/20 text-white border-0' : badgeColor}`}>
+          {badge}
+        </span>
+      )}
+    </button>
   )
 }
