@@ -15,6 +15,8 @@ class User(AbstractUser):
     avatar = models.ImageField(_('avatar'), upload_to='avatars/', blank=True)
     language = models.CharField(_('language'), max_length=5, default='uk')
     is_phone_verified = models.BooleanField(_('phone verified'), default=False)
+    is_paid = models.BooleanField(_('paid'), default=False)
+    paid_until = models.DateTimeField(_('paid until'), null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
