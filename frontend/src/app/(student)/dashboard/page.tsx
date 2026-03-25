@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import {
   ClipboardCheck, BookOpen, Bookmark, Trophy, FileText, MapPin,
-  ArrowRight, AlertTriangle, CheckCircle, XCircle,
+  ArrowRight, AlertTriangle, CheckCircle, XCircle, Car,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 import Link from 'next/link'
 import api from '@/lib/api'
+import { PageHero } from '@/components/ui/PageHero'
 
 interface CategoryStat {
   category_id: number
@@ -88,15 +89,12 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Welcome header */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-1">
-          Вітаємо, {user?.first_name || user?.username}!
-        </h1>
-        <p className="text-base-content/50 text-sm capitalize">
-          {formatCurrentDate()}
-        </p>
-      </div>
+      <PageHero
+        title={`Вітаємо, ${user?.first_name || user?.username}!`}
+        subtitle={formatCurrentDate()}
+        icon={<Car className="w-7 h-7" />}
+        accentColor="primary"
+      />
 
       {/* Stats cards */}
       {loading ? (

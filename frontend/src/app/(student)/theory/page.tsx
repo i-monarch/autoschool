@@ -8,6 +8,7 @@ import {
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
+import { PageHero } from '@/components/ui/PageHero'
 
 const PAID_SECTIONS = new Set<string>()
 
@@ -70,18 +71,12 @@ export default function TheoryPage() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <GraduationCap className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Теорія ПДР</h1>
-            <p className="text-base-content/50 text-sm">Вивчайте правила дорожнього руху</p>
-          </div>
-        </div>
-      </div>
+      <PageHero
+        title="Теорія ПДР"
+        subtitle="Вивчайте правила дорожнього руху"
+        icon={<GraduationCap className="w-7 h-7" />}
+        accentColor="info"
+      />
 
       {/* Section cards */}
       {sections.length === 0 ? (

@@ -9,6 +9,7 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { PaywallOverlay } from '@/components/ui/PaywallBanner'
+import { PageHero } from '@/components/ui/PageHero'
 
 interface SavedQuestionItem {
   id: number
@@ -145,12 +146,12 @@ export default function TestsPage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Тести ПДР</h1>
-          <p className="text-base-content/60 text-sm mt-1">Тренуйтесь та перевіряйте свої знання</p>
-        </div>
-      </div>
+      <PageHero
+        title="Тести ПДР"
+        subtitle="Тренуйтесь та перевіряйте свої знання"
+        icon={<ClipboardCheck className="w-7 h-7" />}
+        accentColor="error"
+      />
 
       {/* Tabs */}
       <div className="tabs tabs-bordered mb-6">
