@@ -167,119 +167,113 @@ export default function AdminStudentsPage() {
 
       {/* Table */}
       <div className="card bg-base-100 border border-base-300/60">
-        <div className="overflow-hidden">
-          <table className="table table-sm w-full">
-            <thead>
+        <table className="table table-sm table-fixed w-full [&_th]:whitespace-normal [&_td]:whitespace-normal [&_td]:px-3 [&_th]:px-3">
+          <thead>
+            <tr>
+              <th>Учень</th>
+              <th className="hidden md:table-cell w-32">Телефон</th>
+              <th className="text-center w-28">Доступ</th>
+              <th className="hidden lg:table-cell text-center w-16">Тести</th>
+              <th className="hidden lg:table-cell w-32">Реєстрація</th>
+              <th className="w-20" />
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
               <tr>
-                <th className="w-[30%]">Учень</th>
-                <th className="hidden md:table-cell">Телефон</th>
-                <th className="text-center w-28">Доступ</th>
-                <th className="hidden lg:table-cell text-center w-16">Тестів</th>
-                <th className="hidden lg:table-cell w-28">Реєстрація</th>
-                <th className="w-24" />
+                <td colSpan={6} className="text-center py-12">
+                  <span className="loading loading-spinner loading-md" />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-12">
-                    <span className="loading loading-spinner loading-md" />
-                  </td>
-                </tr>
-              ) : students.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-12 text-base-content/50">
-                    <Users className="w-8 h-8 mx-auto text-base-content/20 mb-2" />
-                    {search || accessFilter ? 'Нічого не знайдено' : 'Немає учнів'}
-                  </td>
-                </tr>
-              ) : (
-                students.map(s => {
-                  const config = ACCESS_CONFIG[s.access_type] || ACCESS_CONFIG.free
-                  const Icon = config.icon
-                  return (
-                    <tr key={s.id} className="hover">
-                      <td>
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="avatar placeholder flex-shrink-0">
-                            <div className="bg-neutral text-neutral-content rounded-full w-8">
-                              <span className="text-xs">
-                                {(s.first_name?.[0] || s.username[0]).toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">{s.full_name}</p>
-                            <p className="text-xs text-base-content/50 truncate">{s.email}</p>
+            ) : students.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-12 text-base-content/50">
+                  <Users className="w-8 h-8 mx-auto text-base-content/20 mb-2" />
+                  {search || accessFilter ? 'Нічого не знайдено' : 'Немає учнів'}
+                </td>
+              </tr>
+            ) : (
+              students.map(s => {
+                const config = ACCESS_CONFIG[s.access_type] || ACCESS_CONFIG.free
+                const Icon = config.icon
+                return (
+                  <tr key={s.id} className="hover">
+                    <td>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="avatar placeholder flex-shrink-0">
+                          <div className="bg-neutral text-neutral-content rounded-full w-8">
+                            <span className="text-xs">
+                              {(s.first_name?.[0] || s.username[0]).toUpperCase()}
+                            </span>
                           </div>
                         </div>
-                      </td>
-                      <td className="hidden md:table-cell text-sm text-base-content/60">
-                        {s.phone || '—'}
-                      </td>
-                      <td className="text-center">
-                        <span className={`badge ${config.badge} badge-sm gap-1`}>
-                          <Icon className="w-3 h-3" />
-                          {config.label}
-                        </span>
-                      </td>
-                      <td className="hidden lg:table-cell text-center text-sm">
-                        {s.tests_count}
-                      </td>
-                      <td className="hidden lg:table-cell text-sm text-base-content/60">
-                        {formatDate(s.created_at)}
-                      </td>
-                      <td>
-                        <div className="dropdown dropdown-end">
-                          <label
-                            tabIndex={0}
-                            className="btn btn-xs btn-ghost gap-1"
-                          >
-                            {actionId === s.id ? (
-                              <span className="loading loading-spinner loading-xs" />
-                            ) : (
-                              <CreditCard className="w-3.5 h-3.5" />
-                            )}
-                            Доступ
-                          </label>
-                          <ul tabIndex={0} className="dropdown-content z-10 menu p-1.5 shadow-lg bg-base-100 border border-base-300/60 rounded-box w-40">
-                            <li>
-                              <button
-                                onClick={() => setAccess(s, 'paid')}
-                                className={`text-sm ${s.access_type === 'paid' ? 'active' : ''}`}
-                              >
-                                <CheckCircle className="w-3.5 h-3.5 text-success" />
-                                Оплачений
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                onClick={() => setAccess(s, 'trial')}
-                                className={`text-sm ${s.access_type === 'trial' ? 'active' : ''}`}
-                              >
-                                <Clock className="w-3.5 h-3.5 text-warning" />
-                                Пробний
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                onClick={() => setAccess(s, 'free')}
-                                className={`text-sm ${s.access_type === 'free' ? 'active' : ''}`}
-                              >
-                                <XCircle className="w-3.5 h-3.5 text-base-content/40" />
-                                Безкоштовний
-                              </button>
-                            </li>
-                          </ul>
+                        <div className="min-w-0 overflow-hidden">
+                          <p className="font-medium text-sm truncate">{s.full_name}</p>
+                          <p className="text-xs text-base-content/50 truncate">{s.email}</p>
                         </div>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                      </div>
+                    </td>
+                    <td className="hidden md:table-cell text-sm text-base-content/60 truncate">
+                      {s.phone || '—'}
+                    </td>
+                    <td className="text-center">
+                      <span className={`badge ${config.badge} badge-sm gap-1`}>
+                        <Icon className="w-3 h-3" />
+                        {config.label}
+                      </span>
+                    </td>
+                    <td className="hidden lg:table-cell text-center text-sm">
+                      {s.tests_count}
+                    </td>
+                    <td className="hidden lg:table-cell text-sm text-base-content/60">
+                      {formatDate(s.created_at)}
+                    </td>
+                    <td className="text-right">
+                      <div className="dropdown dropdown-end">
+                        <label tabIndex={0} className="btn btn-xs btn-ghost gap-1">
+                          {actionId === s.id ? (
+                            <span className="loading loading-spinner loading-xs" />
+                          ) : (
+                            <CreditCard className="w-3.5 h-3.5" />
+                          )}
+                        </label>
+                        <ul tabIndex={0} className="dropdown-content z-10 menu p-1.5 shadow-lg bg-base-100 border border-base-300/60 rounded-box w-40">
+                          <li>
+                            <button
+                              onClick={() => setAccess(s, 'paid')}
+                              className={`text-sm ${s.access_type === 'paid' ? 'active' : ''}`}
+                            >
+                              <CheckCircle className="w-3.5 h-3.5 text-success" />
+                              Оплачений
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              onClick={() => setAccess(s, 'trial')}
+                              className={`text-sm ${s.access_type === 'trial' ? 'active' : ''}`}
+                            >
+                              <Clock className="w-3.5 h-3.5 text-warning" />
+                              Пробний
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              onClick={() => setAccess(s, 'free')}
+                              className={`text-sm ${s.access_type === 'free' ? 'active' : ''}`}
+                            >
+                              <XCircle className="w-3.5 h-3.5 text-base-content/40" />
+                              Безкоштовний
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
