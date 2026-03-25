@@ -88,46 +88,44 @@ export default function CoursesPage() {
   return (
     <div>
       {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 text-white mb-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/60 mb-8">
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           {/* Film strip */}
-          <svg className="absolute right-0 top-0 h-full w-28 opacity-[0.08]" viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="10" y="0" width="80" height="200" rx="4" stroke="white" strokeWidth="2" fill="none" />
-            {/* Perforations left */}
-            <rect x="14" y="8" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="28" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="48" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="68" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="88" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="108" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="128" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="148" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="168" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="14" y="188" width="10" height="7" rx="1.5" fill="white" />
-            {/* Perforations right */}
-            <rect x="76" y="8" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="28" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="48" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="68" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="88" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="108" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="128" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="148" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="168" width="10" height="7" rx="1.5" fill="white" />
-            <rect x="76" y="188" width="10" height="7" rx="1.5" fill="white" />
+          <svg className="absolute right-0 top-0 h-full w-28 text-amber-800 opacity-[0.05]" viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="0" width="80" height="200" rx="4" stroke="currentColor" strokeWidth="2" fill="none" />
+            <rect x="14" y="8" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="28" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="48" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="68" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="88" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="108" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="128" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="148" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="168" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="14" y="188" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="8" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="28" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="48" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="68" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="88" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="108" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="128" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="148" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="168" width="10" height="7" rx="1.5" fill="currentColor" />
+            <rect x="76" y="188" width="10" height="7" rx="1.5" fill="currentColor" />
           </svg>
           {/* Steering wheel */}
-          <svg className="absolute right-32 top-1/2 -translate-y-1/2 w-24 h-24 opacity-[0.08]" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="40" cy="40" r="34" stroke="white" strokeWidth="6" fill="none" />
-            <circle cx="40" cy="40" r="8" stroke="white" strokeWidth="3" fill="none" />
-            <line x1="40" y1="14" x2="40" y2="32" stroke="white" strokeWidth="4" strokeLinecap="round" />
-            <line x1="17" y1="52" x2="33" y2="44" stroke="white" strokeWidth="4" strokeLinecap="round" />
-            <line x1="63" y1="52" x2="47" y2="44" stroke="white" strokeWidth="4" strokeLinecap="round" />
+          <svg className="absolute right-32 top-1/2 -translate-y-1/2 w-24 h-24 text-amber-800 opacity-[0.05]" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="34" stroke="currentColor" strokeWidth="6" fill="none" />
+            <circle cx="40" cy="40" r="8" stroke="currentColor" strokeWidth="3" fill="none" />
+            <line x1="40" y1="14" x2="40" y2="32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            <line x1="17" y1="52" x2="33" y2="44" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            <line x1="63" y1="52" x2="47" y2="44" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
           </svg>
           {/* Play button */}
-          <svg className="absolute left-[45%] bottom-3 w-10 h-10 opacity-[0.1]" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="18" stroke="white" strokeWidth="2.5" fill="none" />
-            <polygon points="16,12 30,20 16,28" fill="white" />
+          <svg className="absolute left-[45%] bottom-3 w-10 h-10 text-amber-700 opacity-[0.06]" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none" />
+            <polygon points="16,12 30,20 16,28" fill="currentColor" />
           </svg>
         </div>
 
@@ -135,38 +133,38 @@ export default function CoursesPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
                   <Video className="w-6 h-6" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold">Відеокурси</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-base-content">Відеокурси</h1>
               </div>
-              <p className="text-white/60 text-sm ml-14">
+              <p className="text-base-content/50 text-sm ml-14">
                 {totalLessons} відеоуроків з теорії водіння
                 {!user?.is_paid && (
-                  <span className="ml-2 px-2 py-0.5 rounded-full bg-white/15 text-white/80 text-xs">
+                  <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">
                     {freeLessonsTotal} безкоштовних
                   </span>
                 )}
               </p>
             </div>
             <div className="join flex-shrink-0 ml-14 sm:ml-0">
-              <div className="join-item flex items-center pl-3 bg-white/10 border border-white/20 border-r-0 rounded-l-lg">
-                <Search className="w-4 h-4 text-white/50" />
+              <div className="join-item flex items-center pl-3 bg-base-100 border border-base-300/60 border-r-0">
+                <Search className="w-4 h-4 text-base-content/40" />
               </div>
               <input
                 type="text"
                 placeholder="Пошук курсу..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="input join-item input-sm w-full sm:w-48 bg-white/10 border border-white/20 border-l-0 text-white placeholder:text-white/40 focus:outline-none focus:bg-white/15"
+                className="input input-bordered join-item input-sm w-full sm:w-48 border-l-0 focus:outline-none"
               />
             </div>
           </div>
           {!user?.is_paid && (
-            <div className="flex items-center gap-2 mt-4 ml-14 text-sm text-white/70">
-              <Play className="w-4 h-4 text-white/50" />
+            <div className="flex items-center gap-2 mt-4 ml-14 text-sm text-base-content/60">
+              <Play className="w-4 h-4 text-amber-500" />
               <span>Перші 2 уроки у кожному курсі — безкоштовно.</span>
-              <Link href="/payments" className="underline text-white hover:text-white/90 font-medium ml-1">
+              <Link href="/payments" className="text-primary hover:underline font-medium ml-1">
                 Обрати тариф
               </Link>
             </div>

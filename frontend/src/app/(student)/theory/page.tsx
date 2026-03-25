@@ -71,38 +71,32 @@ export default function TheoryPage() {
   return (
     <div>
       {/* Header with traffic light decoration */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500/90 via-blue-500 to-indigo-600 text-white mb-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 border border-blue-200/60 mb-8">
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           {/* Traffic light */}
-          <svg className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-28 opacity-20" viewBox="0 0 36 84" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="2" width="28" height="64" rx="6" stroke="white" strokeWidth="2.5" fill="none" />
-            <circle cx="18" cy="18" r="8" stroke="white" strokeWidth="2" fill="white" opacity="0.15" />
-            <circle cx="18" cy="38" r="8" stroke="white" strokeWidth="2" fill="white" opacity="0.15" />
-            <circle cx="18" cy="58" r="8" stroke="white" strokeWidth="2" fill="white" opacity="0.5" />
-            <rect x="15" y="66" width="6" height="16" rx="1" fill="white" opacity="0.2" />
+          <svg className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-28 text-blue-700 opacity-[0.07]" viewBox="0 0 36 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="2" width="28" height="64" rx="6" stroke="currentColor" strokeWidth="2.5" fill="none" />
+            <circle cx="18" cy="18" r="8" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.1" />
+            <circle cx="18" cy="38" r="8" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.1" />
+            <circle cx="18" cy="58" r="8" stroke="currentColor" strokeWidth="2" fill="currentColor" opacity="0.4" />
+            <rect x="15" y="66" width="6" height="16" rx="1" fill="currentColor" opacity="0.1" />
           </svg>
           {/* Open book */}
-          <svg className="absolute right-28 bottom-3 w-16 h-14 opacity-10" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M32 12 C24 8, 8 6, 4 10 L4 48 C8 44, 24 46, 32 50" stroke="white" strokeWidth="3" fill="none" />
-            <path d="M32 12 C40 8, 56 6, 60 10 L60 48 C56 44, 40 46, 32 50" stroke="white" strokeWidth="3" fill="none" />
-            <line x1="32" y1="12" x2="32" y2="50" stroke="white" strokeWidth="2" opacity="0.5" />
+          <svg className="absolute right-28 bottom-3 w-16 h-14 text-blue-700 opacity-[0.06]" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 12 C24 8, 8 6, 4 10 L4 48 C8 44, 24 46, 32 50" stroke="currentColor" strokeWidth="3" fill="none" />
+            <path d="M32 12 C40 8, 56 6, 60 10 L60 48 C56 44, 40 46, 32 50" stroke="currentColor" strokeWidth="3" fill="none" />
+            <line x1="32" y1="12" x2="32" y2="50" stroke="currentColor" strokeWidth="2" opacity="0.5" />
           </svg>
-          {/* Decorative lines */}
-          <div className="absolute left-0 top-0 w-full h-full">
-            <div className="absolute top-4 left-[30%] w-16 h-0.5 bg-white/10 rounded-full" />
-            <div className="absolute bottom-6 left-[15%] w-24 h-0.5 bg-white/10 rounded-full" />
-            <div className="absolute top-8 left-[50%] w-12 h-0.5 bg-white/10 rounded-full" />
-          </div>
         </div>
 
         <div className="relative px-6 py-7 sm:px-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Теорія ПДР</h1>
-              <p className="text-white/60 text-sm">Вивчайте правила дорожнього руху</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-base-content">Теорія ПДР</h1>
+              <p className="text-base-content/50 text-sm">Вивчайте правила дорожнього руху</p>
             </div>
           </div>
         </div>

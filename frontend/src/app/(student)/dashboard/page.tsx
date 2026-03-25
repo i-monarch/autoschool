@@ -89,58 +89,52 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Welcome banner with road illustration */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/90 via-primary to-emerald-600 text-primary-content mb-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 border border-emerald-200/60 mb-8">
         {/* Road SVG decoration */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          <svg className="absolute bottom-0 right-0 w-[420px] h-full opacity-10" viewBox="0 0 420 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Road */}
-            <path d="M420 140 L280 140 Q240 140 220 120 L140 40 Q120 20 80 20 L0 20" stroke="white" strokeWidth="60" strokeLinecap="round" />
-            {/* Center dashes */}
-            <path d="M420 140 L280 140 Q240 140 220 120 L140 40 Q120 20 80 20 L0 20" stroke="white" strokeWidth="3" strokeDasharray="12 10" opacity="0.6" fill="none" />
+          <svg className="absolute bottom-0 right-0 w-[420px] h-full opacity-[0.06]" viewBox="0 0 420 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M420 140 L280 140 Q240 140 220 120 L140 40 Q120 20 80 20 L0 20" stroke="currentColor" strokeWidth="60" strokeLinecap="round" className="text-emerald-800" />
+            <path d="M420 140 L280 140 Q240 140 220 120 L140 40 Q120 20 80 20 L0 20" stroke="currentColor" strokeWidth="3" strokeDasharray="12 10" opacity="0.4" fill="none" className="text-emerald-600" />
           </svg>
-          {/* Car silhouette */}
-          <svg className="absolute bottom-6 right-16 w-20 h-12 opacity-20" viewBox="0 0 80 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 32 L10 24 Q10 20 14 18 L24 12 Q28 8 34 8 L52 8 Q56 8 60 12 L68 20 Q72 24 72 28 L72 32" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <circle cx="22" cy="36" r="6" stroke="white" strokeWidth="2.5" fill="none" />
-            <circle cx="60" cy="36" r="6" stroke="white" strokeWidth="2.5" fill="none" />
-            <line x1="30" y1="8" x2="32" y2="18" stroke="white" strokeWidth="2" opacity="0.5" />
-            <line x1="50" y1="8" x2="48" y2="18" stroke="white" strokeWidth="2" opacity="0.5" />
+          <svg className="absolute bottom-6 right-16 w-20 h-12 text-emerald-700 opacity-[0.08]" viewBox="0 0 80 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 32 L10 24 Q10 20 14 18 L24 12 Q28 8 34 8 L52 8 Q56 8 60 12 L68 20 Q72 24 72 28 L72 32" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <circle cx="22" cy="36" r="6" stroke="currentColor" strokeWidth="2.5" fill="none" />
+            <circle cx="60" cy="36" r="6" stroke="currentColor" strokeWidth="2.5" fill="none" />
           </svg>
-          {/* Traffic light */}
-          <svg className="absolute top-4 right-56 w-8 h-20 opacity-15" viewBox="0 0 24 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="0" width="16" height="45" rx="4" stroke="white" strokeWidth="2" fill="none" />
-            <circle cx="12" cy="12" r="5" fill="white" opacity="0.3" />
-            <circle cx="12" cy="24" r="5" fill="white" opacity="0.3" />
-            <circle cx="12" cy="36" r="5" fill="white" opacity="0.8" />
-            <rect x="10" y="45" width="4" height="15" fill="white" opacity="0.3" />
+          <svg className="absolute top-4 right-56 w-8 h-20 text-emerald-700 opacity-[0.07]" viewBox="0 0 24 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="0" width="16" height="45" rx="4" stroke="currentColor" strokeWidth="2" fill="none" />
+            <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.2" />
+            <circle cx="12" cy="24" r="5" fill="currentColor" opacity="0.2" />
+            <circle cx="12" cy="36" r="5" fill="currentColor" opacity="0.6" />
+            <rect x="10" y="45" width="4" height="15" fill="currentColor" opacity="0.15" />
           </svg>
         </div>
 
         <div className="relative px-6 py-7 sm:px-8 sm:py-8">
-          <p className="text-primary-content/60 text-sm mb-1 capitalize">{formatCurrentDate()}</p>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-3">
+          <p className="text-emerald-600/60 text-sm mb-1 capitalize">{formatCurrentDate()}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-base-content mb-3">
             Вітаємо, {user?.first_name || user?.username}!
           </h1>
           {stats && stats.total_attempts > 0 ? (
             <div className="flex items-center gap-3">
               <div className="flex-1 max-w-xs">
                 <div className="flex items-center justify-between text-sm mb-1.5">
-                  <span className="text-primary-content/70">Ваш прогрес</span>
-                  <span className="font-semibold">{stats.avg_percent}%</span>
+                  <span className="text-base-content/60">Ваш прогрес</span>
+                  <span className="font-semibold text-emerald-700">{stats.avg_percent}%</span>
                 </div>
-                <div className="w-full bg-white/20 rounded-full h-2.5">
+                <div className="w-full bg-emerald-200/50 rounded-full h-2.5">
                   <div
-                    className="h-full bg-white rounded-full transition-all"
+                    className="h-full bg-emerald-500 rounded-full transition-all"
                     style={{ width: `${stats.avg_percent}%` }}
                   />
                 </div>
               </div>
-              <Link href="/tests/exam" className="btn btn-sm bg-white/20 border-white/30 text-white hover:bg-white/30">
+              <Link href="/tests/exam" className="btn btn-sm btn-primary">
                 Почати тест
               </Link>
             </div>
           ) : (
-            <Link href="/tests/exam" className="btn btn-sm bg-white/20 border-white/30 text-white hover:bg-white/30">
+            <Link href="/tests/exam" className="btn btn-sm btn-primary">
               Почати перший тест
             </Link>
           )}
