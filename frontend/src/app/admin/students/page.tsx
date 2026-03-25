@@ -167,27 +167,28 @@ export default function AdminStudentsPage() {
 
       {/* Table */}
       <div className="card bg-base-100 border border-base-300/60">
-        <table className="table table-sm table-fixed w-full [&_th]:whitespace-normal [&_td]:whitespace-normal [&_td]:px-3 [&_th]:px-3">
+        <table className="table table-sm [&_td]:py-3">
           <thead>
             <tr>
               <th>Учень</th>
-              <th className="hidden md:table-cell w-32">Телефон</th>
-              <th className="text-center w-28">Доступ</th>
-              <th className="hidden lg:table-cell text-center w-16">Тести</th>
-              <th className="hidden lg:table-cell w-32">Реєстрація</th>
-              <th className="w-20" />
+              <th className="hidden sm:table-cell">Email</th>
+              <th className="hidden md:table-cell">Телефон</th>
+              <th className="text-center">Доступ</th>
+              <th className="hidden lg:table-cell text-center">Тести</th>
+              <th className="hidden lg:table-cell">Реєстрація</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center py-12">
+                <td colSpan={7} className="text-center py-12">
                   <span className="loading loading-spinner loading-md" />
                 </td>
               </tr>
             ) : students.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-12 text-base-content/50">
+                <td colSpan={7} className="text-center py-12 text-base-content/50">
                   <Users className="w-8 h-8 mx-auto text-base-content/20 mb-2" />
                   {search || accessFilter ? 'Нічого не знайдено' : 'Немає учнів'}
                 </td>
@@ -199,7 +200,7 @@ export default function AdminStudentsPage() {
                 return (
                   <tr key={s.id} className="hover">
                     <td>
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex items-center gap-2">
                         <div className="avatar placeholder flex-shrink-0">
                           <div className="bg-neutral text-neutral-content rounded-full w-8">
                             <span className="text-xs">
@@ -207,13 +208,13 @@ export default function AdminStudentsPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="min-w-0 overflow-hidden">
-                          <p className="font-medium text-sm truncate">{s.full_name}</p>
-                          <p className="text-xs text-base-content/50 truncate">{s.email}</p>
-                        </div>
+                        <span className="font-medium text-sm">{s.full_name}</span>
                       </div>
                     </td>
-                    <td className="hidden md:table-cell text-sm text-base-content/60 truncate">
+                    <td className="hidden sm:table-cell text-sm text-base-content/60">
+                      {s.email}
+                    </td>
+                    <td className="hidden md:table-cell text-sm text-base-content/60">
                       {s.phone || '—'}
                     </td>
                     <td className="text-center">
@@ -228,13 +229,14 @@ export default function AdminStudentsPage() {
                     <td className="hidden lg:table-cell text-sm text-base-content/60">
                       {formatDate(s.created_at)}
                     </td>
-                    <td className="text-right">
+                    <td>
                       <div className="dropdown dropdown-end">
-                        <label tabIndex={0} className="btn btn-xs btn-ghost gap-1">
+                        <label tabIndex={0} className="btn btn-xs btn-outline gap-1">
+                          <CreditCard className="w-3 h-3" />
                           {actionId === s.id ? (
                             <span className="loading loading-spinner loading-xs" />
                           ) : (
-                            <CreditCard className="w-3.5 h-3.5" />
+                            'Доступ'
                           )}
                         </label>
                         <ul tabIndex={0} className="dropdown-content z-10 menu p-1.5 shadow-lg bg-base-100 border border-base-300/60 rounded-box w-40">
