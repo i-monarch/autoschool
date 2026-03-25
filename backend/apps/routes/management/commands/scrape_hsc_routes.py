@@ -1,8 +1,8 @@
+import json
 import os
 import time
 import requests
-from urllib.parse import urljoin
-from io import BytesIO
+from pathlib import Path
 
 from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
@@ -11,154 +11,106 @@ from django.core.management.base import BaseCommand
 from apps.routes.models import Region, ExamCenter, RouteImage
 
 
-BASE_URL = 'https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/'
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                  '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
 }
+
+FIXTURE_PATH = Path(__file__).resolve().parent.parent.parent / 'fixtures' / 'hsc_routes.json'
 
 
 class Command(BaseCommand):
-    help = 'Scrape exam routes from hsc.gov.ua'
+    help = 'Load exam routes from HSC fixture and download images'
 
     def add_arguments(self, parser):
-        parser.add_argument('--dry-run', action='store_true', help='Only show what would be scraped')
-        parser.add_argument('--skip-images', action='store_true', help='Skip downloading images')
+        parser.add_argument('--skip-images', action='store_true', help='Only load centers, skip image download')
+        parser.add_argument('--images-only', action='store_true', help='Only download images for existing centers')
 
     def handle(self, *args, **options):
-        dry_run = options['dry_run']
         skip_images = options['skip_images']
+        images_only = options['images_only']
 
-        self.stdout.write('Fetching main page...')
-        resp = requests.get(BASE_URL, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, 'html.parser')
+        if not images_only:
+            self._load_fixture()
 
-        content = soup.select_one('.entry-content')
-        if not content:
-            self.stderr.write('Could not find .entry-content')
-            return
-
-        regions_data = self._parse_main_page(content)
-        self.stdout.write(f'Found {len(regions_data)} regions')
-
-        for idx, region_data in enumerate(regions_data):
-            region_name = region_data['name']
-            centers = region_data['centers']
-            self.stdout.write(f'\n--- Region: {region_name} ({len(centers)} centers) ---')
-
-            if dry_run:
-                for c in centers:
-                    self.stdout.write(f'  {c["name"]} -> {c["url"]}')
-                continue
-
-            region, _ = Region.objects.update_or_create(
-                name=region_name,
-                defaults={'order': idx},
-            )
-
-            for c_idx, center_data in enumerate(centers):
-                self._process_center(region, center_data, c_idx, skip_images)
-                time.sleep(1)
+        if not skip_images:
+            self._download_all_images()
 
         self.stdout.write(self.style.SUCCESS('\nDone!'))
 
-    def _parse_main_page(self, content):
-        import re
+    def _load_fixture(self):
+        self.stdout.write(f'Loading fixture from {FIXTURE_PATH}')
 
-        html = str(content)
-        regions = []
+        with open(FIXTURE_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-        # BS4 breaks DOM with invalid div-inside-ul, so parse with regex
-        # Find all li.select headers
-        li_pattern = re.compile(
-            r'<li[^>]*class="select"[^>]*>(.*?)</li>',
-            re.DOTALL
-        )
-        gohide_pattern = re.compile(
-            r'<div[^>]*class="gohide"[^>]*>(.*?)</div>\s*</div>\s*<p',
-            re.DOTALL
-        )
+        for idx, region_data in enumerate(data):
+            region_name = region_data['region']
+            region, created = Region.objects.update_or_create(
+                name=region_name,
+                defaults={'order': idx},
+            )
+            action = 'Created' if created else 'Updated'
+            self.stdout.write(f'  {action} region: {region_name}')
 
-        # Split content by li.select to pair each header with its gohide block
-        li_matches = list(li_pattern.finditer(html))
-        gohide_matches = list(re.finditer(
-            r'<div[^>]*class="gohide"[^>]*>(.*?)(?=<li[^>]*class="select"|$)',
-            html, re.DOTALL
-        ))
+            for c_idx, center_data in enumerate(region_data['centers']):
+                center_name = center_data['name']
+                center_url = center_data['url']
+                city = self._extract_city(center_name)
+                address = self._extract_address(center_name)
 
-        self.stdout.write(f'  Found {len(li_matches)} region headers, {len(gohide_matches)} content blocks')
-
-        for i, li_match in enumerate(li_matches):
-            region_name = re.sub(r'<[^>]+>', '', li_match.group(1)).strip()
-
-            centers = []
-            if i < len(gohide_matches):
-                block_html = gohide_matches[i].group(1)
-                link_pattern = re.compile(
-                    r'<a[^>]*href="(https?://hsc\.gov\.ua/[^"]+)"[^>]*>([^<]*)</a>',
-                    re.DOTALL
+                center, created = ExamCenter.objects.update_or_create(
+                    source_url=center_url,
+                    defaults={
+                        'region': region,
+                        'name': center_name,
+                        'city': city,
+                        'address': address,
+                        'order': c_idx,
+                    },
                 )
-                seen_urls = set()
-                for link_match in link_pattern.finditer(block_html):
-                    url = link_match.group(1)
-                    name = link_match.group(2).strip()
-                    if name and url and url not in seen_urls:
-                        seen_urls.add(url)
-                        centers.append({'name': name, 'url': url})
+                action = 'Created' if created else 'Updated'
+                self.stdout.write(f'    {action} center: {center_name}')
 
-            regions.append({'name': region_name, 'centers': centers})
+        total = ExamCenter.objects.count()
+        self.stdout.write(f'\nTotal: {total} centers loaded')
 
-        return regions
+    def _download_all_images(self):
+        centers = ExamCenter.objects.exclude(source_url='')
+        self.stdout.write(f'\nDownloading images for {centers.count()} centers...')
 
-    def _process_center(self, region, center_data, order, skip_images):
-        center_name = center_data['name']
-        center_url = center_data['url']
-
-        city = self._extract_city(center_name)
-        address = self._extract_address(center_name)
-
-        self.stdout.write(f'  Processing: {center_name}')
-
-        center, created = ExamCenter.objects.update_or_create(
-            source_url=center_url,
-            defaults={
-                'region': region,
-                'name': center_name,
-                'city': city,
-                'address': address,
-                'order': order,
-            },
-        )
-
-        action = 'Created' if created else 'Updated'
-        self.stdout.write(f'    {action} center: {center.name}')
-
-        if skip_images:
-            return
-
-        image_urls = self._fetch_center_images(center_url)
-        self.stdout.write(f'    Found {len(image_urls)} images')
-
-        existing_sources = set(center.images.values_list('source_url', flat=True))
-
-        for img_idx, img_url in enumerate(image_urls):
-            if img_url in existing_sources:
+        for center in centers:
+            existing_count = center.images.count()
+            if existing_count > 0:
+                self.stdout.write(f'  Skip {center.name} ({existing_count} images already)')
                 continue
 
-            try:
-                self._download_and_save_image(center, img_url, img_idx)
-                self.stdout.write(f'    Downloaded image {img_idx + 1}/{len(image_urls)}')
-            except Exception as e:
-                self.stderr.write(f'    Error downloading {img_url}: {e}')
+            self.stdout.write(f'  Fetching: {center.name}')
+            image_urls = self._fetch_center_images(center.source_url)
 
-            time.sleep(0.5)
+            if not image_urls:
+                self.stdout.write(f'    No images found')
+                continue
+
+            self.stdout.write(f'    Found {len(image_urls)} images')
+            for img_idx, img_url in enumerate(image_urls):
+                try:
+                    self._download_and_save_image(center, img_url, img_idx)
+                    self.stdout.write(f'    Downloaded {img_idx + 1}/{len(image_urls)}')
+                except Exception as e:
+                    self.stderr.write(f'    Error: {e}')
+                time.sleep(0.3)
+
+            time.sleep(1)
 
     def _fetch_center_images(self, url):
         try:
             resp = requests.get(url, headers=HEADERS, timeout=30)
             resp.raise_for_status()
         except Exception as e:
-            self.stderr.write(f'    Error fetching {url}: {e}')
+            self.stderr.write(f'    Fetch error: {e}')
             return []
 
         soup = BeautifulSoup(resp.text, 'html.parser')
@@ -170,9 +122,10 @@ class Command(BaseCommand):
         for img in article.select('img'):
             src = img.get('data-src') or img.get('src', '')
             if src and not src.startswith('data:') and 'wp-content/uploads' in src:
-                full_url = urljoin(url, src)
-                if full_url not in images:
-                    images.append(full_url)
+                if not src.startswith('http'):
+                    src = f'https://hsc.gov.ua{src}'
+                if src not in images:
+                    images.append(src)
 
         return images
 
@@ -193,10 +146,9 @@ class Command(BaseCommand):
 
     def _extract_city(self, name):
         prefixes = ['м. ', 'м.', 'с. ', 'с.', 'с-ще ', 'сел. ', 'смт ', 'смт. ']
-        text = name
         for prefix in prefixes:
-            if prefix in text:
-                after = text.split(prefix, 1)[1]
+            if prefix in name:
+                after = name.split(prefix, 1)[1]
                 city = after.split(',')[0].strip()
                 return city
         parts = name.split(',')
@@ -209,7 +161,6 @@ class Command(BaseCommand):
             before_bracket = name.split('(')[0]
         else:
             before_bracket = name
-
         parts = before_bracket.split(',')
         if len(parts) >= 2:
             return ','.join(parts[1:]).strip()

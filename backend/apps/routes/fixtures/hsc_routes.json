@@ -1,0 +1,124 @@
+[
+  {
+    "region": "Вінницька, Черкаська та Кіровоградська області",
+    "centers": [
+      {"name": "м. Вінниця, вул. Ботанічна, 24 (ТСЦ МВС № 0541)", "url": "https://hsc.gov.ua/vinnitska-oblast-m-vinnitsya-vul-botanichna-24-tsts-mvs-0541/"},
+      {"name": "м. Гайсин, вул. Південна, 67 (ТСЦ МВС № 0542)", "url": "https://hsc.gov.ua/vinnitska-m-gajsin-vul-pivdenna-67-tsts-mvs-0542/"},
+      {"name": "м. Шаргород, вул. Героїв Майдану, 224 (ТСЦ МВС № 0543)", "url": "https://hsc.gov.ua/vynnitska-m-mogiliv-podilskij-vul-ostrivska-4/"},
+      {"name": "м. Черкаси, вул. Лесі Українки, 21 (ТСЦ МВС № 7141)", "url": "https://hsc.gov.ua/m-cherkasi-vul-lesi-ukrayinki-21-tsts-mvs-7141/"},
+      {"name": "Уманський р-н, с/рада Родниківська, автодорога Київ-Одеса, 203 км, 800 м, будинок б/н (ТСЦ МВС № 7142)", "url": "https://hsc.gov.ua/m-uman-vul-s-banderi-12-tsts-mvs-7142/"},
+      {"name": "м. Кропивницький, просп. Інженерів, 9/92 (ТСЦ МВС № 3541)", "url": "https://hsc.gov.ua/m-kropivnitskij-prosp-inzheneriv-9-92-tsts-mvs-3541/"},
+      {"name": "м. Олександрія, пр. Будівельників, 38 (ТСЦ МВС № 3542)", "url": "https://hsc.gov.ua/m-oleksandriya-pr-budivelnikiv-38-tsts-mvs-3542/"}
+    ]
+  },
+  {
+    "region": "Дніпропетровська та Запорізька області",
+    "centers": [
+      {"name": "м. Дніпро, пр. Праці, 16 (ТСЦ МВС №1242)", "url": "https://hsc.gov.ua/m-dnipro-pr-pratsi-16-tsts-mvs-1242/"},
+      {"name": "м. Покров, вул. Уральська, 1 (ТСЦ МВС №1245)", "url": "https://hsc.gov.ua/9546-2/"},
+      {"name": "м. Павлоград, вул. Дніпровська, 334а (ТСЦ МВС №1247)", "url": "https://hsc.gov.ua/m-pavlograd-vul-dniprovska-10-tsts-mvs-1247/"},
+      {"name": "м. Кривий Ріг, вул. Дениса Комара, 15 (ТСЦ МВС №1248)", "url": "https://hsc.gov.ua/m-krivij-rig-vul-bikova-31-tts-metro-tsts-mvs-1248/"},
+      {"name": "м. Дніпро, пр. Слобожанський, 31 Д (ТСЦ МВС №1249)", "url": "https://hsc.gov.ua/m-dnipro-pr-slobozhanskij-31-d-tsts-mvs-1249/"},
+      {"name": "м. Запоріжжя, вул. Олександрівська, 84 (ТСЦ МВС № 2341)", "url": "https://hsc.gov.ua/m-zaporizhzhya-vul-parkovij-bulvar-12-tsts-mvs-2341/"},
+      {"name": "м. Запоріжжя, вул. Бабури козака, 9а (ТСЦ МВС № 2342)", "url": "https://hsc.gov.ua/m-zaporizhzhya-vul-fortechna-2v-tsts-mvs-2342/"}
+    ]
+  },
+  {
+    "region": "Донецька, Луганська області, АР Крим та м. Севастополь",
+    "centers": [
+      {"name": "с. Олександрівка, вул. Центральна, 18 (ТСЦ МВС № 1451)", "url": "https://hsc.gov.ua/m-pokrovsk-krasnoarmijsk-vul-tyulenina-1-tsts-mvs-1444/"},
+      {"name": "м. Краматорськ, вул. Героїв небесної сотні, 5 (ТСЦ МВС № 1452)", "url": "https://hsc.gov.ua/m-kramatorsk-vul-geroyiv-nebesnoyi-sotni-5-tsts-mvs-1443/"}
+    ]
+  },
+  {
+    "region": "Київська та Чернігівська області",
+    "centers": [
+      {"name": "м. Біла Церква, вул. Сухоярська, 20 (ТСЦ МВС № 3242)", "url": "https://hsc.gov.ua/m-bila-tserkva-vul-suhoyarska-20-tsts-mvs-3242/"},
+      {"name": "м. Бровари, вул. Броварської сотні, 4А (ТСЦ МВС № 3243)", "url": "https://hsc.gov.ua/m-brovari-vul-brovarskoyi-sotni-4a-tsts-mvs-3243/"},
+      {"name": "с. Софіївська Борщагівка, вул. Андрія Малишка, 2 (ТСЦ МВС № 3246)", "url": "https://hsc.gov.ua/kiyivska-obl-kiyevo-svyatoshinskij-r-n-s-sofiyivska-borshhagivka-vul-lva-tolstogo-2-tsts-mvs-3246/"},
+      {"name": "м. Буча, вул. Депутатська, 1В (ТСЦ МВС № 3247)", "url": "https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/smt-makariv-vul-dorozhna-13-a-tsts-mvs-3247/"},
+      {"name": "м. Переяслав, вул. Ново-Київське шосе, 46 (ТСЦ МВС № 3248)", "url": "https://hsc.gov.ua/pereyaslav-hmelnitskij-r-n-s-gajshin-vul-zhovtneva-10-tsts-mvs-3248/"},
+      {"name": "м. Чернігів, вул. Шевченка, 162а (ТСЦ МВС № 7441)", "url": "https://hsc.gov.ua/m-chernigiv-vul-shevchenka-162a-tsts-mvs-7441/"},
+      {"name": "м. Прилуки, вул. Індустріальна, 6 (ТСЦ МВС № 7442)", "url": "https://hsc.gov.ua/m-priluki-vul-industrialna-6-tsts-mvs-7441/"}
+    ]
+  },
+  {
+    "region": "м. Київ",
+    "centers": [
+      {"name": "м. Київ, вул. Перемоги, 20 (ТСЦ МВС № 8041)", "url": "https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/m-kiyiv-vul-peremogu-20-tsts-mvs-8041/"},
+      {"name": "м. Київ, вул. Мрії, 19 (ТСЦ МВС № 8042)", "url": "https://hsc.gov.ua/m-kiyiv-vul-tupolyeva-19-tsts-mvs-8042/"},
+      {"name": "м. Київ, вул. Павла Усенка, 8 (ТСЦ МВС № 8049)", "url": "https://hsc.gov.ua/m-kiyiv-vul-pavla-usenka-8-tsts-mvs-8049/"}
+    ]
+  },
+  {
+    "region": "Львівська, Івано-Франківська та Закарпатська області",
+    "centers": [
+      {"name": "м. Львів, вул. Д. Апостола 11 (ТСЦ МВС № 4641)", "url": "https://hsc.gov.ua/m-lviv-vul-d-apostola-11-tsts-mvs-4641/"},
+      {"name": "м. Самбір, вул. Східна, 216 (ТСЦ МВС № 4644)", "url": "https://hsc.gov.ua/m-sambir-vul-shidna-216-tsts-mvs-4644/"},
+      {"name": "м. Стрий, вул. Багряного, 4 (ТСЦ МВС № 4645)", "url": "https://hsc.gov.ua/m-strij-vul-kossaka-11-tsts-mvs-4645/"},
+      {"name": "м. Шептицький, вул. Корольова, 14 а (ТСЦ МВС № 4646)", "url": "https://hsc.gov.ua/m-chervonograd-vul-kozatska-2-tsts-mvs-4646/"},
+      {"name": "м. Львів, вул. Богданівська, 44 (ТСЦ МВС № 4651)", "url": "https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/m-lviv-vul-bogdanivska-44-tsts-mvs-4651/"},
+      {"name": "м. Івано-Франківськ, вул. Євгена Коновальця, 229у (ТСЦ МВС № 2641)", "url": "https://hsc.gov.ua/m-ivano-frankivsk-vul-ye-konovaltsya-433-tsts-mvs-2641/"},
+      {"name": "м. Коломия, вул. Симоненка, 2 (ТСЦ МВС № 2643)", "url": "https://hsc.gov.ua/m-kolomiya-vul-o-dovbusha-11-1-tsts-mvs-2643/"},
+      {"name": "м. Ужгород, вул. О. Кошового, 4 (ТСЦ МВС № 2141)", "url": "https://hsc.gov.ua/m-uzhgorod-vul-o-koshovogo-4-tsts-mvs-2141/"},
+      {"name": "Мукачівський р-н, с. Клячаново, вул. Автомобілістів, 28 (ТСЦ МВС № 2142)", "url": "https://hsc.gov.ua/m-mukachevo-vul-beregivska-ob-yizna-7-a-tsts-mvs-2142/"},
+      {"name": "м. Хуст, вул. Окружна, 34 (ТСЦ МВС № 2144)", "url": "https://hsc.gov.ua/m-hust-vul-timiryazyeva-1-tsts-mvs-2144/"}
+    ]
+  },
+  {
+    "region": "Одеська, Миколаївська та Херсонська області",
+    "centers": [
+      {"name": "м. Білгород-Дністровський, вул. Ігоря Іванова, 4 (ТСЦ МВС № 5143)", "url": "https://hsc.gov.ua/m-bilgorod-dnistrovskij-vul-gagarina-4-tsts-mvs-5143/"},
+      {"name": "м. Ізмаїл, просп. Незалежності, 362 (ТСЦ МВС № 5144)", "url": "https://hsc.gov.ua/m-izmayil-pr-suvorova-362-tsts-mvs-5144/"},
+      {"name": "м. Подільськ, вул. Соборная, 202 Б (ТСЦ МВС № 5149)", "url": "https://hsc.gov.ua/m-podilsk-vul-sobornaya-202-b-tsts-mvs-5149/"},
+      {"name": "м. Чорноморськ, вул. Промислова, 14 (ТСЦ МВС № 5150)", "url": "https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/m-chornomorsk-vul-hantadze-19-tsts-mvs-5150/"},
+      {"name": "м. Одеса, вул. Аеропортівська, 27/1 (ТСЦ МВС № 5154)", "url": "https://hsc.gov.ua/m-odesa-vul-ak-korolova-5-tsts-mvs-5141/"},
+      {"name": "м. Миколаїв, пров. Транспортний, 1а/1 (ТСЦ МВС № 4841)", "url": "https://hsc.gov.ua/m-mikolayiv-prov-transportnij-1a-1-tsts-mvs-4841/"},
+      {"name": "м. Первомайськ, вул. Вознесенська, 73Б (ТСЦ МВС № 4842)", "url": "https://hsc.gov.ua/m-pervomajsk-vul-voznesenska-73b-tsts-mvs-4842/"},
+      {"name": "м. Вознесенськ, вул. Молодогвардійська, 45 (ТСЦ МВС № 4844)", "url": "https://hsc.gov.ua/m-voznesensk-vul-molodogvardijska-45-tsts-mvs-4844/"},
+      {"name": "м. Новий Буг, площа Свободи, 1 (ТСЦ МВС № 4845)", "url": "https://hsc.gov.ua/9893-2/"},
+      {"name": "м. Херсон, вул. Вишнева, 22 (ТСЦ МВС № 6541)", "url": "https://hsc.gov.ua/m-herson-vul-mikolayivske-shose-5-km-tsts-mvs-6541/"}
+    ]
+  },
+  {
+    "region": "Рівненська, Волинська та Житомирська області",
+    "centers": [
+      {"name": "м. Рівне, вул. Київська, 108Б (ТСЦ МВС № 5641)", "url": "https://hsc.gov.ua/m-rivne-vul-makarova-21-tts-metro-tsts-mvs-5641/"},
+      {"name": "м. Сарни, вул. Костопільська, 100 (ТСЦ МВС № 5643)", "url": "https://hsc.gov.ua/m-sarni-vul-gagarina-100-tsts-mvs-5643/"},
+      {"name": "Волинська область, Луцький р-н, с. Струмівка, вул. Рівненська, 74 (ТСЦ МВС № 0741)", "url": "https://hsc.gov.ua/volinska-oblast-lutskij-r-n-s-strumivka-vul-rivnenska-74-tsts-mvs-0741-2/"},
+      {"name": "м. Ковель, вул. Володимирська, 133 (ТСЦ МВС № 0742)", "url": "https://hsc.gov.ua/volinska-m-kovel-vul-volodimirska-133-tsts-mvs-0742/"},
+      {"name": "Житомирський район, с. Довжик, вул. Богунська, 1А (ТСЦ МВС № 1841)", "url": "https://hsc.gov.ua/m-zhitomir-prosp-nezalezhnosti-168a-1-tsts-mvs-1841/"},
+      {"name": "м. Коростень, вул. Сергія Кемського, 3 (ТСЦ МВС № 1843)", "url": "https://hsc.gov.ua/m-korosten-vul-s-kemskogo-3-tsts-mvs-1843/"},
+      {"name": "м. Звягель, вул. Відродження, 2 (ТСЦ МВС № 1844)", "url": "https://hsc.gov.ua/m-novograd-volinskij-vul-vidrodzhennya-2-tsts-mvs-1844/"}
+    ]
+  },
+  {
+    "region": "Харківська, Полтавська та Сумська області",
+    "centers": [
+      {"name": "м. Харків, вул. Шевченка, 26 (ТСЦ МВС № 6341)", "url": "https://hsc.gov.ua/m-harkiv-vul-shevchenka-26-tsts-mvs-6341/"},
+      {"name": "м. Харків, Станція метро «Київська», вестибюль №1 (ТСЦ МВС № 6342)", "url": "https://hsc.gov.ua/m-harkiv-vul-shevchenka-62-tsts-mvs-6342/"},
+      {"name": "м. Лозова, Мікрорайон 1, будинок 21 (ТСЦ МВС № 6348)", "url": "https://hsc.gov.ua/m-lozova-vul-svobodi-12-1-tsts-mvs-6348/"},
+      {"name": "с. Пісочин, вул. Транспортна, 116 (ТСЦ МВС № 6350)", "url": "https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/smt-pisochin-vul-nadiyi-15-tsts-mvs-6350/"},
+      {"name": "Полтавський район, с. Розсошенці, вул. Кременчуцька, 2В (ТСЦ МВС № 5341)", "url": "https://hsc.gov.ua/m-poltava-vul-yevropejska-164-tsts-mvs-5341/"},
+      {"name": "м. Кременчук, вул. Покровська, 14 (ТСЦ МВС № 5342)", "url": "https://hsc.gov.ua/m-kremenchuk-proyizd-40-rokiv-dai-3-tsts-mvs-5342/"},
+      {"name": "м. Лубни, проспект Володимирський, 178-б (ТСЦ МВС № 5343)", "url": "https://hsc.gov.ua/m-lubni-prospekt-volodimirskij-178-a-tsts-mvs-5343/"},
+      {"name": "м. Конотоп, вул. Садова, 39 (ТСЦ МВС № 5942)", "url": "https://hsc.gov.ua/m-konotop-vul-virivska-19-a-tsts-mvs-5942/"},
+      {"name": "м. Охтирка, вул. Київська, 164В (ТСЦ МВС № 5943)", "url": "https://hsc.gov.ua/m-ohtirka-vul-kiyivska-164v-tsts-mvs-5943/"},
+      {"name": "м. Шостка, вул. Героїв Шосткинщини, 24 (ТСЦ МВС № 5945)", "url": "https://hsc.gov.ua/index/poslugi/vidacha-posvidchennya-vodiya/marshruti/http-hsc-gov-ua-m-romni-vul-poltavska-4a-tsts-mvs-5945/"},
+      {"name": "м. Суми, вул. Білопільський шлях, 18/1 (ТСЦ МВС № 5946)", "url": "https://hsc.gov.ua/m-sumi-vul-bilopilskij-shlyah-18-1-tsts-mvs-5946/"}
+    ]
+  },
+  {
+    "region": "Хмельницька, Тернопільська та Чернівецька області",
+    "centers": [
+      {"name": "м. Хмельницький, вул. Західно-Окружна, 11/1 (ТСЦ МВС № 6841)", "url": "https://hsc.gov.ua/m-hmelnitskij-vul-zahidno-okruzhna-11-1-tsts-mvs-6841/"},
+      {"name": "м. Камянець-Подільський, проспект Грушевського 1/2 (ТСЦ МВС № 6843)", "url": "https://hsc.gov.ua/m-kamyanets-podilskij-prospekt-grushevskogo-1-2-tsts-mvs-6843/"},
+      {"name": "м. Старокостянтинів, вул. Героїв України, 1а (ТСЦ МВС № 6844)", "url": "https://hsc.gov.ua/m-starokostyantiniv-vul-chajkovskogo-1a-tsts-mvs-6844/"},
+      {"name": "Тернопільський район, с. Підгороднє, вул. Стрийська, 5 (ТСЦ МВС № 6141)", "url": "https://hsc.gov.ua/m-ternopil-vul-berezhanska-65-tsts-mvs-6141/"},
+      {"name": "м. Кременець, вул. Шевченка, 67 (ТСЦ МВС № 6143)", "url": "https://hsc.gov.ua/m-kremenets-vul-shevchenka-67-tsts-mvs-6143/"},
+      {"name": "Чортківський район, с. Угринь, вул. Обїзна, 1 (ТСЦ МВС № 6145)", "url": "https://hsc.gov.ua/m-chortkiv-vul-kopichinetska-128-tsts-mvs-6145/"},
+      {"name": "м. Чернівці, вул. Руська, 248 М (ТСЦ МВС № 7341)", "url": "https://hsc.gov.ua/m-chernivtsi-vul-ruska-248-m-tsts-mvs-7341/"},
+      {"name": "с-ще Кельменці, вул. О. Паламаря, 9 В (ТСЦ МВС № 7345)", "url": "https://hsc.gov.ua/chernivetska-oblast-smt-kelmentsi-vul-zhukova-9-v-tsts-mvs-7345/"}
+    ]
+  }
+]
