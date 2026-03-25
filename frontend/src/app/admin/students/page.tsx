@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   Search, Users, ChevronLeft, ChevronRight,
-  CheckCircle, XCircle, CreditCard,
+  CheckCircle, Clock, XCircle, CreditCard,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
@@ -18,6 +18,7 @@ interface Student {
   phone: string | null
   is_paid: boolean
   paid_until: string | null
+  access_type: 'free' | 'trial' | 'paid'
   is_active: boolean
   created_at: string
   tests_count: number
@@ -27,13 +28,20 @@ interface Stats {
   total: number
   active: number
   paid: number
-  unpaid: number
+  trial: number
+  free: number
 }
 
 interface PaginatedResponse {
   count: number
   results: Student[]
 }
+
+const ACCESS_CONFIG = {
+  paid: { label: 'Оплачено', badge: 'badge-success', icon: CheckCircle },
+  trial: { label: 'Пробний', badge: 'badge-warning', icon: Clock },
+  free: { label: 'Безкоштовний', badge: 'badge-ghost', icon: XCircle },
+} as const
 
 export default function AdminStudentsPage() {
   const toast = useToast()
@@ -43,9 +51,9 @@ export default function AdminStudentsPage() {
   const [totalStudents, setTotalStudents] = useState(0)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [paidFilter, setPaidFilter] = useState<string>('')
+  const [accessFilter, setAccessFilter] = useState<string>('')
   const [loading, setLoading] = useState(true)
-  const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [actionId, setActionId] = useState<number | null>(null)
 
   const pageSize = 30
 
@@ -63,7 +71,7 @@ export default function AdminStudentsPage() {
     try {
       const params: Record<string, string | number> = { page, page_size: pageSize }
       if (search) params.search = search
-      if (paidFilter) params.paid = paidFilter
+      if (accessFilter) params.access = accessFilter
       const { data } = await api.get<PaginatedResponse>('/admin/students/', { params })
       setStudents(data.results)
       setTotalStudents(data.count)
@@ -72,29 +80,27 @@ export default function AdminStudentsPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, search, paidFilter, toast])
+  }, [page, search, accessFilter, toast])
 
   useEffect(() => { fetchStats() }, [])
-  useEffect(() => { fetchStudents() }, [page, search, paidFilter])
-  useEffect(() => { setPage(1) }, [search, paidFilter])
+  useEffect(() => { fetchStudents() }, [page, search, accessFilter])
+  useEffect(() => { setPage(1) }, [search, accessFilter])
 
-  const togglePayment = async (student: Student) => {
-    setTogglingId(student.id)
+  const setAccess = async (student: Student, accessType: 'free' | 'trial' | 'paid') => {
+    setActionId(student.id)
     try {
       await api.post(`/admin/students/${student.id}/payment/`, {
-        is_paid: !student.is_paid,
+        access_type: accessType,
         paid_until: null,
       })
-      toast.add(
-        !student.is_paid ? `${student.full_name} — оплату підтверджено` : `${student.full_name} — оплату скасовано`,
-        'success'
-      )
+      const labels = { free: 'безкоштовний', trial: 'пробний', paid: 'оплачений' }
+      toast.add(`${student.full_name} — ${labels[accessType]} доступ`, 'success')
       fetchStudents()
       fetchStats()
     } catch {
-      toast.add('Помилка зміни статусу', 'error')
+      toast.add('Помилка зміни доступу', 'error')
     } finally {
-      setTogglingId(null)
+      setActionId(null)
     }
   }
 
@@ -110,7 +116,7 @@ export default function AdminStudentsPage() {
         <div>
           <h1 className="text-2xl font-bold">Учні</h1>
           <p className="text-base-content/60 text-sm mt-1">
-            {stats ? `${stats.total} учнів, ${stats.paid} оплачено` : 'Завантаження...'}
+            {stats ? `${stats.total} учнів` : 'Завантаження...'}
           </p>
         </div>
       </div>
@@ -126,12 +132,12 @@ export default function AdminStudentsPage() {
           <p className="text-xs text-base-content/50">Оплачено</p>
         </div>
         <div className="card bg-base-100 border border-base-300/60 p-4">
-          <p className="text-2xl font-bold text-warning">{stats?.unpaid ?? 0}</p>
-          <p className="text-xs text-base-content/50">Без оплати</p>
+          <p className="text-2xl font-bold text-warning">{stats?.trial ?? 0}</p>
+          <p className="text-xs text-base-content/50">Пробний</p>
         </div>
         <div className="card bg-base-100 border border-base-300/60 p-4">
-          <p className="text-2xl font-bold text-info">{stats?.active ?? 0}</p>
-          <p className="text-xs text-base-content/50">Активних</p>
+          <p className="text-2xl font-bold text-base-content/40">{stats?.free ?? 0}</p>
+          <p className="text-xs text-base-content/50">Безкоштовний</p>
         </div>
       </div>
 
@@ -149,12 +155,13 @@ export default function AdminStudentsPage() {
         </div>
         <select
           className="select select-bordered select-sm"
-          value={paidFilter}
-          onChange={e => setPaidFilter(e.target.value)}
+          value={accessFilter}
+          onChange={e => setAccessFilter(e.target.value)}
         >
           <option value="">Всі статуси</option>
-          <option value="true">Оплачено</option>
-          <option value="false">Без оплати</option>
+          <option value="paid">Оплачено</option>
+          <option value="trial">Пробний</option>
+          <option value="free">Безкоштовний</option>
         </select>
       </div>
 
@@ -167,7 +174,7 @@ export default function AdminStudentsPage() {
                 <th>Учень</th>
                 <th className="hidden sm:table-cell">Email</th>
                 <th className="hidden md:table-cell">Телефон</th>
-                <th className="text-center">Оплата</th>
+                <th className="text-center">Доступ</th>
                 <th className="hidden lg:table-cell text-center">Тестів</th>
                 <th className="hidden lg:table-cell">Реєстрація</th>
                 <th />
@@ -184,66 +191,93 @@ export default function AdminStudentsPage() {
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-base-content/50">
                     <Users className="w-8 h-8 mx-auto text-base-content/20 mb-2" />
-                    {search || paidFilter ? 'Нічого не знайдено' : 'Немає учнів'}
+                    {search || accessFilter ? 'Нічого не знайдено' : 'Немає учнів'}
                   </td>
                 </tr>
               ) : (
-                students.map(s => (
-                  <tr key={s.id} className="hover">
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="avatar placeholder">
-                          <div className="bg-neutral text-neutral-content rounded-full w-8">
-                            <span className="text-xs">
-                              {(s.first_name?.[0] || s.username[0]).toUpperCase()}
-                            </span>
+                students.map(s => {
+                  const config = ACCESS_CONFIG[s.access_type] || ACCESS_CONFIG.free
+                  const Icon = config.icon
+                  return (
+                    <tr key={s.id} className="hover">
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar placeholder">
+                            <div className="bg-neutral text-neutral-content rounded-full w-8">
+                              <span className="text-xs">
+                                {(s.first_name?.[0] || s.username[0]).toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{s.full_name}</p>
+                            <p className="text-xs text-base-content/50 sm:hidden">{s.email}</p>
                           </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{s.full_name}</p>
-                          <p className="text-xs text-base-content/50 sm:hidden">{s.email}</p>
+                      </td>
+                      <td className="hidden sm:table-cell text-sm">{s.email}</td>
+                      <td className="hidden md:table-cell text-sm text-base-content/60">
+                        {s.phone || '—'}
+                      </td>
+                      <td className="text-center">
+                        <span className={`badge ${config.badge} badge-sm gap-1`}>
+                          <Icon className="w-3 h-3" />
+                          {config.label}
+                        </span>
+                      </td>
+                      <td className="hidden lg:table-cell text-center text-sm">
+                        {s.tests_count}
+                      </td>
+                      <td className="hidden lg:table-cell text-sm text-base-content/60">
+                        {formatDate(s.created_at)}
+                      </td>
+                      <td>
+                        <div className="dropdown dropdown-end">
+                          <label
+                            tabIndex={0}
+                            className="btn btn-sm btn-ghost gap-1"
+                          >
+                            {actionId === s.id ? (
+                              <span className="loading loading-spinner loading-xs" />
+                            ) : (
+                              <CreditCard className="w-4 h-4" />
+                            )}
+                            <span className="hidden sm:inline">Доступ</span>
+                          </label>
+                          <ul tabIndex={0} className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300/60 rounded-box w-44">
+                            <li>
+                              <button
+                                onClick={() => setAccess(s, 'paid')}
+                                className={s.access_type === 'paid' ? 'active' : ''}
+                              >
+                                <CheckCircle className="w-4 h-4 text-success" />
+                                Оплачений
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                onClick={() => setAccess(s, 'trial')}
+                                className={s.access_type === 'trial' ? 'active' : ''}
+                              >
+                                <Clock className="w-4 h-4 text-warning" />
+                                Пробний
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                onClick={() => setAccess(s, 'free')}
+                                className={s.access_type === 'free' ? 'active' : ''}
+                              >
+                                <XCircle className="w-4 h-4 text-base-content/40" />
+                                Безкоштовний
+                              </button>
+                            </li>
+                          </ul>
                         </div>
-                      </div>
-                    </td>
-                    <td className="hidden sm:table-cell text-sm">{s.email}</td>
-                    <td className="hidden md:table-cell text-sm text-base-content/60">
-                      {s.phone || '—'}
-                    </td>
-                    <td className="text-center">
-                      {s.is_paid ? (
-                        <span className="badge badge-success badge-sm gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          Оплачено
-                        </span>
-                      ) : (
-                        <span className="badge badge-ghost badge-sm gap-1">
-                          <XCircle className="w-3 h-3" />
-                          Ні
-                        </span>
-                      )}
-                    </td>
-                    <td className="hidden lg:table-cell text-center text-sm">
-                      {s.tests_count}
-                    </td>
-                    <td className="hidden lg:table-cell text-sm text-base-content/60">
-                      {formatDate(s.created_at)}
-                    </td>
-                    <td>
-                      <button
-                        className={`btn btn-sm gap-2 whitespace-nowrap ${s.is_paid ? 'btn-outline btn-error' : 'btn-success'}`}
-                        onClick={() => togglePayment(s)}
-                        disabled={togglingId === s.id}
-                      >
-                        {togglingId === s.id ? (
-                          <span className="loading loading-spinner loading-xs" />
-                        ) : (
-                          <CreditCard className="w-4 h-4" />
-                        )}
-                        {s.is_paid ? 'Скасувати' : 'Оплатити'}
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>

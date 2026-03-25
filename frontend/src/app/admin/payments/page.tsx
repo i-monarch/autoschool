@@ -48,9 +48,7 @@ export default function AdminPaymentsPage() {
     }
   }, [])
 
-  useEffect(() => {
-    fetchTariff()
-  }, [fetchTariff])
+  useEffect(() => { fetchTariff() }, [fetchTariff])
 
   async function handleSave() {
     setSaving(true)
@@ -97,77 +95,94 @@ export default function AdminPaymentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Підписка</h1>
-          <p className="text-base-content/60 text-sm mt-1">Налаштування підписки для учнів</p>
+          <p className="text-base-content/60 text-sm mt-1">Налаштування тарифу для учнів</p>
         </div>
-        <button
-          onClick={handleSave}
-          className="btn btn-primary btn-sm gap-2"
-          disabled={saving || !name || !price}
-        >
-          {saving ? (
-            <span className="loading loading-spinner loading-xs" />
-          ) : saved ? (
-            <Check className="w-4 h-4" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          {saved ? 'Збережено' : 'Зберегти'}
-        </button>
+        <div className="flex items-center gap-3">
+          <label className="label cursor-pointer gap-2">
+            <input
+              type="checkbox"
+              className="toggle toggle-sm toggle-success"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+            />
+            <span className="label-text text-sm">Видима</span>
+          </label>
+          <button
+            onClick={handleSave}
+            className="btn btn-primary btn-sm gap-2"
+            disabled={saving || !name || !price}
+          >
+            {saving ? (
+              <span className="loading loading-spinner loading-xs" />
+            ) : saved ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {saved ? 'Збережено' : 'Зберегти'}
+          </button>
+        </div>
       </div>
 
-      <div className="card bg-base-100 border border-base-300/60">
-        <div className="card-body space-y-5">
-          <div className="form-control">
-            <label className="label"><span className="label-text text-sm font-medium">Назва підписки</span></label>
-            <input
-              type="text"
-              className="input input-bordered input-sm max-w-md"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Повний доступ"
-            />
-          </div>
-
-          <div className="form-control">
-            <label className="label"><span className="label-text text-sm font-medium">Опис</span></label>
-            <textarea
-              className="textarea textarea-bordered textarea-sm max-w-md"
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Повний доступ до всіх матеріалів автошколи"
-            />
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4 max-w-md">
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Left: Settings */}
+        <div className="card bg-base-100 border border-base-300/60">
+          <div className="card-body p-5 space-y-4">
             <div className="form-control">
-              <label className="label"><span className="label-text text-sm font-medium">Ціна (грн)</span></label>
+              <label className="label py-1"><span className="label-text text-sm font-medium">Назва</span></label>
               <input
-                type="number"
+                type="text"
                 className="input input-bordered input-sm"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="2500"
-                min="0"
-                step="0.01"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Повний доступ"
               />
             </div>
+
             <div className="form-control">
-              <label className="label"><span className="label-text text-sm font-medium">Тривалість (днів)</span></label>
-              <input
-                type="number"
-                className="input input-bordered input-sm"
-                value={durationDays}
-                onChange={(e) => setDurationDays(Number(e.target.value))}
-                placeholder="30"
-                min="1"
+              <label className="label py-1"><span className="label-text text-sm font-medium">Опис</span></label>
+              <textarea
+                className="textarea textarea-bordered textarea-sm"
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Повний доступ до всіх матеріалів автошколи"
               />
             </div>
-          </div>
 
-          <div className="form-control">
-            <label className="label"><span className="label-text text-sm font-medium">Що входить у підписку</span></label>
-            <div className="flex gap-2 max-w-md">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-control">
+                <label className="label py-1"><span className="label-text text-sm font-medium">Ціна (грн)</span></label>
+                <input
+                  type="number"
+                  className="input input-bordered input-sm"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="1500"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="form-control">
+                <label className="label py-1"><span className="label-text text-sm font-medium">Тривалість (днів)</span></label>
+                <input
+                  type="number"
+                  className="input input-bordered input-sm"
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(Number(e.target.value))}
+                  placeholder="90"
+                  min="1"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Features */}
+        <div className="card bg-base-100 border border-base-300/60">
+          <div className="card-body p-5">
+            <label className="label py-1"><span className="label-text text-sm font-medium">Що входить у підписку</span></label>
+            <div className="flex gap-2">
               <input
                 type="text"
                 className="input input-bordered input-sm flex-1"
@@ -181,12 +196,12 @@ export default function AdminPaymentsPage() {
               </button>
             </div>
             {features.length > 0 && (
-              <ul className="mt-3 space-y-1.5">
+              <ul className="mt-3 space-y-1">
                 {features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm">
+                  <li key={i} className="flex items-center gap-2 text-sm py-1 px-2 rounded hover:bg-base-200/50">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
                     <span className="flex-1">{f}</span>
-                    <button onClick={() => removeFeature(i)} className="btn btn-ghost btn-xs">
+                    <button onClick={() => removeFeature(i)} className="btn btn-ghost btn-xs opacity-40 hover:opacity-100">
                       <X className="w-3 h-3" />
                     </button>
                   </li>
@@ -194,18 +209,6 @@ export default function AdminPaymentsPage() {
               </ul>
             )}
           </div>
-
-          <div className="divider my-0" />
-
-          <label className="label cursor-pointer gap-2 w-fit">
-            <input
-              type="checkbox"
-              className="toggle toggle-sm toggle-success"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-            />
-            <span className="label-text text-sm">Показувати учням</span>
-          </label>
         </div>
       </div>
     </div>

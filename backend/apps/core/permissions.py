@@ -22,4 +22,4 @@ class IsPaid(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
-        return request.user.is_paid
+        return request.user.access_type in ('paid', 'trial')

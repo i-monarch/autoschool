@@ -9,6 +9,11 @@ class User(AbstractUser):
         ('teacher', _('Teacher')),
         ('admin', _('Admin')),
     ]
+    ACCESS_CHOICES = [
+        ('free', _('Free')),
+        ('trial', _('Trial')),
+        ('paid', _('Paid')),
+    ]
 
     phone = models.CharField(_('phone'), max_length=20, unique=True, blank=True, null=True)
     role = models.CharField(_('role'), max_length=10, choices=ROLE_CHOICES, default='student')
@@ -17,6 +22,7 @@ class User(AbstractUser):
     is_phone_verified = models.BooleanField(_('phone verified'), default=False)
     is_paid = models.BooleanField(_('paid'), default=False)
     paid_until = models.DateTimeField(_('paid until'), null=True, blank=True)
+    access_type = models.CharField(_('access type'), max_length=10, choices=ACCESS_CHOICES, default='free')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

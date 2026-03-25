@@ -9,7 +9,7 @@ from .models import User
 from .serializers_admin import (
     AdminStudentListSerializer,
     AdminStudentDetailSerializer,
-    AdminStudentPaymentSerializer,
+    AdminStudentAccessSerializer,
 )
 
 
@@ -39,6 +39,10 @@ class AdminStudentListView(generics.ListAPIView):
                 Q(phone__icontains=search)
             )
 
+        access = self.request.query_params.get('access')
+        if access in ('free', 'trial', 'paid'):
+            qs = qs.filter(access_type=access)
+
         paid_filter = self.request.query_params.get('paid')
         if paid_filter == 'true':
             qs = qs.filter(is_paid=True)
@@ -67,14 +71,22 @@ class AdminStudentPaymentView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'not_found'}, status=status.HTTP_404_NOT_FOUND)
 
-        ser = AdminStudentPaymentSerializer(data=request.data)
+        ser = AdminStudentAccessSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
-        student.is_paid = ser.validated_data['is_paid']
-        student.paid_until = ser.validated_data.get('paid_until')
-        student.save(update_fields=['is_paid', 'paid_until'])
+        access_type = ser.validated_data['access_type']
+        paid_until = ser.validated_data.get('paid_until')
 
-        return Response({'status': 'ok', 'is_paid': student.is_paid})
+        student.access_type = access_type
+        student.is_paid = access_type in ('paid', 'trial')
+        student.paid_until = paid_until
+        student.save(update_fields=['access_type', 'is_paid', 'paid_until'])
+
+        return Response({
+            'status': 'ok',
+            'access_type': student.access_type,
+            'is_paid': student.is_paid,
+        })
 
 
 class AdminStudentStatsView(APIView):
@@ -85,6 +97,7 @@ class AdminStudentStatsView(APIView):
         return Response({
             'total': students.count(),
             'active': students.filter(is_active=True).count(),
-            'paid': students.filter(is_paid=True).count(),
-            'unpaid': students.filter(is_paid=False).count(),
+            'paid': students.filter(access_type='paid').count(),
+            'trial': students.filter(access_type='trial').count(),
+            'free': students.filter(access_type='free').count(),
         })

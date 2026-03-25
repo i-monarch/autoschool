@@ -10,8 +10,8 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
-            'phone', 'is_paid', 'paid_until', 'is_active', 'created_at',
-            'tests_count',
+            'phone', 'is_paid', 'paid_until', 'access_type', 'is_active',
+            'created_at', 'tests_count',
         ]
 
     def get_full_name(self, obj):
@@ -24,11 +24,11 @@ class AdminStudentDetailSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'phone', 'is_paid', 'paid_until', 'is_active',
+            'phone', 'is_paid', 'paid_until', 'access_type', 'is_active',
         ]
         read_only_fields = ['id', 'username', 'email']
 
 
-class AdminStudentPaymentSerializer(serializers.Serializer):
-    is_paid = serializers.BooleanField()
+class AdminStudentAccessSerializer(serializers.Serializer):
+    access_type = serializers.ChoiceField(choices=['free', 'trial', 'paid'])
     paid_until = serializers.DateTimeField(required=False, allow_null=True)

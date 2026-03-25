@@ -11,6 +11,7 @@ export interface User {
   is_phone_verified: boolean
   is_paid: boolean
   paid_until: string | null
+  access_type: 'free' | 'trial' | 'paid'
   created_at: string
 }
 

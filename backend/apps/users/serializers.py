@@ -27,8 +27,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'phone', 'first_name', 'last_name',
-                  'role', 'avatar', 'language', 'is_phone_verified', 'is_paid', 'paid_until', 'created_at')
-        read_only_fields = ('id', 'role', 'is_phone_verified', 'is_paid', 'paid_until', 'created_at')
+                  'role', 'avatar', 'language', 'is_phone_verified', 'is_paid', 'paid_until',
+                  'access_type', 'created_at')
+        read_only_fields = ('id', 'role', 'is_phone_verified', 'is_paid', 'paid_until',
+                            'access_type', 'created_at')
 
 
 class UserDeviceSerializer(serializers.Serializer):

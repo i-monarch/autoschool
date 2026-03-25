@@ -48,7 +48,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* Subscription status */}
-      {user?.is_paid ? (
+      {user?.access_type === 'paid' ? (
         <div className="alert bg-success/10 border border-success/20 mb-8">
           <Check className="w-5 h-5 text-success" />
           <div>
@@ -58,6 +58,14 @@ export default function PaymentsPage() {
                 Дійсна до {new Date(user.paid_until).toLocaleDateString('uk-UA')}
               </p>
             )}
+          </div>
+        </div>
+      ) : user?.access_type === 'trial' ? (
+        <div className="alert bg-info/10 border border-info/20 mb-8">
+          <CreditCard className="w-5 h-5 text-info" />
+          <div>
+            <p className="font-medium text-sm">Пробний доступ</p>
+            <p className="text-xs text-base-content/60">У вас активний пробний доступ до платного контенту</p>
           </div>
         </div>
       ) : (
