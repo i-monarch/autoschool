@@ -9,7 +9,6 @@ import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { PaywallOverlay } from '@/components/ui/PaywallBanner'
-import { PageHero } from '@/components/ui/PageHero'
 
 interface SavedQuestionItem {
   id: number
@@ -146,12 +145,10 @@ export default function TestsPage() {
 
   return (
     <div>
-      <PageHero
-        title="Тести ПДР"
-        subtitle="Тренуйтесь та перевіряйте свої знання"
-        icon={<ClipboardCheck className="w-7 h-7" />}
-        accentColor="error"
-      />
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Тести ПДР</h1>
+        <p className="text-base-content/60 text-sm mt-1">Тренуйтесь та перевіряйте свої знання</p>
+      </div>
 
       {/* Tabs */}
       <div className="tabs tabs-bordered mb-6">
@@ -194,49 +191,92 @@ export default function TestsPage() {
       {/* === TAB: Modes === */}
       {tab === 'modes' && (
         <>
-          {/* Test modes */}
+          {/* Test modes — unique cards with road sign decorations */}
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
-            <Link href="/tests/exam" className="card bg-base-100 border border-base-300/60 hover:border-error/40 hover:shadow-md transition-all">
-              <div className="card-body p-5">
-                <div className="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center mb-2">
-                  <Clock className="w-6 h-6" />
+            {/* Exam — stop sign themed */}
+            <Link href="/tests/exam" className="group relative overflow-hidden card bg-gradient-to-br from-red-50 to-base-100 border-2 border-red-200/60 hover:border-red-400/60 hover:shadow-lg transition-all">
+              <div className="absolute -top-3 -right-3 opacity-[0.07]" aria-hidden>
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                  <polygon points="30,5 70,5 95,30 95,70 70,95 30,95 5,70 5,30" fill="currentColor" stroke="currentColor" strokeWidth="4" className="text-red-500" />
+                </svg>
+              </div>
+              <div className="card-body p-5 relative">
+                <div className="flex items-center gap-3 mb-3">
+                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="flex-shrink-0">
+                    <polygon points="13,3 31,3 41,13 41,31 31,41 13,41 3,31 3,13" fill="#fee2e2" stroke="#ef4444" strokeWidth="2.5" />
+                    <text x="22" y="27" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#dc2626">20</text>
+                  </svg>
+                  <div>
+                    <h3 className="font-bold text-base">Екзамен</h3>
+                    <span className="text-xs text-error/70 font-medium">20 хв</span>
+                  </div>
                 </div>
-                <h3 className="font-semibold">Екзамен</h3>
                 <p className="text-sm text-base-content/60">20 питань, 20 хвилин. Як у сервісному центрі.</p>
               </div>
             </Link>
 
+            {/* Marathon — priority road sign themed */}
             {isPaid ? (
-              <Link href="/tests/marathon" className="card bg-base-100 border border-base-300/60 hover:border-accent/40 hover:shadow-md transition-all">
-                <div className="card-body p-5">
-                  <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-2">
-                    <TrendingUp className="w-6 h-6" />
+              <Link href="/tests/marathon" className="group relative overflow-hidden card bg-gradient-to-br from-amber-50 to-base-100 border-2 border-amber-200/60 hover:border-amber-400/60 hover:shadow-lg transition-all">
+                <div className="absolute -top-2 -right-2 opacity-[0.07]" aria-hidden>
+                  <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
+                    <rect x="15" y="15" width="42" height="42" rx="5" transform="rotate(45, 36, 36)" fill="currentColor" className="text-amber-500" />
+                  </svg>
+                </div>
+                <div className="card-body p-5 relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="flex-shrink-0">
+                      <rect x="6" y="6" width="22" height="22" rx="3" transform="rotate(45, 17, 17)" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2.5" />
+                      <text x="22" y="28" textAnchor="middle" fontSize="20" fill="#d97706">&#8734;</text>
+                    </svg>
+                    <div>
+                      <h3 className="font-bold text-base">Марафон</h3>
+                      <span className="text-xs text-amber-600/70 font-medium">без ліміту</span>
+                    </div>
                   </div>
-                  <h3 className="font-semibold">Марафон</h3>
                   <p className="text-sm text-base-content/60">Без обмежень часу. Тренування з поясненнями.</p>
                 </div>
               </Link>
             ) : (
-              <div className="card bg-base-100 border border-base-300/60 opacity-60">
+              <div className="relative overflow-hidden card bg-base-100 border border-base-300/60 opacity-60">
                 <div className="card-body p-5">
-                  <div className="w-12 h-12 rounded-xl bg-base-200 text-base-content/30 flex items-center justify-center mb-2">
-                    <Lock className="w-6 h-6" />
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-11 h-11 rounded-lg bg-base-200 text-base-content/30 flex items-center justify-center flex-shrink-0">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-base">Марафон</h3>
+                      <span className="text-xs text-base-content/40">після оплати</span>
+                    </div>
                   </div>
-                  <h3 className="font-semibold">Марафон</h3>
                   <p className="text-sm text-base-content/60">Доступний після оплати</p>
                 </div>
               </div>
             )}
 
-            <Link href="/tests/history" className="card bg-base-100 border border-base-300/60 hover:border-primary/40 hover:shadow-md transition-all">
-              <div className="card-body p-5">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2">
-                  <BookOpen className="w-6 h-6" />
+            {/* Results — speed sign themed */}
+            <Link href="/tests/history" className="group relative overflow-hidden card bg-gradient-to-br from-emerald-50 to-base-100 border-2 border-emerald-200/60 hover:border-emerald-400/60 hover:shadow-lg transition-all">
+              <div className="absolute -top-3 -right-3 opacity-[0.07]" aria-hidden>
+                <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
+                  <circle cx="45" cy="45" r="40" fill="currentColor" className="text-emerald-500" />
+                </svg>
+              </div>
+              <div className="card-body p-5 relative">
+                <div className="flex items-center gap-3 mb-3">
+                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="flex-shrink-0">
+                    <circle cx="22" cy="22" r="19" fill="#d1fae5" stroke="#10b981" strokeWidth="2.5" />
+                    <path d="M14 22 L19 27 L30 16" stroke="#059669" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                  <div>
+                    <h3 className="font-bold text-base">Мої результати</h3>
+                    <span className="text-xs text-emerald-600/70 font-medium">
+                      {hasStats ? `${stats.avg_percent}% правильних` : 'історія'}
+                    </span>
+                  </div>
                 </div>
-                <h3 className="font-semibold">Мої результати</h3>
                 <p className="text-sm text-base-content/60">
                   {hasStats
-                    ? `${stats.total_attempts} спроб, ${stats.avg_percent}% правильних`
+                    ? `${stats.total_attempts} спроб пройдено`
                     : 'Історія ваших спроб'
                   }
                 </p>

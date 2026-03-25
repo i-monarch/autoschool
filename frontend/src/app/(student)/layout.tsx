@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
-import { RoadPattern } from '@/components/ui/RoadPattern'
+import { RoadDecor } from '@/components/ui/RoadPattern'
 
 const navItems = [
   { href: '/dashboard', label: 'Головна', icon: Home },
@@ -190,7 +190,7 @@ export default function StudentLayout({
 
         {/* Content */}
         <main className="flex-1 p-4 pb-20 lg:pb-6 lg:p-6 xl:p-8 relative">
-          <RoadPattern />
+          <RoadDecor />
           <div className="relative">
             {children}
           </div>

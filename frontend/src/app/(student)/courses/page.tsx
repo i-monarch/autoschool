@@ -7,7 +7,6 @@ import {
   Play, Clock, Lock, ChevronRight, Search, Video,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
-import { PageHero } from '@/components/ui/PageHero'
 import { MOCK_COURSES, formatDuration } from '@/data/mock-courses'
 import type { VideoCourse } from '@/types/courses'
 
@@ -88,14 +87,17 @@ export default function CoursesPage() {
 
   return (
     <div>
-      <PageHero
-        title="Відеокурси"
-        subtitle={`${totalLessons} відеоуроків${!user?.is_paid ? ` / ${freeLessonsTotal} безкоштовних` : ''}`}
-        icon={<Video className="w-7 h-7" />}
-        accentColor="secondary"
-      >
-        <div className="join flex-shrink-0">
-          <div className="join-item flex items-center pl-3 bg-base-100/80 border border-base-300/60 border-r-0 rounded-l-lg">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Відеокурси</h1>
+          <p className="text-base-content/60 text-sm mt-1">
+            {totalLessons} відеоуроків
+            {!user?.is_paid && <span> / {freeLessonsTotal} безкоштовних</span>}
+          </p>
+        </div>
+        <div className="join flex-1 sm:flex-none">
+          <div className="join-item flex items-center pl-3 bg-base-100 border border-base-300/60 border-r-0">
             <Search className="w-4 h-4 text-base-content/40" />
           </div>
           <input
@@ -106,7 +108,7 @@ export default function CoursesPage() {
             className="input input-bordered join-item input-sm w-full sm:w-48 border-l-0 focus:outline-none"
           />
         </div>
-      </PageHero>
+      </div>
 
       {/* Info banner for free users */}
       {!user?.is_paid && (
