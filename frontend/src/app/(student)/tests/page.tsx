@@ -166,7 +166,7 @@ export default function TestsPage() {
           <BarChart3 className="w-4 h-4 mr-2" />
           Статистика
           {hasStats && (
-            <span className="badge badge-sm badge-primary ml-2">{stats.avg_percent}%</span>
+            <span className="badge badge-sm badge-info ml-2">{stats.avg_percent}%</span>
           )}
         </button>
         <button

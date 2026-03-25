@@ -109,7 +109,7 @@ export default function LeaderboardPage() {
                   <td>
                     {entry.first_name}
                     {isCurrentUser && (
-                      <span className="badge badge-primary badge-xs ml-2">ви</span>
+                      <span className="text-xs text-primary/70 ml-1.5">(ви)</span>
                     )}
                   </td>
                   <td className="text-right text-success">{entry.total_correct}</td>
