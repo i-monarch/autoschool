@@ -88,7 +88,7 @@ export default function CoursesPage() {
   return (
     <div>
       {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 text-white mb-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 text-white mb-8">
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           {/* Film strip */}
           <svg className="absolute right-0 top-0 h-full w-28 opacity-[0.08]" viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
