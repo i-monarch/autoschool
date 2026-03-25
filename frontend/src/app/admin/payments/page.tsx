@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Save, Plus, X, Check } from 'lucide-react'
+import { Save, Plus, X, Check, CreditCard } from 'lucide-react'
 import api from '@/lib/api'
 
 interface Tariff {
@@ -209,6 +209,33 @@ export default function AdminPaymentsPage() {
               </ul>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Payment History */}
+      <div className="mt-8">
+        <h2 className="text-lg font-bold mb-4">Історія платежів</h2>
+        <div className="card bg-base-100 border border-base-300/60">
+          <table className="table table-sm">
+            <thead>
+              <tr>
+                <th>Учень</th>
+                <th>Тип</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дата</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-base-content/40">
+                  <CreditCard className="w-8 h-8 mx-auto text-base-content/20 mb-2" />
+                  <p className="text-sm">Платежів поки немає</p>
+                  <p className="text-xs mt-1">Тут відображатимуться всі оплати після підключення платіжної системи</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
