@@ -63,24 +63,45 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('\nDone!'))
 
     def _parse_main_page(self, content):
-        regions = []
-        select_items = content.select('li.select')
+        import re
 
-        for li in select_items:
-            region_name = li.get_text(strip=True)
-            parent = li.parent
-            gohide = parent.select_one('.gohide') if parent else None
-            if not gohide:
-                next_sib = li.find_next_sibling()
-                if next_sib and 'gohide' in (next_sib.get('class') or []):
-                    gohide = next_sib
+        html = str(content)
+        regions = []
+
+        # BS4 breaks DOM with invalid div-inside-ul, so parse with regex
+        # Find all li.select headers
+        li_pattern = re.compile(
+            r'<li[^>]*class="select"[^>]*>(.*?)</li>',
+            re.DOTALL
+        )
+        gohide_pattern = re.compile(
+            r'<div[^>]*class="gohide"[^>]*>(.*?)</div>\s*</div>\s*<p',
+            re.DOTALL
+        )
+
+        # Split content by li.select to pair each header with its gohide block
+        li_matches = list(li_pattern.finditer(html))
+        gohide_matches = list(re.finditer(
+            r'<div[^>]*class="gohide"[^>]*>(.*?)(?=<li[^>]*class="select"|$)',
+            html, re.DOTALL
+        ))
+
+        self.stdout.write(f'  Found {len(li_matches)} region headers, {len(gohide_matches)} content blocks')
+
+        for i, li_match in enumerate(li_matches):
+            region_name = re.sub(r'<[^>]+>', '', li_match.group(1)).strip()
 
             centers = []
-            if gohide:
+            if i < len(gohide_matches):
+                block_html = gohide_matches[i].group(1)
+                link_pattern = re.compile(
+                    r'<a[^>]*href="(https?://hsc\.gov\.ua/[^"]+)"[^>]*>([^<]*)</a>',
+                    re.DOTALL
+                )
                 seen_urls = set()
-                for a in gohide.select('a[href]'):
-                    name = a.get_text(strip=True)
-                    url = a['href']
+                for link_match in link_pattern.finditer(block_html):
+                    url = link_match.group(1)
+                    name = link_match.group(2).strip()
                     if name and url and url not in seen_urls:
                         seen_urls.add(url)
                         centers.append({'name': name, 'url': url})
