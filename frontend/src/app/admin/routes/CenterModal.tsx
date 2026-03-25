@@ -5,27 +5,37 @@ import { X } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
 
+interface Region {
+  id: number
+  name: string
+}
+
 interface ExamCenter {
   id: number
+  region: number | null
   name: string
   city: string
   address: string
   phone: string
   lat: string | null
   lng: string | null
+  source_url: string
   order: number
 }
 
 interface CenterModalProps {
   center: ExamCenter | null
+  regions: Region[]
+  defaultRegionId: number | null
   onClose: () => void
   onSaved: () => void
 }
 
-export default function CenterModal({ center, onClose, onSaved }: CenterModalProps) {
+export default function CenterModal({ center, regions, defaultRegionId, onClose, onSaved }: CenterModalProps) {
   const toast = useToast()
   const isEdit = !!center
 
+  const [regionId, setRegionId] = useState<string>('')
   const [name, setName] = useState('')
   const [city, setCity] = useState('')
   const [address, setAddress] = useState('')
@@ -36,14 +46,17 @@ export default function CenterModal({ center, onClose, onSaved }: CenterModalPro
 
   useEffect(() => {
     if (center) {
+      setRegionId(center.region ? String(center.region) : '')
       setName(center.name)
       setCity(center.city)
       setAddress(center.address)
       setPhone(center.phone)
       setLat(center.lat || '')
       setLng(center.lng || '')
+    } else if (defaultRegionId) {
+      setRegionId(String(defaultRegionId))
     }
-  }, [center])
+  }, [center, defaultRegionId])
 
   const handleSave = async () => {
     if (!name.trim() || !city.trim() || !address.trim()) {
@@ -54,9 +67,10 @@ export default function CenterModal({ center, onClose, onSaved }: CenterModalPro
     setSaving(true)
     try {
       const payload = {
+        region: regionId ? Number(regionId) : null,
         name, city, address, phone,
-        lat: lat ? lat : null,
-        lng: lng ? lng : null,
+        lat: lat || null,
+        lng: lng || null,
       }
 
       if (isEdit) {
@@ -88,13 +102,27 @@ export default function CenterModal({ center, onClose, onSaved }: CenterModalPro
 
         <div className="space-y-4">
           <div>
+            <label className="label"><span className="label-text">Регіон</span></label>
+            <select
+              className="select select-bordered w-full"
+              value={regionId}
+              onChange={e => setRegionId(e.target.value)}
+            >
+              <option value="">-- Без регіону --</option>
+              {regions.map(r => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="label"><span className="label-text">Назва</span></label>
             <input
               type="text"
               className="input input-bordered w-full"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="ТСЦ МВС 1234"
+              placeholder="м. Київ, вул. Перемоги, 20 (ТСЦ МВС 8041)"
             />
           </div>
 
@@ -116,7 +144,7 @@ export default function CenterModal({ center, onClose, onSaved }: CenterModalPro
               className="input input-bordered w-full"
               value={address}
               onChange={e => setAddress(e.target.value)}
-              placeholder="вул. Прикладна, 1"
+              placeholder="вул. Перемоги, 20"
             />
           </div>
 

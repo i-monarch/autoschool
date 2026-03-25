@@ -1,8 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, Phone, ChevronDown, ExternalLink, Navigation } from 'lucide-react'
+import { MapPin, ChevronDown, Navigation, ZoomIn, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import api from '@/lib/api'
+
+interface RouteImage {
+  id: number
+  image: string
+  order: number
+}
 
 interface ExamRoute {
   id: number
@@ -18,35 +24,150 @@ interface ExamCenter {
   city: string
   address: string
   phone: string
+  images: RouteImage[]
   routes: ExamRoute[]
 }
 
+interface Region {
+  id: number
+  name: string
+  order: number
+  centers: ExamCenter[]
+}
+
+function ImageGallery({ images, centerName }: { images: RouteImage[], centerName: string }) {
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  if (images.length === 0) return null
+
+  const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
+
+  const getImageUrl = (path: string) => {
+    if (path.startsWith('http')) return path
+    return `${mediaBase}${path.startsWith('/') ? '' : '/'}${path}`
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-3">
+        {images.map((img, idx) => (
+          <div
+            key={img.id}
+            className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group border border-base-300/40"
+            onClick={() => setLightboxIdx(idx)}
+          >
+            <img
+              src={getImageUrl(img.image)}
+              alt={`${centerName} - маршрут ${idx + 1}`}
+              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {lightboxIdx !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxIdx(null)}
+        >
+          <button
+            className="absolute top-4 right-4 btn btn-circle btn-ghost text-white"
+            onClick={() => setLightboxIdx(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {images.length > 1 && (
+            <>
+              <button
+                className="absolute left-4 btn btn-circle btn-ghost text-white"
+                onClick={e => {
+                  e.stopPropagation()
+                  setLightboxIdx(lightboxIdx > 0 ? lightboxIdx - 1 : images.length - 1)
+                }}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                className="absolute right-4 btn btn-circle btn-ghost text-white"
+                onClick={e => {
+                  e.stopPropagation()
+                  setLightboxIdx(lightboxIdx < images.length - 1 ? lightboxIdx + 1 : 0)
+                }}
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
+
+          <img
+            src={getImageUrl(images[lightboxIdx].image)}
+            alt={`${centerName} - маршрут ${lightboxIdx + 1}`}
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            onClick={e => e.stopPropagation()}
+          />
+
+          <div className="absolute bottom-4 text-white/70 text-sm">
+            {lightboxIdx + 1} / {images.length}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function RoutesPage() {
-  const [centers, setCenters] = useState<ExamCenter[]>([])
+  const [regions, setRegions] = useState<Region[]>([])
   const [loading, setLoading] = useState(true)
-  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [expandedRegions, setExpandedRegions] = useState<Set<number>>(new Set())
+  const [expandedCenters, setExpandedCenters] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    api.get('/routes/centers/')
-      .then(res => setCenters(res.data))
+    api.get('/routes/regions/')
+      .then(res => {
+        setRegions(res.data)
+        if (res.data.length === 1) {
+          setExpandedRegions(new Set([res.data[0].id]))
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  const toggleRegion = (id: number) => {
+    setExpandedRegions(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleCenter = (id: number) => {
+    setExpandedCenters(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   if (loading) {
     return (
       <div>
         <h1 className="text-2xl font-bold mb-6">Екзаменаційні маршрути</h1>
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="skeleton h-28 rounded-xl" />
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="skeleton h-16 rounded-xl" />
           ))}
         </div>
       </div>
     )
   }
-
-  const cities = Array.from(new Set(centers.map(c => c.city)))
 
   return (
     <div>
@@ -57,12 +178,14 @@ export default function RoutesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Екзаменаційні маршрути</h1>
-            <p className="text-base-content/50 text-sm">Сервісні центри МВС та маршрути для складання іспиту</p>
+            <p className="text-base-content/50 text-sm">
+              Маршрути для складання практичного іспиту по регіонах України
+            </p>
           </div>
         </div>
       </div>
 
-      {centers.length === 0 ? (
+      {regions.length === 0 ? (
         <div className="card bg-base-100 border border-base-300/60">
           <div className="card-body items-center text-center py-12">
             <MapPin className="w-12 h-12 text-base-content/20 mb-3" />
@@ -70,91 +193,80 @@ export default function RoutesPage() {
           </div>
         </div>
       ) : (
-        <div className="space-y-8">
-          {cities.map(city => (
-            <div key={city}>
-              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                {city}
-              </h2>
-              <div className="space-y-3">
-                {centers.filter(c => c.city === city).map(center => {
-                  const isExpanded = expandedId === center.id
-                  return (
-                    <div
-                      key={center.id}
-                      className="card bg-base-100 border border-base-300/60"
-                    >
-                      <div
-                        className="card-body p-4 cursor-pointer"
-                        onClick={() => setExpandedId(isExpanded ? null : center.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold">{center.name}</h3>
-                            <p className="text-sm text-base-content/60 mt-1">{center.address}</p>
-                            {center.phone && (
-                              <p className="text-sm text-base-content/50 mt-1 flex items-center gap-1.5">
-                                <Phone className="w-3.5 h-3.5" />
-                                {center.phone}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 ml-3">
-                            {center.routes.length > 0 && (
-                              <span className="badge badge-primary badge-sm">
-                                {center.routes.length} {center.routes.length === 1 ? 'маршрут' : center.routes.length < 5 ? 'маршрути' : 'маршрутів'}
-                              </span>
-                            )}
-                            <ChevronDown className={`w-5 h-5 text-base-content/30 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                          </div>
-                        </div>
+        <div className="space-y-3">
+          {regions.map(region => {
+            const isRegionExpanded = expandedRegions.has(region.id)
+            return (
+              <div key={region.id} className="card bg-base-100 border border-base-300/60">
+                <div
+                  className="card-body p-4 cursor-pointer"
+                  onClick={() => toggleRegion(region.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
+                      <div>
+                        <h2 className="font-semibold">{region.name}</h2>
+                        <p className="text-xs text-base-content/50 mt-0.5">
+                          {region.centers.length} {region.centers.length === 1 ? 'центр' : region.centers.length < 5 ? 'центри' : 'центрів'}
+                        </p>
                       </div>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-base-content/30 transition-transform ${isRegionExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                </div>
 
-                      {isExpanded && center.routes.length > 0 && (
-                        <div className="border-t border-base-300/60 px-4 pb-4">
-                          <div className="space-y-2 mt-3">
-                            {center.routes.map(route => (
-                              <div
-                                key={route.id}
-                                className="flex items-start gap-3 p-3 rounded-lg bg-base-200/50"
-                              >
-                                <Navigation className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm">{route.name}</p>
-                                  {route.description && (
-                                    <p className="text-xs text-base-content/50 mt-1">{route.description}</p>
-                                  )}
-                                </div>
-                                {route.map_url && (
-                                  <a
-                                    href={route.map_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-ghost btn-xs gap-1 flex-shrink-0"
-                                    onClick={e => e.stopPropagation()}
-                                  >
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                    На мапі
-                                  </a>
+                {isRegionExpanded && (
+                  <div className="border-t border-base-300/60 px-4 pb-4">
+                    <div className="space-y-2 mt-3">
+                      {region.centers.map(center => {
+                        const isCenterExpanded = expandedCenters.has(center.id)
+                        const hasContent = center.images.length > 0 || center.routes.length > 0
+                        return (
+                          <div
+                            key={center.id}
+                            className="rounded-xl bg-base-200/50 overflow-hidden"
+                          >
+                            <div
+                              className={`flex items-center gap-3 p-3 ${hasContent ? 'cursor-pointer' : ''}`}
+                              onClick={() => hasContent && toggleCenter(center.id)}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm">{center.name}</p>
+                                {center.address && (
+                                  <p className="text-xs text-base-content/50 mt-0.5">{center.address}</p>
                                 )}
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                {center.images.length > 0 && (
+                                  <span className="badge badge-primary badge-sm badge-outline">
+                                    {center.images.length} фото
+                                  </span>
+                                )}
+                                {hasContent && (
+                                  <ChevronDown
+                                    className={`w-4 h-4 text-base-content/30 transition-transform ${isCenterExpanded ? 'rotate-180' : ''}`}
+                                  />
+                                )}
+                              </div>
+                            </div>
 
-                      {isExpanded && center.routes.length === 0 && (
-                        <div className="border-t border-base-300/60 px-4 pb-4">
-                          <p className="text-sm text-base-content/40 mt-3">Маршрути для цього центру ще не додано</p>
-                        </div>
-                      )}
+                            {isCenterExpanded && (
+                              <div className="px-3 pb-3">
+                                <ImageGallery images={center.images} centerName={center.name} />
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
