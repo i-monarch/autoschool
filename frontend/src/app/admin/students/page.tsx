@@ -166,30 +166,29 @@ export default function AdminStudentsPage() {
       </div>
 
       {/* Table */}
-      <div className="card bg-base-100 border border-base-300/60 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="table table-sm">
+      <div className="card bg-base-100 border border-base-300/60">
+        <div className="overflow-hidden">
+          <table className="table table-sm w-full">
             <thead>
               <tr>
-                <th>Учень</th>
-                <th className="hidden sm:table-cell">Email</th>
+                <th className="w-[30%]">Учень</th>
                 <th className="hidden md:table-cell">Телефон</th>
-                <th className="text-center">Доступ</th>
-                <th className="hidden lg:table-cell text-center">Тестів</th>
-                <th className="hidden lg:table-cell">Реєстрація</th>
-                <th />
+                <th className="text-center w-28">Доступ</th>
+                <th className="hidden lg:table-cell text-center w-16">Тестів</th>
+                <th className="hidden lg:table-cell w-28">Реєстрація</th>
+                <th className="w-24" />
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12">
+                  <td colSpan={6} className="text-center py-12">
                     <span className="loading loading-spinner loading-md" />
                   </td>
                 </tr>
               ) : students.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-base-content/50">
+                  <td colSpan={6} className="text-center py-12 text-base-content/50">
                     <Users className="w-8 h-8 mx-auto text-base-content/20 mb-2" />
                     {search || accessFilter ? 'Нічого не знайдено' : 'Немає учнів'}
                   </td>
@@ -201,21 +200,20 @@ export default function AdminStudentsPage() {
                   return (
                     <tr key={s.id} className="hover">
                       <td>
-                        <div className="flex items-center gap-3">
-                          <div className="avatar placeholder">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="avatar placeholder flex-shrink-0">
                             <div className="bg-neutral text-neutral-content rounded-full w-8">
                               <span className="text-xs">
                                 {(s.first_name?.[0] || s.username[0]).toUpperCase()}
                               </span>
                             </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-sm">{s.full_name}</p>
-                            <p className="text-xs text-base-content/50 sm:hidden">{s.email}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">{s.full_name}</p>
+                            <p className="text-xs text-base-content/50 truncate">{s.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="hidden sm:table-cell text-sm">{s.email}</td>
                       <td className="hidden md:table-cell text-sm text-base-content/60">
                         {s.phone || '—'}
                       </td>
@@ -235,40 +233,40 @@ export default function AdminStudentsPage() {
                         <div className="dropdown dropdown-end">
                           <label
                             tabIndex={0}
-                            className="btn btn-sm btn-ghost gap-1"
+                            className="btn btn-xs btn-ghost gap-1"
                           >
                             {actionId === s.id ? (
                               <span className="loading loading-spinner loading-xs" />
                             ) : (
-                              <CreditCard className="w-4 h-4" />
+                              <CreditCard className="w-3.5 h-3.5" />
                             )}
-                            <span className="hidden sm:inline">Доступ</span>
+                            Доступ
                           </label>
-                          <ul tabIndex={0} className="dropdown-content z-10 menu p-2 shadow-lg bg-base-100 border border-base-300/60 rounded-box w-44">
+                          <ul tabIndex={0} className="dropdown-content z-10 menu p-1.5 shadow-lg bg-base-100 border border-base-300/60 rounded-box w-40">
                             <li>
                               <button
                                 onClick={() => setAccess(s, 'paid')}
-                                className={s.access_type === 'paid' ? 'active' : ''}
+                                className={`text-sm ${s.access_type === 'paid' ? 'active' : ''}`}
                               >
-                                <CheckCircle className="w-4 h-4 text-success" />
+                                <CheckCircle className="w-3.5 h-3.5 text-success" />
                                 Оплачений
                               </button>
                             </li>
                             <li>
                               <button
                                 onClick={() => setAccess(s, 'trial')}
-                                className={s.access_type === 'trial' ? 'active' : ''}
+                                className={`text-sm ${s.access_type === 'trial' ? 'active' : ''}`}
                               >
-                                <Clock className="w-4 h-4 text-warning" />
+                                <Clock className="w-3.5 h-3.5 text-warning" />
                                 Пробний
                               </button>
                             </li>
                             <li>
                               <button
                                 onClick={() => setAccess(s, 'free')}
-                                className={s.access_type === 'free' ? 'active' : ''}
+                                className={`text-sm ${s.access_type === 'free' ? 'active' : ''}`}
                               >
-                                <XCircle className="w-4 h-4 text-base-content/40" />
+                                <XCircle className="w-3.5 h-3.5 text-base-content/40" />
                                 Безкоштовний
                               </button>
                             </li>
