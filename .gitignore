@@ -43,3 +43,15 @@ desktop.ini
 htmlcov/
 .coverage
 .coverage.*
+
+# Temp/scraped data
+hsc_images/
+hsc_images.tar.gz
+*.png
+!frontend/public/**/*.png
+download_*.py
+download_*.js
+gen_*.py
+tz.md
+.playwright-mcp/
+.claude/
