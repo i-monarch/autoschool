@@ -46,7 +46,7 @@ class ExamRoute(models.Model):
 
 class RouteImage(models.Model):
     center = models.ForeignKey(ExamCenter, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='routes/images/')
+    image = models.ImageField(upload_to='routes/images/', blank=True, null=True)
     source_url = models.URLField(blank=True)
     order = models.PositiveIntegerField(default=0)
 

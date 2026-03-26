@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
             name='RouteImage',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(upload_to='routes/images/')),
+                ('image', models.ImageField(blank=True, null=True, upload_to='routes/images/')),
                 ('source_url', models.URLField(blank=True)),
                 ('order', models.PositiveIntegerField(default=0)),
                 ('center', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='routes.examcenter')),

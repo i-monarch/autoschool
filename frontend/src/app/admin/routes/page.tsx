@@ -14,7 +14,7 @@ import RegionModal from './RegionModal'
 interface RouteImage {
   id: number
   center: number
-  image: string
+  image: string | null
   source_url: string
   order: number
 }
@@ -173,9 +173,13 @@ export default function AdminRoutesPage() {
   }
 
   const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
-  const getImageUrl = (path: string) => {
-    if (path.startsWith('http')) return path
-    return `${mediaBase}${path.startsWith('/') ? '' : '/'}${path}`
+  const getImageUrl = (img: RouteImage) => {
+    if (img.source_url) return img.source_url
+    if (img.image) {
+      if (img.image.startsWith('http')) return img.image
+      return `${mediaBase}${img.image.startsWith('/') ? '' : '/'}${img.image}`
+    }
+    return ''
   }
 
   const totalCenters = regions.reduce((sum, r) => sum + r.centers.length, 0)
@@ -372,7 +376,7 @@ export default function AdminRoutesPage() {
                       {selectedCenter.images.map(img => (
                         <div key={img.id} className="relative group aspect-[4/3] rounded-lg overflow-hidden border border-base-300/40">
                           <img
-                            src={getImageUrl(img.image)}
+                            src={getImageUrl(img)}
                             alt=""
                             className="w-full h-full object-cover"
                             loading="lazy"
