@@ -44,11 +44,11 @@ function ImageGallery({ images, centerName }: { images: RouteImage[], centerName
   const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
   const getImageUrl = (img: RouteImage) => {
-    if (img.source_url) return img.source_url
     if (img.image) {
       if (img.image.startsWith('http')) return img.image
       return `${mediaBase}${img.image.startsWith('/') ? '' : '/'}${img.image}`
     }
+    if (img.source_url) return img.source_url
     return ''
   }
 
