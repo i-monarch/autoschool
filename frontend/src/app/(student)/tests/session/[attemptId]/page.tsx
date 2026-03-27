@@ -171,25 +171,48 @@ export default function TestSessionPage() {
     <div>
       {/* Header bar */}
       <div className="sticky top-16 z-20 bg-base-200/80 backdrop-blur-md -mx-4 px-4 py-3 mb-4 border-b border-base-300/40">
-        <div className="flex items-center gap-4">
-          <div className="text-base flex-shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-base">
             <span className="font-bold text-lg">{currentIndex + 1}</span>
             <span className="text-base-content/40"> / {questions.length}</span>
           </div>
 
+          {/* Question nav dots */}
+          <div className="flex-1 flex gap-0.5 py-1">
+            {questions.map((q, i) => {
+              const a = answered[q.id]
+              let bg = 'bg-base-300'
+
+              if (a?.result?.is_correct) bg = 'bg-success'
+              else if (a?.result && !a.result.is_correct) bg = 'bg-error'
+              else if (a?.selectedId) bg = 'bg-primary'
+
+              const isCurrent = i === currentIndex
+              const ring = isCurrent ? 'ring-2 ring-primary/30' : ''
+
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`flex-1 h-3.5 min-w-0 rounded-full transition-colors ${bg} ${ring}`}
+                />
+              )
+            })}
+          </div>
+
           {isExamMode && (
-            <div className="badge badge-error gap-1.5 font-semibold text-xs px-3 py-2.5 flex-shrink-0">
+            <div className="badge badge-error font-semibold text-xs px-3 py-3 flex-shrink-0">
               Екзамен
             </div>
           )}
 
           {testType === 'marathon' && (
-            <div className="badge badge-primary gap-1.5 font-semibold text-xs px-3 py-2.5 flex-shrink-0">
+            <div className="badge badge-primary font-semibold text-xs px-3 py-3 flex-shrink-0">
               Марафон
             </div>
           )}
 
-          <label className="flex items-center gap-1.5 cursor-pointer flex-shrink-0" title="Автоперехід до наступного питання">
+          <label className="flex items-center gap-2 cursor-pointer flex-shrink-0" title="Автоперехід до наступного питання">
             <span className="text-xs text-base-content/50">Авто</span>
             <input
               type="checkbox"
@@ -205,29 +228,6 @@ export default function TestSessionPage() {
               {formatTime(secondsLeft)}
             </div>
           )}
-        </div>
-
-        {/* Question nav dots — full width */}
-        <div className="flex gap-1 mt-3">
-          {questions.map((q, i) => {
-            const a = answered[q.id]
-            let bg = 'bg-base-300'
-
-            if (a?.result?.is_correct) bg = 'bg-success'
-            else if (a?.result && !a.result.is_correct) bg = 'bg-error'
-            else if (a?.selectedId) bg = 'bg-primary'
-
-            const isCurrent = i === currentIndex
-            const ring = isCurrent ? 'ring-2 ring-primary/40 ring-offset-1 ring-offset-base-200' : ''
-
-            return (
-              <button
-                key={q.id}
-                onClick={() => setCurrentIndex(i)}
-                className={`flex-1 h-3 min-w-0 rounded-full transition-all ${bg} ${ring}`}
-              />
-            )
-          })}
         </div>
       </div>
 
