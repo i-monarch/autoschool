@@ -178,7 +178,7 @@ export default function TestSessionPage() {
           </div>
 
           {/* Question nav dots */}
-          <div className="flex-1 flex gap-0.5 overflow-x-auto py-1 scrollbar-none min-w-0">
+          <div className="flex-1 flex gap-1 overflow-x-auto py-1 scrollbar-none">
             {questions.map((q, i) => {
               const a = answered[q.id]
               let bg = 'bg-base-300'
@@ -188,13 +188,13 @@ export default function TestSessionPage() {
               else if (a?.selectedId) bg = 'bg-primary'
 
               const isCurrent = i === currentIndex
-              const ring = isCurrent ? 'ring-2 ring-primary/30' : ''
+              if (isCurrent && !a?.result) bg = 'bg-primary ring-2 ring-primary/30'
 
               return (
                 <button
                   key={q.id}
                   onClick={() => setCurrentIndex(i)}
-                  className={`flex-1 min-w-[6px] h-2 rounded-full transition-colors ${bg} ${ring}`}
+                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors ${bg}`}
                 />
               )
             })}
