@@ -178,7 +178,7 @@ export default function TestSessionPage() {
           </div>
 
           {/* Question nav dots */}
-          <div className="flex-1 flex gap-1 overflow-x-auto py-1 scrollbar-none">
+          <div className="flex-1 flex flex-wrap gap-1.5 py-1">
             {questions.map((q, i) => {
               const a = answered[q.id]
               let bg = 'bg-base-300'
@@ -194,7 +194,7 @@ export default function TestSessionPage() {
                 <button
                   key={q.id}
                   onClick={() => setCurrentIndex(i)}
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors ${bg}`}
+                  className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${bg}`}
                 />
               )
             })}
