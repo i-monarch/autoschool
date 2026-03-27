@@ -178,24 +178,26 @@ export default function TestSessionPage() {
           </div>
 
           {/* Question nav dots */}
-          <div className="flex-1 flex flex-wrap gap-1.5 py-1">
+          <div className="flex-1 flex flex-wrap gap-1 py-1">
             {questions.map((q, i) => {
               const a = answered[q.id]
-              let bg = 'bg-base-300'
+              let bg = 'bg-base-300 text-base-content/50'
 
-              if (a?.result?.is_correct) bg = 'bg-success'
-              else if (a?.result && !a.result.is_correct) bg = 'bg-error'
-              else if (a?.selectedId) bg = 'bg-primary'
+              if (a?.result?.is_correct) bg = 'bg-success text-success-content'
+              else if (a?.result && !a.result.is_correct) bg = 'bg-error text-error-content'
+              else if (a?.selectedId) bg = 'bg-primary text-primary-content'
 
               const isCurrent = i === currentIndex
-              if (isCurrent && !a?.result) bg = 'bg-primary ring-2 ring-primary/30'
+              if (isCurrent && !a?.result) bg = 'bg-primary text-primary-content ring-2 ring-primary/30'
 
               return (
                 <button
                   key={q.id}
                   onClick={() => setCurrentIndex(i)}
-                  className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${bg}`}
-                />
+                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-[10px] font-semibold leading-none ${bg}`}
+                >
+                  {i + 1}
+                </button>
               )
             })}
           </div>
