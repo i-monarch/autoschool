@@ -178,7 +178,7 @@ export default function TestSessionPage() {
           </div>
 
           {/* Question nav dots */}
-          <div className="flex-1 flex gap-0.5 py-1">
+          <div className="flex-1 flex justify-between py-1">
             {questions.map((q, i) => {
               const a = answered[q.id]
               let bg = 'bg-base-300'
@@ -194,7 +194,7 @@ export default function TestSessionPage() {
                 <button
                   key={q.id}
                   onClick={() => setCurrentIndex(i)}
-                  className={`flex-1 h-3.5 min-w-0 rounded-full transition-colors ${bg} ${ring}`}
+                  className={`w-3.5 h-3.5 rounded-full flex-shrink-0 transition-colors ${bg} ${ring}`}
                 />
               )
             })}
