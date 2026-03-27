@@ -120,7 +120,7 @@ export default function TestSessionPage() {
       }))
 
       if (autoAdvance && currentIndex < questions.length - 1) {
-        setTimeout(() => setCurrentIndex(prev => prev + 1), 400)
+        setTimeout(() => setCurrentIndex(prev => prev + 1), 800)
       }
     } catch {
       // handle error
@@ -160,7 +160,7 @@ export default function TestSessionPage() {
   }
 
   const currentAnswer = answered[currentQuestion.id]
-  const showResult = !isExamMode && currentAnswer?.result
+  const showResult = !!currentAnswer?.result
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60)
     const sec = s % 60
@@ -171,61 +171,63 @@ export default function TestSessionPage() {
     <div>
       {/* Header bar */}
       <div className="sticky top-16 z-20 bg-base-200/80 backdrop-blur-md -mx-4 px-4 py-3 mb-4 border-b border-base-300/40">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-sm">
-            <span className="font-semibold">{currentIndex + 1}</span>
+        <div className="flex items-center gap-4">
+          <div className="text-base flex-shrink-0">
+            <span className="font-bold text-lg">{currentIndex + 1}</span>
             <span className="text-base-content/40"> / {questions.length}</span>
           </div>
 
-          {/* Question nav dots */}
-          <div className="flex-1 flex gap-1 overflow-x-auto py-1 scrollbar-none">
-            {questions.map((q, i) => {
-              const a = answered[q.id]
-              let bg = 'bg-base-300'
-
-              if (isExamMode) {
-                // Exam: just show answered/not answered
-                if (a?.selectedId) bg = 'bg-primary'
-                if (i === currentIndex) bg = 'bg-primary ring-2 ring-primary/30'
-              } else {
-                // Training: show correct/incorrect
-                if (a?.result?.is_correct) bg = 'bg-success'
-                else if (a?.result && !a.result.is_correct) bg = 'bg-error'
-                else if (i === currentIndex) bg = 'bg-primary'
-              }
-
-              return (
-                <button
-                  key={q.id}
-                  onClick={() => setCurrentIndex(i)}
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors ${bg}`}
-                />
-              )
-            })}
-          </div>
-
           {isExamMode && (
-            <div className="badge badge-error badge-sm gap-1 font-medium">
+            <div className="badge badge-error gap-1.5 font-semibold text-xs px-3 py-2.5 flex-shrink-0">
               Екзамен
             </div>
           )}
 
+          {testType === 'marathon' && (
+            <div className="badge badge-primary gap-1.5 font-semibold text-xs px-3 py-2.5 flex-shrink-0">
+              Марафон
+            </div>
+          )}
+
           <label className="flex items-center gap-1.5 cursor-pointer flex-shrink-0" title="Автоперехід до наступного питання">
-            <span className="text-[10px] text-base-content/40">Авто</span>
+            <span className="text-xs text-base-content/50">Авто</span>
             <input
               type="checkbox"
-              className="toggle toggle-xs toggle-primary"
+              className="toggle toggle-sm toggle-primary"
               checked={autoAdvance}
               onChange={(e) => setAutoAdvance(e.target.checked)}
             />
           </label>
 
           {secondsLeft !== null && (
-            <div className={`flex items-center gap-1.5 text-sm font-mono ${secondsLeft < 120 ? 'text-error animate-pulse' : 'text-base-content/60'}`}>
-              <Clock className="w-4 h-4" />
+            <div className={`flex items-center gap-2 text-base font-mono font-semibold flex-shrink-0 ${secondsLeft < 120 ? 'text-error animate-pulse' : 'text-base-content/70'}`}>
+              <Clock className="w-5 h-5" />
               {formatTime(secondsLeft)}
             </div>
           )}
+        </div>
+
+        {/* Question nav dots — full width */}
+        <div className="flex gap-1 mt-3">
+          {questions.map((q, i) => {
+            const a = answered[q.id]
+            let bg = 'bg-base-300'
+
+            if (a?.result?.is_correct) bg = 'bg-success'
+            else if (a?.result && !a.result.is_correct) bg = 'bg-error'
+            else if (a?.selectedId) bg = 'bg-primary'
+
+            const isCurrent = i === currentIndex
+            const ring = isCurrent ? 'ring-2 ring-primary/40 ring-offset-1 ring-offset-base-200' : ''
+
+            return (
+              <button
+                key={q.id}
+                onClick={() => setCurrentIndex(i)}
+                className={`flex-1 h-3 min-w-0 rounded-full transition-all ${bg} ${ring}`}
+              />
+            )
+          })}
         </div>
       </div>
 
