@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, ChevronDown, Navigation, ZoomIn, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, ChevronDown, Navigation, ZoomIn, X, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import api from '@/lib/api'
+import HlsPlayer from '@/components/video/HlsPlayer'
 
 interface RouteImage {
   id: number
@@ -187,6 +188,19 @@ export default function RoutesPage() {
               Маршрути для складання практичного іспиту по регіонах України
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Test video player - route 1 */}
+      <div className="card bg-base-100 border border-base-300/60 mb-6">
+        <div className="card-body p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Play className="w-5 h-5 text-primary" />
+            <h2 className="font-semibold">Маршрут 1 - Харків (тест)</h2>
+          </div>
+          <HlsPlayer
+            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}/media/routes/video/route-1/master.m3u8`}
+          />
         </div>
       </div>
 
