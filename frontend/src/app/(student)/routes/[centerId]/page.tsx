@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, MapPin, Phone, ExternalLink, Play, X, ChevronLeft, ChevronRight, Lock } from 'lucide-react'
+import { ArrowLeft, MapPin, Phone, Play, X, ChevronLeft, ChevronRight, Lock, Map } from 'lucide-react'
 import api from '@/lib/api'
 import HlsPlayer from '@/components/video/HlsPlayer'
 
@@ -54,8 +54,8 @@ export default function CenterDetailPage() {
   const centerId = Number(params.centerId)
   const [center, setCenter] = useState<ExamCenter | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedRoute, setSelectedRoute] = useState<number | null>(null)
-  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+  const [selectedRoute, setSelectedRoute] = useState<number>(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   useEffect(() => {
     api.get(`/routes/centers/${centerId}/`)
@@ -67,21 +67,27 @@ export default function CenterDetailPage() {
   if (loading) {
     return (
       <div>
-        <div className="skeleton h-8 w-48 mb-6" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="skeleton aspect-[4/3] rounded-xl" />
+        <div className="skeleton h-8 w-48 mb-4" />
+        <div className="skeleton h-6 w-72 mb-6" />
+        <div className="flex gap-2 mb-6">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="skeleton w-10 h-10 rounded-lg" />
           ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="skeleton aspect-[4/3] rounded-xl" />
+          <div className="skeleton aspect-video rounded-xl" />
         </div>
       </div>
     )
   }
 
-  if (!center) return null
+  if (!center || center.images.length === 0) return null
 
   const centerVideos = ROUTE_VIDEOS[centerId] || {}
-  const selectedImage = selectedRoute !== null ? center.images[selectedRoute] : null
-  const selectedVideoUrl = selectedRoute !== null ? centerVideos[selectedRoute] : undefined
+  const currentImage = center.images[selectedRoute]
+  const currentVideoUrl = centerVideos[selectedRoute]
+  const totalRoutes = center.images.length
 
   return (
     <div>
@@ -89,15 +95,15 @@ export default function CenterDetailPage() {
       <div className="mb-6">
         <button
           onClick={() => router.push('/routes')}
-          className="btn btn-ghost btn-sm gap-2 -ml-2 mb-3"
+          className="btn btn-ghost btn-sm gap-2 -ml-2 mb-2"
         >
           <ArrowLeft className="w-4 h-4" />
           Всі центри
         </button>
 
-        <h1 className="text-xl font-bold mb-2">{center.name}</h1>
+        <h1 className="text-xl font-bold">{center.name}</h1>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-base-content/60">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-base-content/60 mt-1">
           {center.address && (
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4" />
@@ -113,164 +119,134 @@ export default function CenterDetailPage() {
         </div>
       </div>
 
-      {/* Route grid or selected route */}
-      {selectedRoute === null ? (
-        <>
-          <p className="text-sm text-base-content/50 mb-4">
-            Оберіть маршрут для детального перегляду
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {center.images.map((img, idx) => {
-              const hasVideo = centerVideos[idx] !== undefined
-              return (
-                <div
-                  key={img.id}
-                  onClick={() => setSelectedRoute(idx)}
-                  className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group border border-base-300/40 hover:border-primary/40 hover:shadow-md transition-all"
-                >
-                  <img
-                    src={getImageUrl(img)}
-                    alt={`Маршрут ${idx + 1}`}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white font-semibold text-sm">
-                        Маршрут {idx + 1}
-                      </span>
-                      {hasVideo && (
-                        <div className="flex items-center gap-1 bg-secondary/90 text-secondary-content rounded-full px-2 py-0.5 text-xs">
-                          <Play className="w-3 h-3" />
-                          <span>Відео</span>
-                        </div>
-                      )}
-                    </div>
+      {/* Route selector strip */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Map className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium">Оберіть маршрут:</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {Array.from({ length: totalRoutes }, (_, idx) => {
+            const hasVideo = centerVideos[idx] !== undefined
+            const isActive = selectedRoute === idx
+            return (
+              <button
+                key={idx}
+                onClick={() => setSelectedRoute(idx)}
+                className={`relative w-11 h-11 rounded-lg font-semibold text-sm transition-all
+                  ${isActive
+                    ? 'bg-primary text-primary-content shadow-md scale-105'
+                    : 'bg-base-200 hover:bg-base-300 text-base-content'
+                  }`}
+              >
+                {idx + 1}
+                {hasVideo && (
+                  <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center
+                    ${isActive ? 'bg-secondary text-secondary-content' : 'bg-secondary/80 text-secondary-content'}`}
+                  >
+                    <Play className="w-2.5 h-2.5" />
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Selected route detail */}
-          <button
-            onClick={() => setSelectedRoute(null)}
-            className="btn btn-ghost btn-sm gap-2 -ml-2 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Всі маршрути
-          </button>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-lg font-bold">Маршрут {selectedRoute + 1}</h2>
-            {/* Navigation between routes */}
-            <div className="flex items-center gap-1 ml-auto">
-              <button
-                onClick={() => setSelectedRoute(selectedRoute > 0 ? selectedRoute - 1 : center.images.length - 1)}
-                className="btn btn-ghost btn-sm btn-circle"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-sm text-base-content/50 min-w-[3rem] text-center">
-                {selectedRoute + 1} / {center.images.length}
-              </span>
-              <button
-                onClick={() => setSelectedRoute(selectedRoute < center.images.length - 1 ? selectedRoute + 1 : 0)}
-                className="btn btn-ghost btn-sm btn-circle"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+      {/* Route content */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold">Маршрут {selectedRoute + 1}</h2>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setSelectedRoute(selectedRoute > 0 ? selectedRoute - 1 : totalRoutes - 1)}
+            className="btn btn-ghost btn-sm btn-square"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setSelectedRoute(selectedRoute < totalRoutes - 1 ? selectedRoute + 1 : 0)}
+            className="btn btn-ghost btn-sm btn-square"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Scheme card */}
+        <div className="card bg-base-100 border border-base-300/60">
+          <div className="card-body p-4">
+            <h3 className="text-sm font-medium text-base-content/60 mb-2">Схема маршруту</h3>
+            <div
+              className="rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setLightboxOpen(true)}
+            >
+              <img
+                src={getImageUrl(currentImage)}
+                alt={`Маршрут ${selectedRoute + 1}`}
+                className="w-full object-contain bg-base-200 max-h-[400px]"
+              />
             </div>
           </div>
+        </div>
 
-          <div className="space-y-6">
-            {/* Route photo */}
-            {selectedImage && (
-              <div>
-                <h3 className="text-sm font-medium text-base-content/70 mb-2">Схема маршруту</h3>
-                <div
-                  className="rounded-xl overflow-hidden border border-base-300/40 cursor-pointer"
-                  onClick={() => setLightboxIdx(selectedRoute)}
-                >
-                  <img
-                    src={getImageUrl(selectedImage)}
-                    alt={`Маршрут ${selectedRoute + 1}`}
-                    className="w-full max-h-[500px] object-contain bg-base-200"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Route video */}
-            {selectedVideoUrl ? (
-              <div>
-                <h3 className="text-sm font-medium text-base-content/70 mb-2">Відеозапис проїзду маршруту</h3>
-                <HlsPlayer src={`${mediaBase}${selectedVideoUrl}`} />
-              </div>
+        {/* Video card */}
+        <div className="card bg-base-100 border border-base-300/60">
+          <div className="card-body p-4">
+            <h3 className="text-sm font-medium text-base-content/60 mb-2">Відеозапис проїзду</h3>
+            {currentVideoUrl ? (
+              <HlsPlayer src={`${mediaBase}${currentVideoUrl}`} />
             ) : (
-              <div className="card bg-base-200/50 border border-base-300/40">
-                <div className="card-body items-center text-center py-8">
-                  <Lock className="w-8 h-8 text-base-content/20 mb-2" />
-                  <p className="text-sm text-base-content/50">Відео для цього маршруту ще не додано</p>
-                </div>
+              <div className="flex flex-col items-center justify-center bg-base-200/50 rounded-lg aspect-video">
+                <Lock className="w-8 h-8 text-base-content/15 mb-2" />
+                <p className="text-sm text-base-content/40">Відео незабаром</p>
               </div>
             )}
           </div>
-        </>
-      )}
+        </div>
+      </div>
 
       {/* Lightbox */}
-      {lightboxIdx !== null && (
+      {lightboxOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setLightboxIdx(null)}
+          onClick={() => setLightboxOpen(false)}
         >
           <button
             className="absolute top-4 right-4 btn btn-circle btn-ghost text-white"
-            onClick={() => setLightboxIdx(null)}
+            onClick={() => setLightboxOpen(false)}
           >
             <X className="w-6 h-6" />
           </button>
 
-          {center.images.length > 1 && (
-            <>
-              <button
-                className="absolute left-4 btn btn-circle btn-ghost text-white"
-                onClick={e => {
-                  e.stopPropagation()
-                  const newIdx = lightboxIdx > 0 ? lightboxIdx - 1 : center.images.length - 1
-                  setLightboxIdx(newIdx)
-                  setSelectedRoute(newIdx)
-                }}
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                className="absolute right-4 btn btn-circle btn-ghost text-white"
-                onClick={e => {
-                  e.stopPropagation()
-                  const newIdx = lightboxIdx < center.images.length - 1 ? lightboxIdx + 1 : 0
-                  setLightboxIdx(newIdx)
-                  setSelectedRoute(newIdx)
-                }}
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
+          <button
+            className="absolute left-4 btn btn-circle btn-ghost text-white"
+            onClick={e => {
+              e.stopPropagation()
+              setSelectedRoute(selectedRoute > 0 ? selectedRoute - 1 : totalRoutes - 1)
+            }}
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            className="absolute right-4 btn btn-circle btn-ghost text-white"
+            onClick={e => {
+              e.stopPropagation()
+              setSelectedRoute(selectedRoute < totalRoutes - 1 ? selectedRoute + 1 : 0)
+            }}
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
 
           <img
-            src={getImageUrl(center.images[lightboxIdx])}
-            alt={`Маршрут ${lightboxIdx + 1}`}
+            src={getImageUrl(currentImage)}
+            alt={`Маршрут ${selectedRoute + 1}`}
             className="max-w-full max-h-[90vh] object-contain rounded-lg"
             onClick={e => e.stopPropagation()}
           />
 
           <div className="absolute bottom-4 text-white/70 text-sm">
-            Маршрут {lightboxIdx + 1} / {center.images.length}
+            Маршрут {selectedRoute + 1} з {totalRoutes}
           </div>
         </div>
       )}
