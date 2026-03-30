@@ -5,7 +5,7 @@ from .models import Region, ExamCenter, ExamRoute, RouteImage
 class AdminRouteImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = RouteImage
-        fields = ['id', 'center', 'image', 'source_url', 'order']
+        fields = ['id', 'center', 'image', 'source_url', 'video_url', 'order']
         read_only_fields = ['source_url']
 
 

@@ -10,6 +10,7 @@ interface RouteImage {
   id: number
   image: string | null
   source_url: string
+  video_url: string
   order: number
 }
 
@@ -29,12 +30,6 @@ interface ExamCenter {
   phone: string
   images: RouteImage[]
   routes: ExamRoute[]
-}
-
-const ROUTE_VIDEOS: Record<number, Record<number, string>> = {
-  54: {
-    0: '/media/routes/video/route-1/master.m3u8',
-  },
 }
 
 const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
@@ -84,9 +79,8 @@ export default function CenterDetailPage() {
 
   if (!center || center.images.length === 0) return null
 
-  const centerVideos = ROUTE_VIDEOS[centerId] || {}
   const currentImage = center.images[selectedRoute]
-  const currentVideoUrl = centerVideos[selectedRoute]
+  const currentVideoUrl = currentImage?.video_url || ''
   const totalRoutes = center.images.length
 
   return (
@@ -127,7 +121,7 @@ export default function CenterDetailPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: totalRoutes }, (_, idx) => {
-            const hasVideo = centerVideos[idx] !== undefined
+            const hasVideo = !!center.images[idx]?.video_url
             const isActive = selectedRoute === idx
             return (
               <button

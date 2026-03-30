@@ -1,4 +1,8 @@
+import os
+from django.conf import settings
 from rest_framework import generics, parsers
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from apps.core.permissions import IsAdmin
 from .models import Region, ExamCenter, ExamRoute, RouteImage
 from .serializers_admin import (
@@ -76,3 +80,20 @@ class AdminImageDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdmin]
     serializer_class = AdminRouteImageSerializer
     queryset = RouteImage.objects.select_related('center')
+
+
+class AdminAvailableVideosView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        video_dir = os.path.join(settings.MEDIA_ROOT, 'routes', 'video')
+        videos = []
+        if os.path.isdir(video_dir):
+            for name in sorted(os.listdir(video_dir)):
+                master = os.path.join(video_dir, name, 'master.m3u8')
+                if os.path.isfile(master):
+                    videos.append({
+                        'name': name,
+                        'url': f'/media/routes/video/{name}/master.m3u8',
+                    })
+        return Response(videos)

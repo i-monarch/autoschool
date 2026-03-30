@@ -11,7 +11,7 @@ interface ExamCenter {
   city: string
   address: string
   phone: string
-  images: { id: number }[]
+  images: { id: number; video_url: string }[]
   routes: { id: number }[]
 }
 
@@ -21,8 +21,6 @@ interface Region {
   order: number
   centers: ExamCenter[]
 }
-
-const CENTERS_WITH_VIDEO = [54]
 
 export default function RoutesPage() {
   const [regions, setRegions] = useState<Region[]>([])
@@ -83,7 +81,7 @@ export default function RoutesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {region.centers.map(center => {
-                  const hasVideo = CENTERS_WITH_VIDEO.includes(center.id)
+                  const hasVideo = center.images.some(img => !!img.video_url)
                   return (
                     <div
                       key={center.id}

@@ -10,4 +10,5 @@ urlpatterns = [
     path('routes/<int:pk>/', views.AdminRouteDetailView.as_view()),
     path('images/', views.AdminImageListCreateView.as_view()),
     path('images/<int:pk>/', views.AdminImageDetailView.as_view()),
+    path('available-videos/', views.AdminAvailableVideosView.as_view()),
 ]

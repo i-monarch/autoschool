@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   Plus, Pencil, Trash2, MapPin, Navigation, Image as ImageIcon,
-  ChevronDown, ArrowLeft, Upload, X,
+  ChevronDown, ArrowLeft, Upload, X, Play, Video,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
@@ -11,11 +11,17 @@ import CenterModal from './CenterModal'
 import RouteModal from './RouteModal'
 import RegionModal from './RegionModal'
 
+interface AvailableVideo {
+  name: string
+  url: string
+}
+
 interface RouteImage {
   id: number
   center: number
   image: string | null
   source_url: string
+  video_url: string
   order: number
 }
 
@@ -69,6 +75,8 @@ export default function AdminRoutesPage() {
   const [editingRegion, setEditingRegion] = useState<Region | null>(null)
   const [creatingRegion, setCreatingRegion] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [availableVideos, setAvailableVideos] = useState<AvailableVideo[]>([])
+  const [videoManageMode, setVideoManageMode] = useState(false)
 
   const fetchRegions = useCallback(async () => {
     setLoading(true)
@@ -82,8 +90,16 @@ export default function AdminRoutesPage() {
     }
   }, [toast])
 
+  const fetchVideos = useCallback(async () => {
+    try {
+      const { data } = await api.get<AvailableVideo[]>('/admin/routes/available-videos/')
+      setAvailableVideos(data)
+    } catch {}
+  }, [])
+
   useEffect(() => {
     fetchRegions()
+    fetchVideos()
   }, [])
 
   useEffect(() => {
@@ -169,6 +185,16 @@ export default function AdminRoutesPage() {
       toast.add('Помилка завантаження', 'error')
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleSetVideo = async (imageId: number, videoUrl: string) => {
+    try {
+      await api.patch(`/admin/routes/images/${imageId}/`, { video_url: videoUrl })
+      toast.add('Відео оновлено', 'success')
+      fetchRegions()
+    } catch {
+      toast.add('Помилка оновлення', 'error')
     }
   }
 
@@ -350,37 +376,88 @@ export default function AdminRoutesPage() {
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold flex items-center gap-2">
                       <ImageIcon className="w-4 h-4" />
-                      Зображення маршрутів
+                      Маршрути
                       <span className="badge badge-sm">{selectedCenter.images.length}</span>
                     </h3>
-                    <label className={`btn btn-sm btn-outline gap-2 ${uploading ? 'loading' : ''}`}>
-                      {!uploading && <Upload className="w-4 h-4" />}
-                      Завантажити
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => e.target.files && handleUploadImages(e.target.files)}
-                        disabled={uploading}
-                      />
-                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        className={`btn btn-sm gap-2 ${videoManageMode ? 'btn-secondary' : 'btn-outline'}`}
+                        onClick={() => setVideoManageMode(!videoManageMode)}
+                      >
+                        <Video className="w-4 h-4" />
+                        {videoManageMode ? 'Готово' : 'Відео'}
+                      </button>
+                      <label className={`btn btn-sm btn-outline gap-2 ${uploading ? 'loading' : ''}`}>
+                        {!uploading && <Upload className="w-4 h-4" />}
+                        Завантажити
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => e.target.files && handleUploadImages(e.target.files)}
+                          disabled={uploading}
+                        />
+                      </label>
+                    </div>
                   </div>
 
                   {selectedCenter.images.length === 0 ? (
                     <p className="text-sm text-base-content/40 text-center py-4">
                       Немає зображень
                     </p>
+                  ) : videoManageMode ? (
+                    <div className="space-y-2">
+                      {selectedCenter.images.map((img, idx) => (
+                        <div key={img.id} className="flex items-center gap-3 p-2 rounded-lg bg-base-200/50">
+                          <div className="w-16 h-12 rounded overflow-hidden flex-shrink-0">
+                            <img
+                              src={getImageUrl(img)}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span className="text-sm font-medium w-24 flex-shrink-0">Маршрут {idx + 1}</span>
+                          <select
+                            className="select select-sm select-bordered flex-1"
+                            value={img.video_url || ''}
+                            onChange={e => handleSetVideo(img.id, e.target.value)}
+                          >
+                            <option value="">-- Без відео --</option>
+                            {availableVideos.map(v => (
+                              <option key={v.url} value={v.url}>{v.name}</option>
+                            ))}
+                          </select>
+                          {img.video_url && (
+                            <div className="flex items-center gap-1 text-xs text-secondary flex-shrink-0">
+                              <Play className="w-3 h-3" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                      {selectedCenter.images.map(img => (
-                        <div key={img.id} className="relative group aspect-[4/3] rounded-lg overflow-hidden border border-base-300/40">
-                          <img
-                            src={getImageUrl(img)}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
+                      {selectedCenter.images.map((img, idx) => (
+                        <div key={img.id} className="relative group rounded-lg overflow-hidden border border-base-300/40">
+                          <div className="aspect-[4/3]">
+                            <img
+                              src={getImageUrl(img)}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white text-xs font-medium">Маршрут {idx + 1}</span>
+                              {img.video_url && (
+                                <div className="flex items-center gap-0.5 bg-secondary/90 text-secondary-content rounded-full px-1.5 py-0.5 text-[10px]">
+                                  <Play className="w-2.5 h-2.5" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
                           <button
                             className="absolute top-1 right-1 btn btn-circle btn-xs bg-error/80 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => handleDeleteImage(img)}
