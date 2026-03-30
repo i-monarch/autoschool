@@ -1,9 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, ChevronDown, Navigation, ZoomIn, X, ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { MapPin, ChevronDown, Navigation, ZoomIn, X, ChevronLeft, ChevronRight, Play, Image as ImageIcon } from 'lucide-react'
 import api from '@/lib/api'
 import HlsPlayer from '@/components/video/HlsPlayer'
+
+const ROUTE_VIDEOS: Record<string, string[]> = {
+  'ТСЦ МВС № 6341': [
+    '/media/routes/video/route-1/master.m3u8',
+  ],
+}
 
 interface RouteImage {
   id: number
@@ -126,6 +132,93 @@ function ImageGallery({ images, centerName }: { images: RouteImage[], centerName
   )
 }
 
+function CenterBlock({ center, isExpanded, hasContent, videos, onToggle }: {
+  center: ExamCenter
+  isExpanded: boolean
+  hasContent: boolean
+  videos: string[]
+  onToggle: () => void
+}) {
+  const [tab, setTab] = useState<'photo' | 'video'>('photo')
+  const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
+  const hasPhotos = center.images.length > 0
+  const hasVideos = videos.length > 0
+  const hasBoth = hasPhotos && hasVideos
+
+  return (
+    <div className="rounded-xl bg-base-200/50 overflow-hidden">
+      <div
+        className={`flex items-center gap-3 p-3 ${hasContent ? 'cursor-pointer' : ''}`}
+        onClick={onToggle}
+      >
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm">{center.name}</p>
+          {center.address && (
+            <p className="text-xs text-base-content/50 mt-0.5">{center.address}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {hasPhotos && (
+            <span className="badge badge-primary badge-sm badge-outline">
+              {center.images.length} фото
+            </span>
+          )}
+          {hasVideos && (
+            <span className="badge badge-secondary badge-sm badge-outline">
+              {videos.length} відео
+            </span>
+          )}
+          {hasContent && (
+            <ChevronDown
+              className={`w-4 h-4 text-base-content/30 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            />
+          )}
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="px-3 pb-3">
+          {hasBoth && (
+            <div className="flex gap-1 mb-3">
+              <button
+                onClick={() => setTab('photo')}
+                className={`btn btn-sm gap-2 ${tab === 'photo' ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                <ImageIcon className="w-4 h-4" />
+                Фото ({center.images.length})
+              </button>
+              <button
+                onClick={() => setTab('video')}
+                className={`btn btn-sm gap-2 ${tab === 'video' ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                <Play className="w-4 h-4" />
+                Відео ({videos.length})
+              </button>
+            </div>
+          )}
+
+          {(tab === 'photo' || !hasVideos) && hasPhotos && (
+            <ImageGallery images={center.images} centerName={center.name} />
+          )}
+
+          {(tab === 'video' || !hasPhotos) && hasVideos && (
+            <div className="space-y-4">
+              {videos.map((videoUrl, idx) => (
+                <div key={idx}>
+                  {videos.length > 1 && (
+                    <p className="text-sm font-medium mb-2">Маршрут {idx + 1}</p>
+                  )}
+                  <HlsPlayer src={`${mediaBase}${videoUrl}`} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function RoutesPage() {
   const [regions, setRegions] = useState<Region[]>([])
   const [loading, setLoading] = useState(true)
@@ -191,19 +284,6 @@ export default function RoutesPage() {
         </div>
       </div>
 
-      {/* Test video player - route 1 */}
-      <div className="card bg-base-100 border border-base-300/60 mb-6">
-        <div className="card-body p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Play className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold">Маршрут 1 - Харків (тест)</h2>
-          </div>
-          <HlsPlayer
-            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}/media/routes/video/route-1/master.m3u8`}
-          />
-        </div>
-      </div>
-
       {regions.length === 0 ? (
         <div className="card bg-base-100 border border-base-300/60">
           <div className="card-body items-center text-center py-12">
@@ -242,42 +322,18 @@ export default function RoutesPage() {
                     <div className="space-y-2 mt-3">
                       {region.centers.map(center => {
                         const isCenterExpanded = expandedCenters.has(center.id)
-                        const hasContent = center.images.length > 0 || center.routes.length > 0
+                        const videoKey = Object.keys(ROUTE_VIDEOS).find(k => center.name.includes(k))
+                        const videos = videoKey ? ROUTE_VIDEOS[videoKey] : []
+                        const hasContent = center.images.length > 0 || center.routes.length > 0 || videos.length > 0
                         return (
-                          <div
+                          <CenterBlock
                             key={center.id}
-                            className="rounded-xl bg-base-200/50 overflow-hidden"
-                          >
-                            <div
-                              className={`flex items-center gap-3 p-3 ${hasContent ? 'cursor-pointer' : ''}`}
-                              onClick={() => hasContent && toggleCenter(center.id)}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm">{center.name}</p>
-                                {center.address && (
-                                  <p className="text-xs text-base-content/50 mt-0.5">{center.address}</p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                {center.images.length > 0 && (
-                                  <span className="badge badge-primary badge-sm badge-outline">
-                                    {center.images.length} фото
-                                  </span>
-                                )}
-                                {hasContent && (
-                                  <ChevronDown
-                                    className={`w-4 h-4 text-base-content/30 transition-transform ${isCenterExpanded ? 'rotate-180' : ''}`}
-                                  />
-                                )}
-                              </div>
-                            </div>
-
-                            {isCenterExpanded && (
-                              <div className="px-3 pb-3">
-                                <ImageGallery images={center.images} centerName={center.name} />
-                              </div>
-                            )}
-                          </div>
+                            center={center}
+                            isExpanded={isCenterExpanded}
+                            hasContent={hasContent}
+                            videos={videos}
+                            onToggle={() => hasContent && toggleCenter(center.id)}
+                          />
                         )
                       })}
                     </div>
