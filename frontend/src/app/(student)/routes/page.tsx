@@ -1,30 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, ChevronDown, Navigation, ZoomIn, X, ChevronLeft, ChevronRight, Play, Image as ImageIcon } from 'lucide-react'
+import { MapPin, Navigation, ChevronRight, Image as ImageIcon, Play } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
-import HlsPlayer from '@/components/video/HlsPlayer'
-
-const ROUTE_VIDEOS: Record<string, string[]> = {
-  'ТСЦ МВС № 6341': [
-    '/media/routes/video/route-1/master.m3u8',
-  ],
-}
-
-interface RouteImage {
-  id: number
-  image: string | null
-  source_url: string
-  order: number
-}
-
-interface ExamRoute {
-  id: number
-  name: string
-  description: string
-  map_url: string
-  order: number
-}
 
 interface ExamCenter {
   id: number
@@ -32,8 +11,8 @@ interface ExamCenter {
   city: string
   address: string
   phone: string
-  images: RouteImage[]
-  routes: ExamRoute[]
+  images: { id: number }[]
+  routes: { id: number }[]
 }
 
 interface Region {
@@ -43,225 +22,27 @@ interface Region {
   centers: ExamCenter[]
 }
 
-function ImageGallery({ images, centerName }: { images: RouteImage[], centerName: string }) {
-  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
-
-  if (images.length === 0) return null
-
-  const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
-
-  const getImageUrl = (img: RouteImage) => {
-    if (img.image) {
-      if (img.image.startsWith('http')) return img.image
-      return `${mediaBase}${img.image.startsWith('/') ? '' : '/'}${img.image}`
-    }
-    if (img.source_url) return img.source_url
-    return ''
-  }
-
-  return (
-    <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-3">
-        {images.map((img, idx) => (
-          <div
-            key={img.id}
-            className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group border border-base-300/40"
-            onClick={() => setLightboxIdx(idx)}
-          >
-            <img
-              src={getImageUrl(img)}
-              alt={`${centerName} - маршрут ${idx + 1}`}
-              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-              <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {lightboxIdx !== null && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setLightboxIdx(null)}
-        >
-          <button
-            className="absolute top-4 right-4 btn btn-circle btn-ghost text-white"
-            onClick={() => setLightboxIdx(null)}
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          {images.length > 1 && (
-            <>
-              <button
-                className="absolute left-4 btn btn-circle btn-ghost text-white"
-                onClick={e => {
-                  e.stopPropagation()
-                  setLightboxIdx(lightboxIdx > 0 ? lightboxIdx - 1 : images.length - 1)
-                }}
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                className="absolute right-4 btn btn-circle btn-ghost text-white"
-                onClick={e => {
-                  e.stopPropagation()
-                  setLightboxIdx(lightboxIdx < images.length - 1 ? lightboxIdx + 1 : 0)
-                }}
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
-          <img
-            src={getImageUrl(images[lightboxIdx])}
-            alt={`${centerName} - маршрут ${lightboxIdx + 1}`}
-            className="max-w-full max-h-[90vh] object-contain rounded-lg"
-            onClick={e => e.stopPropagation()}
-          />
-
-          <div className="absolute bottom-4 text-white/70 text-sm">
-            {lightboxIdx + 1} / {images.length}
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-function CenterBlock({ center, isExpanded, hasContent, videos, onToggle }: {
-  center: ExamCenter
-  isExpanded: boolean
-  hasContent: boolean
-  videos: string[]
-  onToggle: () => void
-}) {
-  const [tab, setTab] = useState<'photo' | 'video'>('photo')
-  const mediaBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
-  const hasPhotos = center.images.length > 0
-  const hasVideos = videos.length > 0
-  const hasBoth = hasPhotos && hasVideos
-
-  return (
-    <div className="rounded-xl bg-base-200/50 overflow-hidden">
-      <div
-        className={`flex items-center gap-3 p-3 ${hasContent ? 'cursor-pointer' : ''}`}
-        onClick={onToggle}
-      >
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm">{center.name}</p>
-          {center.address && (
-            <p className="text-xs text-base-content/50 mt-0.5">{center.address}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {hasPhotos && (
-            <span className="badge badge-primary badge-sm badge-outline">
-              {center.images.length} фото
-            </span>
-          )}
-          {hasVideos && (
-            <span className="badge badge-secondary badge-sm badge-outline">
-              {videos.length} відео
-            </span>
-          )}
-          {hasContent && (
-            <ChevronDown
-              className={`w-4 h-4 text-base-content/30 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            />
-          )}
-        </div>
-      </div>
-
-      {isExpanded && (
-        <div className="px-3 pb-3">
-          {hasBoth && (
-            <div className="flex gap-1 mb-3">
-              <button
-                onClick={() => setTab('photo')}
-                className={`btn btn-sm gap-2 ${tab === 'photo' ? 'btn-primary' : 'btn-ghost'}`}
-              >
-                <ImageIcon className="w-4 h-4" />
-                Фото ({center.images.length})
-              </button>
-              <button
-                onClick={() => setTab('video')}
-                className={`btn btn-sm gap-2 ${tab === 'video' ? 'btn-primary' : 'btn-ghost'}`}
-              >
-                <Play className="w-4 h-4" />
-                Відео ({videos.length})
-              </button>
-            </div>
-          )}
-
-          {(tab === 'photo' || !hasVideos) && hasPhotos && (
-            <ImageGallery images={center.images} centerName={center.name} />
-          )}
-
-          {(tab === 'video' || !hasPhotos) && hasVideos && (
-            <div className="space-y-4">
-              {videos.map((videoUrl, idx) => (
-                <div key={idx}>
-                  {videos.length > 1 && (
-                    <p className="text-sm font-medium mb-2">Маршрут {idx + 1}</p>
-                  )}
-                  <HlsPlayer src={`${mediaBase}${videoUrl}`} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
+const CENTERS_WITH_VIDEO = [54]
 
 export default function RoutesPage() {
   const [regions, setRegions] = useState<Region[]>([])
   const [loading, setLoading] = useState(true)
-  const [expandedRegions, setExpandedRegions] = useState<Set<number>>(new Set())
-  const [expandedCenters, setExpandedCenters] = useState<Set<number>>(new Set())
+  const router = useRouter()
 
   useEffect(() => {
     api.get('/routes/regions/')
-      .then(res => {
-        setRegions(res.data)
-        if (res.data.length === 1) {
-          setExpandedRegions(new Set([res.data[0].id]))
-        }
-      })
+      .then(res => setRegions(res.data))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
-
-  const toggleRegion = (id: number) => {
-    setExpandedRegions(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  const toggleCenter = (id: number) => {
-    setExpandedCenters(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
 
   if (loading) {
     return (
       <div>
         <h1 className="text-2xl font-bold mb-6">Екзаменаційні маршрути</h1>
-        <div className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="skeleton h-16 rounded-xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="skeleton h-32 rounded-xl" />
           ))}
         </div>
       </div>
@@ -278,7 +59,7 @@ export default function RoutesPage() {
           <div>
             <h1 className="text-2xl font-bold">Екзаменаційні маршрути</h1>
             <p className="text-base-content/50 text-sm">
-              Маршрути для складання практичного іспиту по регіонах України
+              Оберіть екзаменаційний центр для перегляду маршрутів
             </p>
           </div>
         </div>
@@ -292,56 +73,57 @@ export default function RoutesPage() {
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {regions.map(region => {
-            const isRegionExpanded = expandedRegions.has(region.id)
-            return (
-              <div key={region.id} className="card bg-base-100 border border-base-300/60">
-                <div
-                  className="card-body p-4 cursor-pointer"
-                  onClick={() => toggleRegion(region.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                      <div>
-                        <h2 className="font-semibold">{region.name}</h2>
-                        <p className="text-xs text-base-content/50 mt-0.5">
-                          {region.centers.length} {region.centers.length === 1 ? 'центр' : region.centers.length < 5 ? 'центри' : 'центрів'}
-                        </p>
+        <div className="space-y-8">
+          {regions.map(region => (
+            <div key={region.id}>
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">{region.name}</h2>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {region.centers.map(center => {
+                  const hasVideo = CENTERS_WITH_VIDEO.includes(center.id)
+                  return (
+                    <div
+                      key={center.id}
+                      onClick={() => router.push(`/routes/${center.id}`)}
+                      className="card bg-base-100 border border-base-300/60 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                      <div className="card-body p-4">
+                        <h3 className="font-semibold text-sm group-hover:text-primary transition-colors line-clamp-2">
+                          {center.name}
+                        </h3>
+                        {center.address && (
+                          <p className="text-xs text-base-content/50 line-clamp-1">
+                            {center.city}, {center.address}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-3">
+                            {center.images.length > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-base-content/50">
+                                <ImageIcon className="w-3.5 h-3.5" />
+                                <span>{center.images.length} маршрутів</span>
+                              </div>
+                            )}
+                            {hasVideo && (
+                              <div className="flex items-center gap-1 text-xs text-secondary">
+                                <Play className="w-3.5 h-3.5" />
+                                <span>Відео</span>
+                              </div>
+                            )}
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-base-content/30 group-hover:text-primary transition-colors" />
+                        </div>
                       </div>
                     </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-base-content/30 transition-transform ${isRegionExpanded ? 'rotate-180' : ''}`}
-                    />
-                  </div>
-                </div>
-
-                {isRegionExpanded && (
-                  <div className="border-t border-base-300/60 px-4 pb-4">
-                    <div className="space-y-2 mt-3">
-                      {region.centers.map(center => {
-                        const isCenterExpanded = expandedCenters.has(center.id)
-                        const videoKey = Object.keys(ROUTE_VIDEOS).find(k => center.name.includes(k))
-                        const videos = videoKey ? ROUTE_VIDEOS[videoKey] : []
-                        const hasContent = center.images.length > 0 || center.routes.length > 0 || videos.length > 0
-                        return (
-                          <CenterBlock
-                            key={center.id}
-                            center={center}
-                            isExpanded={isCenterExpanded}
-                            hasContent={hasContent}
-                            videos={videos}
-                            onToggle={() => hasContent && toggleCenter(center.id)}
-                          />
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
+                  )
+                })}
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
       )}
     </div>
