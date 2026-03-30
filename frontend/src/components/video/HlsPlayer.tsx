@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Hls from 'hls.js'
-import { Settings } from 'lucide-react'
 
 interface HlsPlayerProps {
   src: string
@@ -22,7 +21,6 @@ export default function HlsPlayer({ src, poster, className = '' }: HlsPlayerProp
   const [error, setError] = useState(false)
   const [levels, setLevels] = useState<QualityLevel[]>([])
   const [currentLevel, setCurrentLevel] = useState(-1)
-  const [showQuality, setShowQuality] = useState(false)
 
   const onLevelsLoaded = useCallback(() => {
     const hls = hlsRef.current
@@ -77,7 +75,12 @@ export default function HlsPlayer({ src, poster, className = '' }: HlsPlayerProp
     if (!hls) return
     hls.currentLevel = levelIndex
     setCurrentLevel(levelIndex)
-    setShowQuality(false)
+  }
+
+  const getActiveLabel = () => {
+    if (currentLevel === -1) return 'Авто'
+    const level = levels.find(l => l.index === currentLevel)
+    return level ? level.label : 'Авто'
   }
 
   if (error) {
@@ -89,7 +92,7 @@ export default function HlsPlayer({ src, poster, className = '' }: HlsPlayerProp
   }
 
   return (
-    <div className="relative group">
+    <div>
       <video
         ref={videoRef}
         poster={poster}
@@ -99,37 +102,31 @@ export default function HlsPlayer({ src, poster, className = '' }: HlsPlayerProp
       />
 
       {levels.length > 1 && (
-        <div className="absolute top-3 right-3 z-10">
+        <div className="flex items-center gap-1.5 mt-2">
+          <span className="text-xs text-base-content/40 mr-1">Якість:</span>
           <button
-            onClick={() => setShowQuality(!showQuality)}
-            className="btn btn-sm btn-circle bg-black/60 border-0 text-white hover:bg-black/80"
+            onClick={() => switchQuality(-1)}
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+              currentLevel === -1
+                ? 'bg-primary text-primary-content'
+                : 'bg-base-200 text-base-content/60 hover:bg-base-300'
+            }`}
           >
-            <Settings className="w-4 h-4" />
+            Авто
           </button>
-
-          {showQuality && (
-            <div className="absolute top-10 right-0 bg-black/85 backdrop-blur-sm rounded-lg overflow-hidden min-w-[120px]">
-              <button
-                onClick={() => switchQuality(-1)}
-                className={`w-full px-4 py-2 text-sm text-left hover:bg-white/10 transition-colors ${
-                  currentLevel === -1 ? 'text-primary font-medium' : 'text-white'
-                }`}
-              >
-                Авто
-              </button>
-              {levels.map(level => (
-                <button
-                  key={level.index}
-                  onClick={() => switchQuality(level.index)}
-                  className={`w-full px-4 py-2 text-sm text-left hover:bg-white/10 transition-colors ${
-                    currentLevel === level.index ? 'text-primary font-medium' : 'text-white'
-                  }`}
-                >
-                  {level.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {levels.map(level => (
+            <button
+              key={level.index}
+              onClick={() => switchQuality(level.index)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                currentLevel === level.index
+                  ? 'bg-primary text-primary-content'
+                  : 'bg-base-200 text-base-content/60 hover:bg-base-300'
+              }`}
+            >
+              {level.label}
+            </button>
+          ))}
         </div>
       )}
     </div>
