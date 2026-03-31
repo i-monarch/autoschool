@@ -59,9 +59,14 @@ def send_message(room, sender, text='', msg_type='text', parent_id=None, attachm
 
 
 def mark_as_read(room, user):
-    ChatParticipant.objects.filter(
+    updated = ChatParticipant.objects.filter(
         room=room, user=user
     ).update(last_read_at=timezone.now())
+    if not updated and user.role == 'admin':
+        ChatParticipant.objects.create(
+            room=room, user=user, role='member',
+            last_read_at=timezone.now(),
+        )
 
 
 def get_rooms_for_user(user):
