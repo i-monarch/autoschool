@@ -85,19 +85,20 @@ function MessageBubble({ message, isOwn, showSender, groupPosition, onImageClick
   const spacing = groupPosition === 'first' || groupPosition === 'single' ? 'pt-1.5' : 'pt-px'
 
   const getBubbleRadius = () => {
+    // tl tr br bl
     if (isOwn) {
       switch (groupPosition) {
-        case 'single': return 'rounded-2xl rounded-br-md'
-        case 'first': return 'rounded-2xl rounded-br-md'
-        case 'middle': return 'rounded-2xl rounded-r-md'
-        case 'last': return 'rounded-2xl rounded-tr-md'
+        case 'single': return 'rounded-tl-2xl rounded-tr-2xl rounded-br-md rounded-bl-2xl'
+        case 'first':  return 'rounded-tl-2xl rounded-tr-2xl rounded-br-md rounded-bl-2xl'
+        case 'middle': return 'rounded-tl-2xl rounded-tr-md rounded-br-md rounded-bl-2xl'
+        case 'last':   return 'rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-2xl'
       }
     }
     switch (groupPosition) {
-      case 'single': return 'rounded-2xl rounded-bl-md'
-      case 'first': return 'rounded-2xl rounded-bl-md'
-      case 'middle': return 'rounded-2xl rounded-l-md'
-      case 'last': return 'rounded-2xl rounded-tl-md'
+      case 'single': return 'rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-md'
+      case 'first':  return 'rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-md'
+      case 'middle': return 'rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-md'
+      case 'last':   return 'rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-2xl'
     }
   }
 
