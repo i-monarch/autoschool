@@ -4,13 +4,10 @@ import { useState, useRef, useEffect, memo } from 'react'
 import { Check, Download, FileText, Pencil, Trash2, X } from 'lucide-react'
 import type { Message } from '@/types/chat'
 
-type GroupPosition = 'single' | 'first' | 'middle' | 'last'
-
 interface Props {
   message: Message
   isOwn: boolean
   showSender: boolean
-  groupPosition: GroupPosition
   onImageClick?: (url: string) => void
   onEdit?: (msgId: number, newText: string) => void
   onDelete?: (msg: Message) => void
@@ -26,7 +23,7 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function MessageBubble({ message, isOwn, showSender, groupPosition, onImageClick, onEdit, onDelete }: Props) {
+function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDelete }: Props) {
   const [editing, setEditing] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [editText, setEditText] = useState('')
@@ -82,28 +79,8 @@ function MessageBubble({ message, isOwn, showSender, groupPosition, onImageClick
   const hasImages = message.attachments.some((a) => a.content_type.startsWith('image/'))
   const hasFiles = message.attachments.some((a) => !a.content_type.startsWith('image/'))
 
-  const spacing = groupPosition === 'first' || groupPosition === 'single' ? 'pt-1.5' : 'pt-px'
-
-  const getBubbleRadius = () => {
-    // tl tr br bl
-    if (isOwn) {
-      switch (groupPosition) {
-        case 'single': return 'rounded-tl-2xl rounded-tr-2xl rounded-br-md rounded-bl-2xl'
-        case 'first':  return 'rounded-tl-2xl rounded-tr-2xl rounded-br-md rounded-bl-2xl'
-        case 'middle': return 'rounded-tl-2xl rounded-tr-md rounded-br-md rounded-bl-2xl'
-        case 'last':   return 'rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-2xl'
-      }
-    }
-    switch (groupPosition) {
-      case 'single': return 'rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-md'
-      case 'first':  return 'rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-md'
-      case 'middle': return 'rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-md'
-      case 'last':   return 'rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-2xl'
-    }
-  }
-
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-start gap-1 px-4 ${spacing} group`}>
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-start gap-1 px-4 py-0.5 group`}>
       {/* Action buttons - before bubble for own messages */}
       {isOwn && !editing && !confirmingDelete && (
         <div className="flex items-center gap-0.5 pt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -168,8 +145,11 @@ function MessageBubble({ message, isOwn, showSender, groupPosition, onImageClick
 
         <div
           className={`
-            ${getBubbleRadius()} px-3 py-2 text-sm break-words
-            ${isOwn ? 'bg-primary text-primary-content' : 'bg-base-200'}
+            rounded-2xl px-3 py-2 text-sm break-words
+            ${isOwn
+              ? 'bg-primary text-primary-content rounded-br-md'
+              : 'bg-base-200 rounded-bl-md'
+            }
           `}
         >
           {hasImages && (

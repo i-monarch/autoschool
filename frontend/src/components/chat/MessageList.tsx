@@ -108,22 +108,8 @@ export default function MessageList({ onImageClick, onEdit, onDelete, onVisible 
       {messages.map((msg, i) => {
         const showDate = i === 0 || !isSameDay(messages[i - 1].created_at, msg.created_at)
         const isOwn = msg.sender?.id === user?.id
-        const prevMsg = i > 0 ? messages[i - 1] : null
-        const nextMsg = i < messages.length - 1 ? messages[i + 1] : null
-        const sameSenderAsPrev = !showDate && prevMsg?.sender?.id === msg.sender?.id
-          && prevMsg?.type !== 'system' && !prevMsg?.is_deleted
-        const sameSenderAsNext = nextMsg && isSameDay(msg.created_at, nextMsg.created_at)
-          && nextMsg.sender?.id === msg.sender?.id
-          && nextMsg.type !== 'system' && !nextMsg.is_deleted
-        const showSender = isGroup && !isOwn && !sameSenderAsPrev
-
-        const groupPosition = !sameSenderAsPrev && !sameSenderAsNext
-          ? 'single'
-          : !sameSenderAsPrev
-            ? 'first'
-            : !sameSenderAsNext
-              ? 'last'
-              : 'middle'
+        const prevSender = i > 0 ? messages[i - 1].sender?.id : null
+        const showSender = isGroup && !isOwn && msg.sender?.id !== prevSender
 
         return (
           <div key={msg.id}>
@@ -138,7 +124,6 @@ export default function MessageList({ onImageClick, onEdit, onDelete, onVisible 
               message={msg}
               isOwn={isOwn}
               showSender={showSender}
-              groupPosition={groupPosition}
               onImageClick={onImageClick}
               onEdit={onEdit}
               onDelete={onDelete}
