@@ -105,6 +105,9 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
         {showSender && !isOwn && message.sender && (
           <p className="text-xs font-medium text-primary mb-0.5 px-1">
             {message.sender.first_name || message.sender.username}
+            {message.sender.role === 'admin' && (
+              <span className="ml-1 text-[10px] font-normal bg-warning/20 text-warning-content px-1 py-0.5 rounded">Адмін</span>
+            )}
           </p>
         )}
 

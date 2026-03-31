@@ -18,14 +18,10 @@ interface Props {
   onCancelReply: () => void
 }
 
-const ALLOWED_TYPES = [
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-  'application/pdf', 'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/zip',
-]
+const ALLOWED_EXTENSIONS = new Set([
+  'jpg', 'jpeg', 'png', 'gif', 'webp',
+  'pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip',
+])
 
 export default function MessageInput({ roomId, send, replyTo, onCancelReply }: Props) {
   const [text, setText] = useState('')
@@ -113,9 +109,10 @@ export default function MessageInput({ roomId, send, replyTo, onCancelReply }: P
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files || [])
-    const valid = selected.filter(
-      (f) => ALLOWED_TYPES.includes(f.type) && f.size <= 20 * 1024 * 1024
-    )
+    const valid = selected.filter((f) => {
+      const ext = f.name.split('.').pop()?.toLowerCase() || ''
+      return ALLOWED_EXTENSIONS.has(ext) && f.size <= 20 * 1024 * 1024
+    })
     const items: FileItem[] = valid.map((f) => ({
       file: f,
       preview: f.type.startsWith('image/') ? URL.createObjectURL(f) : undefined,
