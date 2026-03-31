@@ -31,6 +31,7 @@ User = get_user_model()
 
 class RoomListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
