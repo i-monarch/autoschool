@@ -10,6 +10,7 @@ interface Props {
   onImageClick: (url: string) => void
   onEdit: (msgId: number, newText: string) => void
   onDelete: (msg: Message) => void
+  onVisible?: () => void
 }
 
 function isSameDay(a: string, b: string) {
@@ -26,7 +27,7 @@ function formatDate(dateStr: string) {
   return d.toLocaleDateString('uk', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-export default function MessageList({ onImageClick, onEdit, onDelete }: Props) {
+export default function MessageList({ onImageClick, onEdit, onDelete, onVisible }: Props) {
   const { messages, messagesLoading, hasMore, loadMoreMessages, activeRoomId } = useChatStore()
   const user = useAuthStore((s) => s.user)
   const listRef = useRef<HTMLDivElement>(null)
@@ -54,6 +55,22 @@ export default function MessageList({ onImageClick, onEdit, onDelete }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: 'instant' })
     prevMsgCount.current = messages.length
   }, [activeRoomId])
+
+  // Mark as read when bottom of messages is visible
+  useEffect(() => {
+    const el = bottomRef.current
+    if (!el || !onVisible) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && messages.length > 0) {
+          onVisible()
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [onVisible, messages.length])
 
   const handleScroll = useCallback(() => {
     checkAtBottom()

@@ -10,16 +10,15 @@ import CreateChatModal from './CreateChatModal'
 import GroupInfoPanel from './GroupInfoPanel'
 
 export default function ChatLayout() {
-  const { activeRoomId, fetchRooms, setActiveRoom } = useChatStore()
+  const { activeRoomId, setActiveRoom } = useChatStore()
   const { send } = useWebSocket()
   const [showNewChat, setShowNewChat] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
   const [mobileView, setMobileView] = useState<'sidebar' | 'chat'>('sidebar')
 
   useEffect(() => {
-    fetchRooms()
     return () => setActiveRoom(null)
-  }, [fetchRooms, setActiveRoom])
+  }, [setActiveRoom])
 
   useEffect(() => {
     if (activeRoomId) {

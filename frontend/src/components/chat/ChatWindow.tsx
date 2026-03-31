@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { chatApi } from '@/lib/chat-api'
@@ -22,6 +22,7 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
   const user = useAuthStore((s) => s.user)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [replyTo, setReplyTo] = useState<Message | null>(null)
+  const markedRef = useRef<number | null>(null)
 
   if (!activeRoomId) return null
 
@@ -46,24 +47,23 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
   }
 
   const handleMarkRead = useCallback(() => {
-    if (!isParticipant) return
+    if (!isParticipant || !activeRoomId) return
+    if (markedRef.current === activeRoomId) return
+    markedRef.current = activeRoomId
     markRoomRead(activeRoomId)
     chatApi.markAsRead(activeRoomId)
     send({ type: 'message.read', room_id: activeRoomId })
   }, [activeRoomId, isParticipant, markRoomRead, send])
 
-  useEffect(() => {
-    handleMarkRead()
-  }, [handleMarkRead])
-
   return (
-    <div className="flex-1 flex flex-col h-full" onClick={handleMarkRead}>
+    <div className="flex-1 flex flex-col h-full">
       <ChatHeader onBack={onBack} onInfo={onInfo} />
 
       <MessageList
         onImageClick={setLightboxUrl}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onVisible={handleMarkRead}
       />
 
       <TypingIndicator visible={typing.length > 0} />
