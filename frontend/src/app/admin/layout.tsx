@@ -30,6 +30,7 @@ export default function AdminLayout({
 }) {
   const { user, loading, checked, fetchMe, logout } = useAuthStore()
   const totalUnread = useChatStore((s) => s.totalUnread)
+  const fetchRooms = useChatStore((s) => s.fetchRooms)
   const router = useRouter()
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
@@ -38,6 +39,12 @@ export default function AdminLayout({
   useEffect(() => {
     fetchMe()
   }, [fetchMe])
+
+  useEffect(() => {
+    if (checked && user) {
+      fetchRooms()
+    }
+  }, [checked, user, fetchRooms])
 
   useEffect(() => {
     if (checked && !user) {
