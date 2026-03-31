@@ -205,14 +205,14 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
                   className="btn btn-xs h-6 min-h-0 bg-white/10 border-0 text-primary-content/70 hover:bg-white/20 hover:text-primary-content gap-1"
                 >
                   <X className="w-3 h-3" />
-                  Esc
+                  Скасувати
                 </button>
                 <button
                   onClick={confirmEdit}
                   className="btn btn-xs h-6 min-h-0 bg-white/25 border-0 text-primary-content hover:bg-white/35 gap-1"
                 >
                   <Check className="w-3 h-3" />
-                  Enter
+                  Зберегти
                 </button>
               </div>
             </div>
