@@ -4,7 +4,8 @@ import { useEffect, useCallback } from 'react'
 import { useChatStore } from '@/stores/chat'
 import type { WSIncoming, WSOutgoing } from '@/types/chat'
 
-const WS_URL = (process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000') + '/ws/chat/'
+const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws'
+const WS_URL = WS_BASE + '/chat/'
 const RECONNECT_MAX = 30000
 const HEARTBEAT_INTERVAL = 30000
 
