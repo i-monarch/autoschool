@@ -1,8 +1,6 @@
 from django.db import transaction
-import datetime as dt
-
 from django.db.models import Count, OuterRef, Q, Subquery, Value
-from django.db.models.functions import Coalesce
+from django.db.models.expressions import RawSQL
 from django.utils import timezone
 
 from .models import ChatParticipant, ChatRoom, Message, MessageAttachment
@@ -75,14 +73,22 @@ def get_rooms_for_user(user):
         room=OuterRef('pk'), user=user
     )
 
-    from django.db.models import DateTimeField
-    epoch = Value(dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc), output_field=DateTimeField())
-    last_read = Coalesce(Subquery(participant.values('last_read_at')[:1]), epoch)
-    unread_subquery = Message.objects.filter(
-        room=OuterRef('pk'),
-        is_deleted=False,
-        created_at__gt=last_read,
-    ).exclude(sender=user).order_by().values('room').annotate(c=Count('id')).values('c')
+    unread_sql = RawSQL(
+        """
+        SELECT COUNT(*) FROM chat_messages m
+        WHERE m.room_id = chat_rooms.id
+          AND m.is_deleted = false
+          AND m.sender_id != %s
+          AND (m.created_at > (
+                SELECT cp.last_read_at FROM chat_participants cp
+                WHERE cp.room_id = chat_rooms.id AND cp.user_id = %s
+              )
+              OR (SELECT cp.last_read_at FROM chat_participants cp
+                  WHERE cp.room_id = chat_rooms.id AND cp.user_id = %s
+              ) IS NULL)
+        """,
+        [user.pk, user.pk, user.pk],
+    )
 
     base_qs = ChatRoom.objects.filter(is_active=True)
     if user.role != 'admin':
@@ -93,7 +99,7 @@ def get_rooms_for_user(user):
         last_message_type=Subquery(last_msg.values('type')[:1]),
         last_message_at=Subquery(last_msg.values('created_at')[:1]),
         last_message_sender_id=Subquery(last_msg.values('sender_id')[:1]),
-        unread_count=Coalesce(Subquery(unread_subquery), Value(0)),
+        unread_count=unread_sql,
     ).order_by('-updated_at')
 
 

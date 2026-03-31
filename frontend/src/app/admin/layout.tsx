@@ -43,6 +43,8 @@ export default function AdminLayout({
   useEffect(() => {
     if (checked && user) {
       fetchRooms()
+      const interval = setInterval(fetchRooms, 30000)
+      return () => clearInterval(interval)
     }
   }, [checked, user, fetchRooms])
 
