@@ -35,12 +35,10 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
   }
 
   const handleDelete = async (msg: Message) => {
-    if (confirm('Видалити повідомлення?')) {
-      try {
-        await chatApi.deleteMessage(activeRoomId, msg.id)
-        deleteMessage(msg.id)
-      } catch { /* error */ }
-    }
+    try {
+      await chatApi.deleteMessage(activeRoomId, msg.id)
+      deleteMessage(msg.id)
+    } catch { /* error */ }
   }
 
   const handleMarkRead = () => {

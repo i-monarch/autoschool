@@ -25,6 +25,7 @@ function formatFileSize(bytes: number) {
 
 export default function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDelete }: Props) {
   const [editing, setEditing] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [editText, setEditText] = useState('')
   const editRef = useRef<HTMLTextAreaElement>(null)
 
@@ -38,6 +39,7 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
   const startEdit = () => {
     setEditText(message.text)
     setEditing(true)
+    setConfirmingDelete(false)
   }
 
   const confirmEdit = () => {
@@ -48,18 +50,12 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
     setEditing(false)
   }
 
-  const cancelEdit = () => {
-    setEditing(false)
-  }
-
   const handleEditKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       confirmEdit()
     }
-    if (e.key === 'Escape') {
-      cancelEdit()
-    }
+    if (e.key === 'Escape') setEditing(false)
   }
 
   if (message.type === 'system') {
@@ -84,8 +80,28 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
   const hasFiles = message.attachments.some((a) => !a.content_type.startsWith('image/'))
 
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} px-4 py-0.5 group`}>
-      <div className={`max-w-[75%] relative ${isOwn ? 'order-1' : ''}`}>
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-start gap-1 px-4 py-0.5 group`}>
+      {/* Action buttons - before bubble for own messages */}
+      {isOwn && !editing && !confirmingDelete && (
+        <div className="flex items-center gap-0.5 pt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={startEdit}
+            className="w-7 h-7 rounded-full bg-base-200 hover:bg-base-300 flex items-center justify-center transition-colors"
+            title="Редагувати"
+          >
+            <Pencil className="w-3.5 h-3.5 text-base-content/60" />
+          </button>
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="w-7 h-7 rounded-full bg-base-200 hover:bg-error/20 flex items-center justify-center transition-colors"
+            title="Видалити"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-base-content/60" />
+          </button>
+        </div>
+      )}
+
+      <div className={`max-w-[75%] relative`}>
         {showSender && !isOwn && message.sender && (
           <p className="text-xs font-medium text-primary mb-0.5 px-1">
             {message.sender.first_name || message.sender.username}
@@ -98,6 +114,26 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
               {message.parent.sender?.first_name || 'Видалений'}
             </span>
             <p className="text-base-content/50 truncate">{message.parent.text}</p>
+          </div>
+        )}
+
+        {/* Delete confirmation */}
+        {confirmingDelete && (
+          <div className="mb-1.5 flex items-center gap-2 px-1">
+            <span className="text-xs text-error">Видалити?</span>
+            <button
+              onClick={() => { onDelete?.(message); setConfirmingDelete(false) }}
+              className="btn btn-xs btn-error gap-1 h-6 min-h-0"
+            >
+              <Trash2 className="w-3 h-3" />
+              Так
+            </button>
+            <button
+              onClick={() => setConfirmingDelete(false)}
+              className="btn btn-xs btn-ghost h-6 min-h-0"
+            >
+              Ні
+            </button>
           </div>
         )}
 
@@ -160,26 +196,23 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 onKeyDown={handleEditKeyDown}
-                className={`
-                  w-full bg-transparent border-0 outline-none resize-none text-sm leading-snug
-                  ${isOwn ? 'text-primary-content placeholder:text-primary-content/40' : 'text-base-content'}
-                `}
+                className="w-full bg-white/10 rounded-lg px-2 py-1 border-0 outline-none resize-none text-sm leading-snug text-primary-content"
                 rows={Math.min(editText.split('\n').length, 5)}
               />
-              <div className="flex items-center justify-end gap-1 mt-1">
+              <div className="flex items-center justify-end gap-1.5 mt-1.5">
                 <button
-                  onClick={cancelEdit}
-                  className={`btn btn-xs btn-circle ${isOwn ? 'btn-ghost text-primary-content/60 hover:text-primary-content' : 'btn-ghost'}`}
-                  title="Скасувати (Esc)"
+                  onClick={() => setEditing(false)}
+                  className="btn btn-xs h-6 min-h-0 bg-white/10 border-0 text-primary-content/70 hover:bg-white/20 hover:text-primary-content gap-1"
                 >
                   <X className="w-3 h-3" />
+                  Esc
                 </button>
                 <button
                   onClick={confirmEdit}
-                  className={`btn btn-xs btn-circle ${isOwn ? 'btn-ghost text-primary-content/60 hover:text-primary-content' : 'btn-ghost'}`}
-                  title="Зберегти (Enter)"
+                  className="btn btn-xs h-6 min-h-0 bg-white/25 border-0 text-primary-content hover:bg-white/35 gap-1"
                 >
                   <Check className="w-3 h-3" />
+                  Enter
                 </button>
               </div>
             </div>
@@ -187,30 +220,13 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
             message.text && <p className="whitespace-pre-wrap">{message.text}</p>
           )}
 
-          <div className={`flex items-center justify-end gap-1 mt-0.5 ${isOwn ? 'text-primary-content/60' : 'text-base-content/40'}`}>
-            {message.is_edited && <span className="text-[10px]">ред.</span>}
-            <span className="text-[10px]">{formatTime(message.created_at)}</span>
-          </div>
+          {!editing && (
+            <div className={`flex items-center justify-end gap-1 mt-0.5 ${isOwn ? 'text-primary-content/60' : 'text-base-content/40'}`}>
+              {message.is_edited && <span className="text-[10px]">ред.</span>}
+              <span className="text-[10px]">{formatTime(message.created_at)}</span>
+            </div>
+          )}
         </div>
-
-        {isOwn && !editing && (
-          <div className="absolute -left-16 top-1 flex gap-0.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={startEdit}
-              className="btn btn-ghost btn-xs btn-circle"
-              title="Редагувати"
-            >
-              <Pencil className="w-3 h-3" />
-            </button>
-            <button
-              onClick={() => onDelete?.(message)}
-              className="btn btn-ghost btn-xs btn-circle text-error"
-              title="Видалити"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )
