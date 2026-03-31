@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { chatApi } from '@/lib/chat-api'
@@ -43,11 +43,16 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
     } catch { /* error */ }
   }
 
-  const handleMarkRead = () => {
+  const handleMarkRead = useCallback(() => {
+    if (!isParticipant) return
     markRoomRead(activeRoomId)
     chatApi.markAsRead(activeRoomId)
     send({ type: 'message.read', room_id: activeRoomId })
-  }
+  }, [activeRoomId, isParticipant, markRoomRead, send])
+
+  useEffect(() => {
+    handleMarkRead()
+  }, [handleMarkRead])
 
   return (
     <div className="flex-1 flex flex-col h-full" onClick={handleMarkRead}>
