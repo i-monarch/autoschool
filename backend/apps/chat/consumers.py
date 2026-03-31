@@ -51,8 +51,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if not msg_type:
             return
 
-        if msg_type == 'message.send':
+        if msg_type == 'ping':
+            await self.send_json({'type': 'pong'})
+        elif msg_type == 'message.send':
             await self._handle_message_send(content)
+        elif msg_type == 'message.edit':
+            await self._handle_message_edit(content)
+        elif msg_type == 'message.delete':
+            await self._handle_message_delete(content)
         elif msg_type == 'message.read':
             await self._handle_message_read(content)
         elif msg_type == 'typing.start':
@@ -72,6 +78,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         attachment_ids = content.get('attachment_ids', [])
 
         if not room_id or (not text and not attachment_ids):
+            return
+
+        if len(text) > 5000:
+            await self.send_json({'type': 'error', 'detail': 'Message too long (max 5000).'})
             return
 
         is_participant = await self._is_participant(room_id)
@@ -99,9 +109,46 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             'data': msg_data,
         })
 
+    async def _handle_message_edit(self, content):
+        message_id = content.get('message_id')
+        text = content.get('text', '').strip()
+        if not message_id or not text:
+            return
+        if len(text) > 5000:
+            await self.send_json({'type': 'error', 'detail': 'Message too long (max 5000).'})
+            return
+
+        result = await self._edit_message(message_id, text)
+        if result is None:
+            await self.send_json({'type': 'error', 'detail': 'Cannot edit message.'})
+            return
+
+        await self.channel_layer.group_send(f'room_{result["room_id"]}', {
+            'type': 'chat.message_edited',
+            'data': {'message_id': message_id, 'text': text, 'room': result['room_id']},
+        })
+
+    async def _handle_message_delete(self, content):
+        message_id = content.get('message_id')
+        if not message_id:
+            return
+
+        result = await self._delete_message(message_id)
+        if result is None:
+            await self.send_json({'type': 'error', 'detail': 'Cannot delete message.'})
+            return
+
+        await self.channel_layer.group_send(f'room_{result["room_id"]}', {
+            'type': 'chat.message_deleted',
+            'data': {'message_id': message_id, 'room': result['room_id']},
+        })
+
     async def _handle_message_read(self, content):
         room_id = content.get('room_id')
         if not room_id:
+            return
+        is_participant = await self._is_participant(room_id)
+        if not is_participant:
             return
         await self._mark_read(room_id)
         await self.channel_layer.group_send(f'room_{room_id}', {
@@ -112,6 +159,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def _handle_typing(self, content, is_typing):
         room_id = content.get('room_id')
         if not room_id:
+            return
+        is_participant = await self._is_participant(room_id)
+        if not is_participant:
             return
         await self.channel_layer.group_send(f'room_{room_id}', {
             'type': 'chat.typing',
@@ -142,6 +192,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_add(group, self.channel_name)
         await self.send_json({'type': 'room.created', 'data': event['data']})
 
+    async def chat_message_edited(self, event):
+        await self.send_json({'type': 'message.edited', 'data': event['data']})
+
+    async def chat_message_deleted(self, event):
+        await self.send_json({'type': 'message.deleted', 'data': event['data']})
+
     async def chat_online(self, event):
         if event['data']['user_id'] != self.user.pk:
             await self.send_json({'type': 'status.online', 'data': event['data']})
@@ -166,6 +222,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @sync_to_async
     def _is_participant(self, room_id):
+        if self.user.role == 'admin':
+            return True
         return ChatParticipant.objects.filter(
             room_id=room_id, user=self.user
         ).exists()
@@ -204,10 +262,36 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return None
 
     @sync_to_async
+    def _edit_message(self, message_id, text):
+        try:
+            msg = Message.objects.get(pk=message_id, sender=self.user, is_deleted=False)
+        except Message.DoesNotExist:
+            return None
+        msg.text = text
+        msg.is_edited = True
+        msg.save(update_fields=['text', 'is_edited', 'updated_at'])
+        return {'room_id': msg.room_id}
+
+    @sync_to_async
+    def _delete_message(self, message_id):
+        try:
+            msg = Message.objects.get(pk=message_id, is_deleted=False)
+        except Message.DoesNotExist:
+            return None
+        if msg.sender_id != self.user.pk and self.user.role != 'admin':
+            return None
+        msg.is_deleted = True
+        msg.save(update_fields=['is_deleted', 'updated_at'])
+        return {'room_id': msg.room_id}
+
+    @sync_to_async
     def _mark_read(self, room_id):
-        ChatParticipant.objects.filter(
-            room_id=room_id, user=self.user
-        ).update(last_read_at=timezone.now())
+        from .services import mark_as_read
+        try:
+            room = ChatRoom.objects.get(pk=room_id)
+        except ChatRoom.DoesNotExist:
+            return
+        mark_as_read(room, self.user)
 
     async def _set_online(self, online):
         room_ids = await self._get_user_room_ids()

@@ -71,13 +71,18 @@ export interface CreateRoomData {
 export type WSIncoming =
   | { type: 'message.new'; data: Message }
   | { type: 'message.read'; data: { room_id: number; user_id: number } }
+  | { type: 'message.edited'; data: { message_id: number; text: string; room: number } }
+  | { type: 'message.deleted'; data: { message_id: number; room: number } }
   | { type: 'typing.update'; data: { room_id: number; user_id: number; is_typing: boolean } }
   | { type: 'status.online'; data: { user_id: number; is_online: boolean } }
   | { type: 'room.created'; data: ChatRoom }
   | { type: 'error'; detail: string }
+  | { type: 'pong' }
 
 export type WSOutgoing =
   | { type: 'message.send'; room_id: number; text: string; msg_type?: string; attachment_ids?: number[]; parent_id?: number }
+  | { type: 'message.edit'; message_id: number; text: string }
+  | { type: 'message.delete'; message_id: number }
   | { type: 'message.read'; room_id: number }
   | { type: 'typing.start'; room_id: number }
   | { type: 'typing.stop'; room_id: number }

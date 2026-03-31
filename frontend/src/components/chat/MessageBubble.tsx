@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { Check, Download, FileText, Pencil, Trash2, X } from 'lucide-react'
 import type { Message } from '@/types/chat'
 
@@ -23,7 +23,7 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export default function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDelete }: Props) {
+function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDelete }: Props) {
   const [editing, setEditing] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [editText, setEditText] = useState('')
@@ -237,3 +237,5 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
     </div>
   )
 }
+
+export default memo(MessageBubble)

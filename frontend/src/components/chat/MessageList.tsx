@@ -34,6 +34,8 @@ export default function MessageList({ onImageClick, onEdit, onDelete, onVisible 
   const bottomRef = useRef<HTMLDivElement>(null)
   const wasAtBottom = useRef(true)
   const prevMsgCount = useRef(0)
+  const prevScrollHeight = useRef(0)
+  const loadingUp = useRef(false)
 
   const checkAtBottom = useCallback(() => {
     const el = listRef.current
@@ -42,7 +44,11 @@ export default function MessageList({ onImageClick, onEdit, onDelete, onVisible 
   }, [])
 
   useEffect(() => {
-    if (wasAtBottom.current || messages.length !== prevMsgCount.current) {
+    if (loadingUp.current && listRef.current) {
+      const newScrollHeight = listRef.current.scrollHeight
+      listRef.current.scrollTop = newScrollHeight - prevScrollHeight.current
+      loadingUp.current = false
+    } else if (wasAtBottom.current || messages.length !== prevMsgCount.current) {
       const isNewMsg = messages.length > prevMsgCount.current && prevMsgCount.current > 0
       if (wasAtBottom.current || !isNewMsg) {
         bottomRef.current?.scrollIntoView({ behavior: isNewMsg ? 'smooth' : 'instant' })
@@ -54,6 +60,7 @@ export default function MessageList({ onImageClick, onEdit, onDelete, onVisible 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'instant' })
     prevMsgCount.current = messages.length
+    loadingUp.current = false
   }, [activeRoomId])
 
   // Mark as read when bottom of messages is visible
@@ -77,6 +84,8 @@ export default function MessageList({ onImageClick, onEdit, onDelete, onVisible 
     const el = listRef.current
     if (!el || messagesLoading || !hasMore) return
     if (el.scrollTop < 100) {
+      prevScrollHeight.current = el.scrollHeight
+      loadingUp.current = true
       loadMoreMessages()
     }
   }, [checkAtBottom, messagesLoading, hasMore, loadMoreMessages])

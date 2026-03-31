@@ -133,7 +133,7 @@ export default function AdminLayout({
                 key={item.href}
                 href={item.href}
                 className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative
                   ${collapsed ? 'justify-center' : ''}
                   ${active
                     ? 'bg-white/10 text-white'
@@ -148,6 +148,9 @@ export default function AdminLayout({
                   <span className="ml-auto bg-primary text-primary-content text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
                     {totalUnread > 99 ? '99+' : totalUnread}
                   </span>
+                )}
+                {item.href === '/admin/chat' && totalUnread > 0 && collapsed && (
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-primary rounded-full" />
                 )}
               </Link>
             )

@@ -82,6 +82,9 @@ export default function MessageInput({ roomId, send, replyTo, onCancelReply }: P
       })
 
       setText('')
+      files.forEach(f => {
+        if (f.preview) URL.revokeObjectURL(f.preview)
+      })
       setFiles([])
       onCancelReply()
 
@@ -93,8 +96,8 @@ export default function MessageInput({ roomId, send, replyTo, onCancelReply }: P
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
       }
-    } catch {
-      // upload error
+    } catch (e) {
+      console.error(e)
     } finally {
       setUploading(false)
     }

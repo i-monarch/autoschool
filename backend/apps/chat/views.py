@@ -1,4 +1,5 @@
-from rest_framework import generics, permissions, status
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, permissions, serializers, status
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -84,7 +85,14 @@ class RoomDetailView(generics.RetrieveUpdateDestroyAPIView):
                 {'detail': 'Cannot update direct chat.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        self.check_object_permissions(request, room)
+        is_room_admin = ChatParticipant.objects.filter(
+            room=room, user=request.user, role='admin'
+        ).exists()
+        if not is_room_admin and request.user.role != 'admin':
+            return Response(
+                {'detail': 'Only group admin can update.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         room.title = request.data.get('title', room.title)
         room.save(update_fields=['title'])
         return Response(RoomDetailSerializer(room).data)
@@ -130,14 +138,29 @@ class MessageListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         room_id = self.kwargs['room_id']
-        room = ChatRoom.objects.get(pk=room_id)
+        room = get_object_or_404(ChatRoom, pk=room_id, is_active=True)
+
+        is_admin = self.request.user.role == 'admin'
+        if not is_admin and not ChatParticipant.objects.filter(
+            room_id=room_id, user=self.request.user
+        ).exists():
+            raise serializers.ValidationError({'detail': 'Not a participant.'})
+
+        if room.write_access != 'all' and self.request.user.role not in ('admin', 'teacher'):
+            raise serializers.ValidationError({'detail': 'Read-only channel.'})
+
+        text = serializer.validated_data.get('text', '')
+        attachment_ids = serializer.validated_data.get('attachment_ids')
+        if not text.strip() and not attachment_ids:
+            raise serializers.ValidationError({'detail': 'Empty message.'})
+
         send_message(
             room=room,
             sender=self.request.user,
-            text=serializer.validated_data.get('text', ''),
+            text=text,
             msg_type=serializer.validated_data.get('type', 'text'),
             parent_id=serializer.validated_data.get('parent_id'),
-            attachment_ids=serializer.validated_data.get('attachment_ids'),
+            attachment_ids=attachment_ids,
         )
 
 
@@ -169,11 +192,11 @@ class MarkAsReadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, room_id):
+        room = get_object_or_404(ChatRoom, pk=room_id, is_active=True)
         if not ChatParticipant.objects.filter(
             room_id=room_id, user=request.user
-        ).exists():
+        ).exists() and request.user.role != 'admin':
             return Response(status=status.HTTP_404_NOT_FOUND)
-        room = ChatRoom.objects.get(pk=room_id)
         mark_as_read(room, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -206,7 +229,7 @@ class ParticipantAddView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, room_id):
-        room = ChatRoom.objects.get(pk=room_id)
+        room = get_object_or_404(ChatRoom, pk=room_id, is_active=True)
         if room.type != 'group':
             return Response(
                 {'detail': 'Can only add participants to groups.'},
@@ -236,19 +259,31 @@ class ParticipantRemoveView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, room_id, user_id):
-        room = ChatRoom.objects.get(pk=room_id)
+        room = get_object_or_404(ChatRoom, pk=room_id, is_active=True)
         if room.type != 'group':
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        is_admin = ChatParticipant.objects.filter(
+        is_room_admin = ChatParticipant.objects.filter(
             room=room, user=request.user, role='admin'
         ).exists()
         is_self = request.user.pk == user_id
 
-        if not is_admin and not is_self:
+        if not is_room_admin and not is_self:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        ChatParticipant.objects.filter(room=room, user_id=user_id).delete()
+        participant = ChatParticipant.objects.filter(room=room, user_id=user_id).first()
+        if not participant:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if participant.role == 'admin':
+            admin_count = ChatParticipant.objects.filter(room=room, role='admin').count()
+            if admin_count <= 1:
+                return Response(
+                    {'detail': 'Призначте іншого адміністратора перед виходом'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        participant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

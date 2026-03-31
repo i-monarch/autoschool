@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function ChatWindow({ send, onBack, onInfo }: Props) {
-  const { activeRoomId, rooms, typingUsers, markRoomRead, editMessage, deleteMessage } = useChatStore()
+  const { activeRoomId, rooms, typingUsers, markRoomRead, editMessage, deleteMessage, isConnected } = useChatStore()
   const user = useAuthStore((s) => s.user)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [replyTo, setReplyTo] = useState<Message | null>(null)
@@ -36,14 +36,18 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
     try {
       await chatApi.editMessage(activeRoomId, msgId, newText)
       editMessage(msgId, newText)
-    } catch { /* error */ }
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   const handleDelete = async (msg: Message) => {
     try {
       await chatApi.deleteMessage(activeRoomId, msg.id)
       deleteMessage(msg.id)
-    } catch { /* error */ }
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   const handleMarkRead = useCallback(() => {
@@ -58,6 +62,12 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
   return (
     <div className="flex-1 flex flex-col h-full">
       <ChatHeader onBack={onBack} onInfo={onInfo} />
+
+      {!isConnected && (
+        <div className="bg-warning/10 text-warning text-center text-sm py-1">
+          Немає з'єднання. Перепідключення...
+        </div>
+      )}
 
       <MessageList
         onImageClick={setLightboxUrl}

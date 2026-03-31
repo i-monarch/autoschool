@@ -16,8 +16,10 @@ interface ChatState {
   typingUsers: Record<number, number[]>
   totalUnread: number
   currentUserId: number | null
+  isConnected: boolean
 
   setCurrentUserId: (id: number) => void
+  setConnected: (connected: boolean) => void
   fetchRooms: () => Promise<void>
   setActiveRoom: (roomId: number | null) => void
   fetchMessages: (roomId: number) => Promise<void>
@@ -45,8 +47,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   typingUsers: {},
   totalUnread: 0,
   currentUserId: null,
+  isConnected: true,
 
   setCurrentUserId: (id) => set({ currentUserId: id }),
+  setConnected: (connected) => set({ isConnected: connected }),
 
   fetchRooms: async () => {
     set({ roomsLoading: true })
@@ -72,7 +76,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const data = await chatApi.getMessages(roomId)
       set({
         messages: data.results.reverse(),
-        nextCursor: data.next ? new URL(data.next).searchParams.get('cursor') : null,
+        nextCursor: data.next ? new URL(data.next, window.location.origin).searchParams.get('cursor') : null,
         hasMore: !!data.next,
         messagesLoading: false,
       })
@@ -90,7 +94,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const data = await chatApi.getMessages(activeRoomId, nextCursor || undefined)
       set((state) => ({
         messages: [...data.results.reverse(), ...state.messages],
-        nextCursor: data.next ? new URL(data.next).searchParams.get('cursor') : null,
+        nextCursor: data.next ? new URL(data.next, window.location.origin).searchParams.get('cursor') : null,
         hasMore: !!data.next,
         messagesLoading: false,
       }))

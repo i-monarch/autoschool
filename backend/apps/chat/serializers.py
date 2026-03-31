@@ -147,6 +147,10 @@ class CreateRoomSerializer(serializers.Serializer):
                 raise serializers.ValidationError({'title': 'Required for group chat.'})
             if not attrs.get('participant_ids'):
                 raise serializers.ValidationError({'participant_ids': 'At least one participant required.'})
+            participant_ids = attrs['participant_ids']
+            existing = User.objects.filter(pk__in=participant_ids, is_active=True).count()
+            if existing != len(set(participant_ids)):
+                raise serializers.ValidationError({'participant_ids': 'Деякі користувачі не знайдені.'})
         return attrs
 
 

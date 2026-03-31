@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Search, Plus } from 'lucide-react'
 import { useChatStore } from '@/stores/chat'
 import ChatRoomItem from './ChatRoomItem'
@@ -13,16 +13,17 @@ export default function ChatSidebar({ onNewChat }: Props) {
   const { rooms, roomsLoading } = useChatStore()
   const [search, setSearch] = useState('')
 
-  const filtered = search
-    ? rooms.filter((r) => {
-        const q = search.toLowerCase()
-        if (r.title?.toLowerCase().includes(q)) return true
-        return r.participants.some((p) => {
-          const name = `${p.user.first_name} ${p.user.last_name} ${p.user.username}`.toLowerCase()
-          return name.includes(q)
-        })
+  const filtered = useMemo(() => {
+    if (!search) return rooms
+    const q = search.toLowerCase()
+    return rooms.filter((r) => {
+      if (r.title?.toLowerCase().includes(q)) return true
+      return r.participants.some((p) => {
+        const name = `${p.user.first_name} ${p.user.last_name} ${p.user.username}`.toLowerCase()
+        return name.includes(q)
       })
-    : rooms
+    })
+  }, [rooms, search])
 
   return (
     <div className="flex flex-col h-full">

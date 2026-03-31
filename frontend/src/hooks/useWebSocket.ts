@@ -23,6 +23,12 @@ function handleMessage(msg: WSIncoming) {
       break
     case 'message.read':
       break
+    case 'message.edited':
+      state.editMessage(msg.data.message_id, msg.data.text)
+      break
+    case 'message.deleted':
+      state.deleteMessage(msg.data.message_id)
+      break
     case 'typing.update':
       state.setTyping(msg.data.room_id, msg.data.user_id, msg.data.is_typing)
       break
@@ -31,6 +37,11 @@ function handleMessage(msg: WSIncoming) {
       break
     case 'room.created':
       state.addRoom(msg.data)
+      break
+    case 'error':
+      console.warn('[WS Error]', msg.detail)
+      break
+    case 'pong':
       break
   }
 }
@@ -42,6 +53,7 @@ function connect() {
 
   ws.onopen = () => {
     reconnectDelay = 1000
+    useChatStore.getState().setConnected(true)
     heartbeatTimer = setInterval(() => {
       if (ws?.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'ping' }))
@@ -57,6 +69,7 @@ function connect() {
 
   ws.onclose = () => {
     clearInterval(heartbeatTimer)
+    useChatStore.getState().setConnected(false)
     ws = null
     if (refCount > 0) {
       reconnectTimer = setTimeout(() => {
