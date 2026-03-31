@@ -10,6 +10,7 @@ import {
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Дашборд', icon: LayoutDashboard },
@@ -31,6 +32,7 @@ export default function AdminLayout({
   const { user, loading, checked, fetchMe, logout } = useAuthStore()
   const totalUnread = useChatStore((s) => s.totalUnread)
   const fetchRooms = useChatStore((s) => s.fetchRooms)
+  useWebSocket()
   const router = useRouter()
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)

@@ -90,8 +90,8 @@ export default function ChatRoomItem({ room }: Props) {
             {room.last_message_type === 'image' ? 'Фото' : room.last_message_type === 'file' ? 'Файл' : room.last_message_text || 'Немає повідомлень'}
           </p>
           {(room.unread_count ?? 0) > 0 && (
-            <span className="badge badge-primary badge-xs px-1.5 min-w-[1.25rem] text-center">
-              {room.unread_count}
+            <span className="bg-primary text-primary-content text-[11px] font-bold rounded-full min-w-[1.25rem] h-5 px-1.5 flex items-center justify-center flex-shrink-0">
+              {room.unread_count > 99 ? '99+' : room.unread_count}
             </span>
           )}
         </div>

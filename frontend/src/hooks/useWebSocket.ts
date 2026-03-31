@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useChatStore } from '@/stores/chat'
 import type { WSIncoming, WSOutgoing } from '@/types/chat'
 
@@ -8,94 +8,101 @@ const WS_URL = (process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000') + '/ws/
 const RECONNECT_MAX = 30000
 const HEARTBEAT_INTERVAL = 30000
 
-export function useWebSocket() {
-  const wsRef = useRef<WebSocket | null>(null)
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>()
-  const heartbeatTimer = useRef<ReturnType<typeof setInterval>>()
-  const reconnectDelay = useRef(1000)
-  const mountedRef = useRef(true)
+let ws: WebSocket | null = null
+let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+let heartbeatTimer: ReturnType<typeof setInterval> | undefined
+let reconnectDelay = 1000
+let refCount = 0
 
-  const store = useChatStore
+function handleMessage(msg: WSIncoming) {
+  const state = useChatStore.getState()
+  switch (msg.type) {
+    case 'message.new':
+      state.addIncomingMessage(msg.data)
+      state.updateRoomOnMessage(msg.data)
+      break
+    case 'message.read':
+      break
+    case 'typing.update':
+      state.setTyping(msg.data.room_id, msg.data.user_id, msg.data.is_typing)
+      break
+    case 'status.online':
+      state.setOnline(msg.data.user_id, msg.data.is_online)
+      break
+    case 'room.created':
+      state.addRoom(msg.data)
+      break
+  }
+}
 
-  const connect = useCallback(() => {
-    if (!mountedRef.current) return
+function connect() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return
 
-    const ws = new WebSocket(WS_URL)
-    wsRef.current = ws
+  ws = new WebSocket(WS_URL)
 
-    ws.onopen = () => {
-      reconnectDelay.current = 1000
-      heartbeatTimer.current = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'ping' }))
-        }
-      }, HEARTBEAT_INTERVAL)
-    }
-
-    ws.onmessage = (event) => {
-      try {
-        const data: WSIncoming = JSON.parse(event.data)
-        handleMessage(data)
-      } catch {
-        // ignore malformed messages
+  ws.onopen = () => {
+    reconnectDelay = 1000
+    heartbeatTimer = setInterval(() => {
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'ping' }))
       }
-    }
+    }, HEARTBEAT_INTERVAL)
+  }
 
-    ws.onclose = () => {
-      clearInterval(heartbeatTimer.current)
-      if (mountedRef.current) {
-        reconnectTimer.current = setTimeout(() => {
-          reconnectDelay.current = Math.min(reconnectDelay.current * 2, RECONNECT_MAX)
-          connect()
-        }, reconnectDelay.current)
-      }
-    }
+  ws.onmessage = (event) => {
+    try {
+      handleMessage(JSON.parse(event.data))
+    } catch { /* ignore */ }
+  }
 
-    ws.onerror = () => {
-      ws.close()
-    }
-  }, [])
-
-  const handleMessage = (msg: WSIncoming) => {
-    const state = store.getState()
-
-    switch (msg.type) {
-      case 'message.new':
-        state.addIncomingMessage(msg.data)
-        state.updateRoomOnMessage(msg.data)
-        break
-      case 'message.read':
-        // could update read receipts UI
-        break
-      case 'typing.update':
-        state.setTyping(msg.data.room_id, msg.data.user_id, msg.data.is_typing)
-        break
-      case 'status.online':
-        state.setOnline(msg.data.user_id, msg.data.is_online)
-        break
-      case 'room.created':
-        state.addRoom(msg.data)
-        break
+  ws.onclose = () => {
+    clearInterval(heartbeatTimer)
+    ws = null
+    if (refCount > 0) {
+      reconnectTimer = setTimeout(() => {
+        reconnectDelay = Math.min(reconnectDelay * 2, RECONNECT_MAX)
+        connect()
+      }, reconnectDelay)
     }
   }
 
-  const send = useCallback((data: WSOutgoing) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(data))
+  ws.onerror = () => {
+    ws?.close()
+  }
+}
+
+function disconnect() {
+  clearTimeout(reconnectTimer)
+  clearInterval(heartbeatTimer)
+  ws?.close()
+  ws = null
+  reconnectDelay = 1000
+}
+
+export function wsSend(data: WSOutgoing) {
+  if (ws?.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data))
+  }
+}
+
+export function useWebSocket() {
+  useEffect(() => {
+    refCount++
+    if (refCount === 1) {
+      connect()
+    }
+    return () => {
+      refCount--
+      if (refCount <= 0) {
+        refCount = 0
+        disconnect()
+      }
     }
   }, [])
 
-  useEffect(() => {
-    mountedRef.current = true
-    connect()
-
-    return () => {
-      mountedRef.current = false
-      clearTimeout(reconnectTimer.current)
-      clearInterval(heartbeatTimer.current)
-      wsRef.current?.close()
-    }
-  }, [connect])
+  const send = useCallback((data: WSOutgoing) => {
+    wsSend(data)
+  }, [])
 
   return { send }
 }

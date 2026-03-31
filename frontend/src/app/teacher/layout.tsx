@@ -9,6 +9,7 @@ import {
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 const navItems = [
   { href: '/teacher/dashboard', label: 'Головна', icon: Home },
@@ -26,6 +27,7 @@ export default function TeacherLayout({
   const { user, loading, checked, fetchMe, logout } = useAuthStore()
   const totalUnread = useChatStore((s) => s.totalUnread)
   const fetchRooms = useChatStore((s) => s.fetchRooms)
+  useWebSocket()
   const router = useRouter()
   const pathname = usePathname()
 
