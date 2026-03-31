@@ -108,6 +108,9 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
             {message.sender.role === 'admin' && (
               <span className="ml-1 text-[10px] font-normal bg-warning/20 text-warning-content px-1 py-0.5 rounded">Адмін</span>
             )}
+            {message.sender.role === 'teacher' && (
+              <span className="ml-1 text-[10px] font-normal bg-secondary/15 text-secondary px-1 py-0.5 rounded">Викладач</span>
+            )}
           </p>
         )}
 
