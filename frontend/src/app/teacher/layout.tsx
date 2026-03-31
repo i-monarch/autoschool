@@ -37,6 +37,7 @@ export default function TeacherLayout({
 
   useEffect(() => {
     if (checked && user) {
+      useChatStore.getState().setCurrentUserId(user.id)
       fetchRooms()
       const interval = setInterval(fetchRooms, 30000)
       return () => clearInterval(interval)

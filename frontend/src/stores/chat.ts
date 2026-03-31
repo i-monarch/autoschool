@@ -15,7 +15,9 @@ interface ChatState {
   onlineUserIds: Set<number>
   typingUsers: Record<number, number[]>
   totalUnread: number
+  currentUserId: number | null
 
+  setCurrentUserId: (id: number) => void
   fetchRooms: () => Promise<void>
   setActiveRoom: (roomId: number | null) => void
   fetchMessages: (roomId: number) => Promise<void>
@@ -42,6 +44,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   onlineUserIds: new Set(),
   typingUsers: {},
   totalUnread: 0,
+  currentUserId: null,
+
+  setCurrentUserId: (id) => set({ currentUserId: id }),
 
   fetchRooms: async () => {
     set({ roomsLoading: true })
@@ -95,25 +100,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   addIncomingMessage: (msg) => {
-    const { activeRoomId } = get()
-    if (msg.room === activeRoomId) {
-      set((state) => ({
-        messages: [...state.messages, msg],
-      }))
-    }
+    const { activeRoomId, messages } = get()
+    if (msg.room !== activeRoomId) return
+    // Dedup — don't add if already exists
+    if (messages.some((m) => m.id === msg.id)) return
+    set((state) => ({
+      messages: [...state.messages, msg],
+    }))
   },
 
   updateRoomOnMessage: (msg) => {
+    const { currentUserId, activeRoomId } = get()
+    const isOwnMessage = msg.sender?.id === currentUserId
+
     set((state) => {
       const rooms = state.rooms.map((r) => {
         if (r.id !== msg.room) return r
+        const shouldIncrement = !isOwnMessage && msg.room !== activeRoomId
         return {
           ...r,
           last_message_text: msg.text,
           last_message_type: msg.type,
           last_message_at: msg.created_at,
           last_message_sender_id: msg.sender?.id ?? null,
-          unread_count: msg.room === state.activeRoomId ? r.unread_count : r.unread_count + 1,
+          unread_count: shouldIncrement ? r.unread_count + 1 : r.unread_count,
           updated_at: msg.created_at,
         }
       })
@@ -156,6 +166,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (state.rooms.some((r) => r.id === room.id)) return state
       return { rooms: [room, ...state.rooms] }
     })
+    get().updateTotalUnread()
   },
 
   updateTotalUnread: () => {
