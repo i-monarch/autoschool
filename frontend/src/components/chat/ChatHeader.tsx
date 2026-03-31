@@ -16,14 +16,18 @@ export default function ChatHeader({ onBack, onInfo }: Props) {
   const room = rooms.find((r) => r.id === activeRoomId)
   if (!room) return null
 
+  const isMyRoom = room.participants.some((p) => p.user.id === user?.id)
   const otherParticipant = room.type === 'direct'
     ? room.participants.find((p) => p.user.id !== user?.id)?.user
     : null
 
+  const getName = (u: { first_name: string; last_name: string; username: string }) =>
+    `${u.first_name} ${u.last_name}`.trim() || u.username
+
   const displayName = room.type === 'direct'
-    ? (otherParticipant
-        ? `${otherParticipant.first_name} ${otherParticipant.last_name}`.trim() || otherParticipant.username
-        : 'Чат')
+    ? (!isMyRoom && room.participants.length >= 2
+        ? room.participants.map((p) => getName(p.user)).join(' / ')
+        : otherParticipant ? getName(otherParticipant) : 'Чат')
     : room.title || 'Група'
 
   const isOnline = otherParticipant ? onlineUserIds.has(otherParticipant.id) : false

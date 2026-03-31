@@ -67,13 +67,14 @@ class RoomListView(generics.ListCreateAPIView):
 
 
 class RoomDetailView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsRoomParticipant]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = RoomDetailSerializer
 
     def get_queryset(self):
-        return ChatRoom.objects.filter(
-            participants__user=self.request.user, is_active=True
-        ).prefetch_related('participants__user')
+        qs = ChatRoom.objects.filter(is_active=True)
+        if self.request.user.role != 'admin':
+            qs = qs.filter(participants__user=self.request.user)
+        return qs.prefetch_related('participants__user')
 
     def update(self, request, *args, **kwargs):
         room = self.get_object()
@@ -101,7 +102,8 @@ class MessageListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         room_id = self.kwargs['room_id']
-        if not ChatParticipant.objects.filter(
+        is_admin = self.request.user.role == 'admin'
+        if not is_admin and not ChatParticipant.objects.filter(
             room_id=room_id, user=self.request.user
         ).exists():
             return Message.objects.none()

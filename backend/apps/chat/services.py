@@ -78,9 +78,11 @@ def get_rooms_for_user(user):
         created_at__gt=Subquery(participant.values('last_read_at')[:1]),
     ).exclude(sender=user).order_by().values('room').annotate(c=Count('id')).values('c')
 
-    return ChatRoom.objects.filter(
-        participants__user=user, is_active=True
-    ).annotate(
+    base_qs = ChatRoom.objects.filter(is_active=True)
+    if user.role != 'admin':
+        base_qs = base_qs.filter(participants__user=user)
+
+    return base_qs.annotate(
         last_message_text=Subquery(last_msg.values('text')[:1]),
         last_message_type=Subquery(last_msg.values('type')[:1]),
         last_message_at=Subquery(last_msg.values('created_at')[:1]),
@@ -90,9 +92,11 @@ def get_rooms_for_user(user):
 
 
 def search_messages(user, query):
-    return Message.objects.filter(
-        room__participants__user=user,
+    qs = Message.objects.filter(
         room__is_active=True,
         is_deleted=False,
         text__icontains=query,
-    ).select_related('sender', 'room').order_by('-created_at')[:50]
+    )
+    if user.role != 'admin':
+        qs = qs.filter(room__participants__user=user)
+    return qs.select_related('sender', 'room').order_by('-created_at')[:50]
