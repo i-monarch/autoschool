@@ -144,7 +144,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     # --- DB helpers ---
 
     @sync_to_async
+    def _is_admin(self):
+        return self.user.role == 'admin'
+
+    @sync_to_async
     def _get_user_room_ids(self):
+        if self.user.role == 'admin':
+            return list(
+                ChatRoom.objects.filter(is_active=True)
+                .values_list('id', flat=True)
+            )
         return list(
             ChatParticipant.objects.filter(user=self.user)
             .values_list('room_id', flat=True)
@@ -152,6 +161,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @sync_to_async
     def _is_participant(self, room_id):
+        if self.user.role == 'admin':
+            return True
         return ChatParticipant.objects.filter(
             room_id=room_id, user=self.user
         ).exists()

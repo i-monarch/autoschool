@@ -44,7 +44,7 @@ export const chatApi = {
     formData.append('file', file)
     return api
       .post<MessageAttachment>('/chat/upload/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined as unknown as string },
       })
       .then((r) => r.data)
   },
