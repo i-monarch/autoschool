@@ -14,6 +14,9 @@ export const chatApi = {
   updateRoom: (id: number, data: { title: string }) =>
     api.patch<ChatRoom>(`/chat/rooms/${id}/`, data).then((r) => r.data),
 
+  deleteRoom: (id: number) =>
+    api.delete(`/chat/rooms/${id}/`),
+
   getMessages: (roomId: number, cursor?: string) => {
     const params = cursor ? { cursor } : {}
     return api

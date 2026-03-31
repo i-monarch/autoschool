@@ -67,7 +67,7 @@ class RoomListView(generics.ListCreateAPIView):
         return Response(out, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
-class RoomDetailView(generics.RetrieveUpdateAPIView):
+class RoomDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = RoomDetailSerializer
 
@@ -88,6 +88,22 @@ class RoomDetailView(generics.RetrieveUpdateAPIView):
         room.title = request.data.get('title', room.title)
         room.save(update_fields=['title'])
         return Response(RoomDetailSerializer(room).data)
+
+    def destroy(self, request, *args, **kwargs):
+        room = self.get_object()
+        if room.type != 'group':
+            return Response(
+                {'detail': 'Cannot delete direct chat.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        is_room_admin = ChatParticipant.objects.filter(
+            room=room, user=request.user, role='admin'
+        ).exists()
+        if not is_room_admin and request.user.role != 'admin':
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        room.is_active = False
+        room.save(update_fields=['is_active'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class MessagePagination(CursorPagination):
@@ -245,14 +261,14 @@ class UserSearchView(generics.ListAPIView):
         from apps.chat.serializers import ChatUserSerializer
         search = self.request.query_params.get('search', '').strip()
         qs = User.objects.filter(is_active=True).exclude(pk=self.request.user.pk)
-        if search and len(search) >= 2:
+        if search:
             from django.db.models import Q
             qs = qs.filter(
                 Q(first_name__icontains=search) |
                 Q(last_name__icontains=search) |
                 Q(username__icontains=search)
             )
-        return qs[:20]
+        return qs.order_by('first_name', 'last_name')[:50]
 
     def list(self, request, *args, **kwargs):
         from apps.chat.serializers import ChatUserSerializer

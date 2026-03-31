@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Search, Users, MessageCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Search, Users, MessageCircle, UserPlus } from 'lucide-react'
 import { chatApi } from '@/lib/chat-api'
 import { useChatStore } from '@/stores/chat'
 import type { ChatUser } from '@/types/chat'
@@ -14,31 +14,43 @@ interface Props {
 export default function CreateChatModal({ open, onClose }: Props) {
   const [mode, setMode] = useState<'direct' | 'group'>('direct')
   const [search, setSearch] = useState('')
-  const [users, setUsers] = useState<ChatUser[]>([])
+  const [allUsers, setAllUsers] = useState<ChatUser[]>([])
   const [loading, setLoading] = useState(false)
   const [groupTitle, setGroupTitle] = useState('')
   const [writeAccess, setWriteAccess] = useState<'all' | 'staff'>('all')
   const [selectedUsers, setSelectedUsers] = useState<ChatUser[]>([])
   const { addRoom, setActiveRoom } = useChatStore()
 
-  if (!open) return null
-
-  const handleSearch = async (q: string) => {
-    setSearch(q)
-    if (q.length < 2) {
-      setUsers([])
-      return
+  useEffect(() => {
+    if (open) {
+      loadUsers()
     }
+  }, [open])
+
+  const loadUsers = async () => {
     setLoading(true)
     try {
-      const results = await chatApi.getUsers(q) as ChatUser[]
-      setUsers(results)
+      const results = await chatApi.getUsers() as ChatUser[]
+      setAllUsers(results)
     } catch {
-      setUsers([])
+      setAllUsers([])
     } finally {
       setLoading(false)
     }
   }
+
+  if (!open) return null
+
+  const filtered = search
+    ? allUsers.filter((u) => {
+        const q = search.toLowerCase()
+        return (
+          u.first_name?.toLowerCase().includes(q) ||
+          u.last_name?.toLowerCase().includes(q) ||
+          u.username.toLowerCase().includes(q)
+        )
+      })
+    : allUsers
 
   const handleSelectDirect = async (user: ChatUser) => {
     try {
@@ -46,9 +58,7 @@ export default function CreateChatModal({ open, onClose }: Props) {
       addRoom(room)
       setActiveRoom(room.id)
       handleClose()
-    } catch {
-      // error
-    }
+    } catch { /* error */ }
   }
 
   const toggleUser = (user: ChatUser) => {
@@ -71,14 +81,11 @@ export default function CreateChatModal({ open, onClose }: Props) {
       addRoom(room)
       setActiveRoom(room.id)
       handleClose()
-    } catch {
-      // error
-    }
+    } catch { /* error */ }
   }
 
   const handleClose = () => {
     setSearch('')
-    setUsers([])
     setGroupTitle('')
     setWriteAccess('all')
     setSelectedUsers([])
@@ -90,6 +97,12 @@ export default function CreateChatModal({ open, onClose }: Props) {
     if (role === 'teacher') return 'Викладач'
     if (role === 'admin') return 'Адмін'
     return 'Учень'
+  }
+
+  const roleBadgeClass = (role: string) => {
+    if (role === 'teacher') return 'bg-secondary/10 text-secondary'
+    if (role === 'admin') return 'bg-warning/10 text-warning'
+    return 'bg-base-200 text-base-content/60'
   }
 
   return (
@@ -132,18 +145,18 @@ export default function CreateChatModal({ open, onClose }: Props) {
               className="input input-bordered input-sm w-full"
             />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-base-content/60">Хто може писати:</span>
+              <span className="text-xs text-base-content/60 flex-shrink-0">Хто пише:</span>
               <select
                 value={writeAccess}
                 onChange={(e) => setWriteAccess(e.target.value as 'all' | 'staff')}
                 className="select select-bordered select-xs flex-1"
               >
                 <option value="all">Всі учасники</option>
-                <option value="staff">Тільки адміни та викладачі</option>
+                <option value="staff">Адміни та викладачі</option>
               </select>
             </div>
             {selectedUsers.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <div className="flex flex-wrap gap-1">
                 {selectedUsers.map((u) => (
                   <span key={u.id} className="badge badge-primary badge-sm gap-1">
                     {u.first_name || u.username}
@@ -162,25 +175,25 @@ export default function CreateChatModal({ open, onClose }: Props) {
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40" />
             <input
               type="text"
-              placeholder="Пошук користувача..."
+              placeholder="Фільтр..."
               value={search}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="input input-bordered input-sm w-full pl-8"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 py-2 min-h-[200px]">
+        <div className="flex-1 overflow-y-auto px-2 py-2 min-h-[200px] max-h-[40vh]">
           {loading ? (
             <div className="flex justify-center py-8">
               <span className="loading loading-spinner loading-sm" />
             </div>
-          ) : users.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <p className="text-center text-sm text-base-content/40 py-8">
-              {search.length < 2 ? 'Введіть мінімум 2 символи' : 'Нікого не знайдено'}
+              Нікого не знайдено
             </p>
           ) : (
-            users.map((u) => {
+            filtered.map((u) => {
               const isSelected = selectedUsers.some((s) => s.id === u.id)
               return (
                 <button
@@ -202,10 +215,14 @@ export default function CreateChatModal({ open, onClose }: Props) {
                     <p className="text-sm font-medium truncate">
                       {u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username}
                     </p>
-                    <p className="text-xs text-base-content/50">{roleLabel(u.role)}</p>
                   </div>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${roleBadgeClass(u.role)}`}>
+                    {roleLabel(u.role)}
+                  </span>
                   {mode === 'group' && isSelected && (
-                    <span className="badge badge-primary badge-xs">V</span>
+                    <span className="w-5 h-5 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs">
+                      ✓
+                    </span>
                   )}
                 </button>
               )
