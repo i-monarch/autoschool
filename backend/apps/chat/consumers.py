@@ -78,6 +78,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if not is_participant:
             return
 
+        can_write = await self._can_write(room_id)
+        if not can_write:
+            await self.send_json({'type': 'error', 'detail': 'Read-only channel.'})
+            return
+
         msg_data = await self._create_message(
             room_id, text, msg_type, parent_id, attachment_ids
         )
@@ -164,6 +169,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return ChatParticipant.objects.filter(
             room_id=room_id, user=self.user
         ).exists()
+
+    @sync_to_async
+    def _can_write(self, room_id):
+        try:
+            room = ChatRoom.objects.get(pk=room_id)
+        except ChatRoom.DoesNotExist:
+            return False
+        if room.write_access == 'all':
+            return True
+        return self.user.role in ('admin', 'teacher')
 
     @sync_to_async
     def _create_message(self, room_id, text, msg_type, parent_id, attachment_ids):

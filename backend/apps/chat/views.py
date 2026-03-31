@@ -55,7 +55,8 @@ class RoomListView(generics.ListCreateAPIView):
             )
         else:
             room = create_group_room(
-                request.user, data['title'], data['participant_ids']
+                request.user, data['title'], data['participant_ids'],
+                write_access=data.get('write_access', 'all'),
             )
             created = True
 

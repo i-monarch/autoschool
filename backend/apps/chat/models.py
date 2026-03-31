@@ -8,9 +8,14 @@ class ChatRoom(models.Model):
         ('direct', _('Direct')),
         ('group', _('Group')),
     ]
+    WRITE_ACCESS_CHOICES = [
+        ('all', _('All participants')),
+        ('staff', _('Admins and teachers only')),
+    ]
 
     type = models.CharField(max_length=10, choices=ROOM_TYPES)
     title = models.CharField(max_length=255, blank=True)
+    write_access = models.CharField(max_length=10, choices=WRITE_ACCESS_CHOICES, default='all')
     avatar = models.ImageField(upload_to='chat/avatars/', blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

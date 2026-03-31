@@ -17,6 +17,7 @@ export default function CreateChatModal({ open, onClose }: Props) {
   const [users, setUsers] = useState<ChatUser[]>([])
   const [loading, setLoading] = useState(false)
   const [groupTitle, setGroupTitle] = useState('')
+  const [writeAccess, setWriteAccess] = useState<'all' | 'staff'>('all')
   const [selectedUsers, setSelectedUsers] = useState<ChatUser[]>([])
   const { addRoom, setActiveRoom } = useChatStore()
 
@@ -64,6 +65,7 @@ export default function CreateChatModal({ open, onClose }: Props) {
       const room = await chatApi.createRoom({
         type: 'group',
         title: groupTitle.trim(),
+        write_access: writeAccess,
         participant_ids: selectedUsers.map((u) => u.id),
       })
       addRoom(room)
@@ -78,6 +80,7 @@ export default function CreateChatModal({ open, onClose }: Props) {
     setSearch('')
     setUsers([])
     setGroupTitle('')
+    setWriteAccess('all')
     setSelectedUsers([])
     setMode('direct')
     onClose()
@@ -120,7 +123,7 @@ export default function CreateChatModal({ open, onClose }: Props) {
         </div>
 
         {mode === 'group' && (
-          <div className="px-4 pt-3">
+          <div className="px-4 pt-3 space-y-2">
             <input
               type="text"
               placeholder="Назва групи"
@@ -128,6 +131,17 @@ export default function CreateChatModal({ open, onClose }: Props) {
               onChange={(e) => setGroupTitle(e.target.value)}
               className="input input-bordered input-sm w-full"
             />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-base-content/60">Хто може писати:</span>
+              <select
+                value={writeAccess}
+                onChange={(e) => setWriteAccess(e.target.value as 'all' | 'staff')}
+                className="select select-bordered select-xs flex-1"
+              >
+                <option value="all">Всі учасники</option>
+                <option value="staff">Тільки адміни та викладачі</option>
+              </select>
+            </div>
             {selectedUsers.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {selectedUsers.map((u) => (

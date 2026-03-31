@@ -24,10 +24,10 @@ def get_or_create_direct_room(user_a, user_b):
     return room, True
 
 
-def create_group_room(creator, title, participant_ids):
+def create_group_room(creator, title, participant_ids, write_access='all'):
     with transaction.atomic():
         room = ChatRoom.objects.create(
-            type='group', title=title, created_by=creator
+            type='group', title=title, write_access=write_access, created_by=creator
         )
         ChatParticipant.objects.create(room=room, user=creator, role='admin')
         for uid in participant_ids:

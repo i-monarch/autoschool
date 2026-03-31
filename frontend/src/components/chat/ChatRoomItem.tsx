@@ -79,7 +79,12 @@ export default function ChatRoomItem({ room }: Props) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="font-medium text-sm truncate">{displayName}</span>
+          <span className="font-medium text-sm truncate">
+            {displayName}
+            {room.write_access === 'staff' && (
+              <span className="ml-1 text-[9px] font-normal text-base-content/40 align-middle">канал</span>
+            )}
+          </span>
           <span className="text-xs text-base-content/40 flex-shrink-0">
             {formatTime(room.last_message_at)}
           </span>

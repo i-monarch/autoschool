@@ -47,6 +47,7 @@ export interface ChatRoom {
   id: number
   type: 'direct' | 'group'
   title: string
+  write_access: 'all' | 'staff'
   avatar: string | null
   is_active: boolean
   participants: ChatParticipant[]
@@ -63,6 +64,7 @@ export interface CreateRoomData {
   type: 'direct' | 'group'
   user_id?: number
   title?: string
+  write_access?: 'all' | 'staff'
   participant_ids?: number[]
 }
 

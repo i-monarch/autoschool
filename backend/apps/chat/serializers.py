@@ -81,7 +81,7 @@ class RoomListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
         fields = (
-            'id', 'type', 'title', 'avatar', 'is_active',
+            'id', 'type', 'title', 'avatar', 'write_access', 'is_active',
             'participants', 'last_message_text', 'last_message_type',
             'last_message_at', 'last_message_sender_id', 'unread_count',
             'created_at', 'updated_at',
@@ -94,7 +94,7 @@ class RoomDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatRoom
-        fields = ('id', 'type', 'title', 'avatar', 'participants', 'created_by', 'created_at', 'updated_at')
+        fields = ('id', 'type', 'title', 'avatar', 'write_access', 'participants', 'created_by', 'created_at', 'updated_at')
         read_only_fields = fields
 
 
@@ -129,6 +129,7 @@ class CreateRoomSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=['direct', 'group'])
     user_id = serializers.IntegerField(required=False)
     title = serializers.CharField(max_length=255, required=False, default='')
+    write_access = serializers.ChoiceField(choices=['all', 'staff'], required=False, default='all')
     participant_ids = serializers.ListField(
         child=serializers.IntegerField(), required=False, default=list
     )
