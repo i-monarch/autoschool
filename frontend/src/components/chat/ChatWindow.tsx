@@ -51,7 +51,7 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
   }
 
   const handleMarkRead = useCallback(() => {
-    if (!isParticipant || !activeRoomId) return
+    if ((!isParticipant && !isStaff) || !activeRoomId) return
     if (markedRef.current === activeRoomId) return
     markedRef.current = activeRoomId
     markRoomRead(activeRoomId)
