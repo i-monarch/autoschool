@@ -1,5 +1,8 @@
 from django.db import transaction
-from django.db.models import Count, Max, OuterRef, Q, Subquery
+import datetime as dt
+
+from django.db.models import Count, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .models import ChatParticipant, ChatRoom, Message, MessageAttachment
@@ -72,10 +75,13 @@ def get_rooms_for_user(user):
         room=OuterRef('pk'), user=user
     )
 
+    from django.db.models import DateTimeField
+    epoch = Value(dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc), output_field=DateTimeField())
+    last_read = Coalesce(Subquery(participant.values('last_read_at')[:1]), epoch)
     unread_subquery = Message.objects.filter(
         room=OuterRef('pk'),
         is_deleted=False,
-        created_at__gt=Subquery(participant.values('last_read_at')[:1]),
+        created_at__gt=last_read,
     ).exclude(sender=user).order_by().values('room').annotate(c=Count('id')).values('c')
 
     base_qs = ChatRoom.objects.filter(is_active=True)
@@ -87,7 +93,7 @@ def get_rooms_for_user(user):
         last_message_type=Subquery(last_msg.values('type')[:1]),
         last_message_at=Subquery(last_msg.values('created_at')[:1]),
         last_message_sender_id=Subquery(last_msg.values('sender_id')[:1]),
-        unread_count=Subquery(unread_subquery),
+        unread_count=Coalesce(Subquery(unread_subquery), Value(0)),
     ).order_by('-updated_at')
 
 
