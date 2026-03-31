@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Download, FileText, Pencil, Trash2 } from 'lucide-react'
 import type { Message } from '@/types/chat'
 
@@ -24,7 +23,6 @@ function formatFileSize(bytes: number) {
 }
 
 export default function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDelete }: Props) {
-  const [showMenu, setShowMenu] = useState(false)
 
   if (message.type === 'system') {
     return (
@@ -51,8 +49,6 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} px-4 py-0.5 group`}>
       <div
         className={`max-w-[75%] relative ${isOwn ? 'order-1' : ''}`}
-        onMouseEnter={() => isOwn && setShowMenu(true)}
-        onMouseLeave={() => setShowMenu(false)}
       >
         {showSender && !isOwn && message.sender && (
           <p className="text-xs font-medium text-primary mb-0.5 px-1">
@@ -87,7 +83,7 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
                     key={a.id}
                     src={a.thumbnail || a.file}
                     alt={a.filename}
-                    className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
+                    className="rounded-lg max-w-[200px] max-h-[200px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => onImageClick?.(a.file)}
                   />
                 ))}
@@ -129,8 +125,8 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
           </div>
         </div>
 
-        {isOwn && showMenu && (
-          <div className="absolute -left-16 top-1 flex gap-0.5 z-10">
+        {isOwn && (
+          <div className="absolute -left-16 top-1 flex gap-0.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => onEdit?.(message)}
               className="btn btn-ghost btn-xs btn-circle"

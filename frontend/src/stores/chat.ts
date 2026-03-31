@@ -27,6 +27,8 @@ interface ChatState {
   setTyping: (roomId: number, userId: number, isTyping: boolean) => void
   addRoom: (room: ChatRoom) => void
   updateTotalUnread: () => void
+  editMessage: (msgId: number, text: string) => void
+  deleteMessage: (msgId: number) => void
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -159,5 +161,21 @@ export const useChatStore = create<ChatState>((set, get) => ({
   updateTotalUnread: () => {
     const total = get().rooms.reduce((sum, r) => sum + (r.unread_count || 0), 0)
     set({ totalUnread: total })
+  },
+
+  editMessage: (msgId, text) => {
+    set((state) => ({
+      messages: state.messages.map((m) =>
+        m.id === msgId ? { ...m, text, is_edited: true } : m
+      ),
+    }))
+  },
+
+  deleteMessage: (msgId) => {
+    set((state) => ({
+      messages: state.messages.map((m) =>
+        m.id === msgId ? { ...m, is_deleted: true, text: '', attachments: [] } : m
+      ),
+    }))
   },
 }))

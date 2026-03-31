@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function ChatWindow({ send, onBack, onInfo }: Props) {
-  const { activeRoomId, typingUsers, markRoomRead } = useChatStore()
+  const { activeRoomId, typingUsers, markRoomRead, editMessage, deleteMessage } = useChatStore()
   const user = useAuthStore((s) => s.user)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [replyTo, setReplyTo] = useState<Message | null>(null)
@@ -29,14 +29,20 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
 
   const handleEdit = async (msg: Message) => {
     const newText = prompt('Редагувати повідомлення:', msg.text)
-    if (newText !== null && newText.trim() !== msg.text) {
-      await chatApi.editMessage(activeRoomId, msg.id, newText.trim())
+    if (newText !== null && newText.trim() && newText.trim() !== msg.text) {
+      try {
+        await chatApi.editMessage(activeRoomId, msg.id, newText.trim())
+        editMessage(msg.id, newText.trim())
+      } catch { /* error */ }
     }
   }
 
   const handleDelete = async (msg: Message) => {
     if (confirm('Видалити повідомлення?')) {
-      await chatApi.deleteMessage(activeRoomId, msg.id)
+      try {
+        await chatApi.deleteMessage(activeRoomId, msg.id)
+        deleteMessage(msg.id)
+      } catch { /* error */ }
     }
   }
 
