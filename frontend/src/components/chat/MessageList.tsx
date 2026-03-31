@@ -8,7 +8,7 @@ import type { Message } from '@/types/chat'
 
 interface Props {
   onImageClick: (url: string) => void
-  onEdit: (msg: Message) => void
+  onEdit: (msgId: number, newText: string) => void
   onDelete: (msg: Message) => void
 }
 

@@ -27,14 +27,11 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
 
   const typing = (typingUsers[activeRoomId] || []).filter((id) => id !== user?.id)
 
-  const handleEdit = async (msg: Message) => {
-    const newText = prompt('Редагувати повідомлення:', msg.text)
-    if (newText !== null && newText.trim() && newText.trim() !== msg.text) {
-      try {
-        await chatApi.editMessage(activeRoomId, msg.id, newText.trim())
-        editMessage(msg.id, newText.trim())
-      } catch { /* error */ }
-    }
+  const handleEdit = async (msgId: number, newText: string) => {
+    try {
+      await chatApi.editMessage(activeRoomId, msgId, newText)
+      editMessage(msgId, newText)
+    } catch { /* error */ }
   }
 
   const handleDelete = async (msg: Message) => {

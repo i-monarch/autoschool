@@ -1,6 +1,7 @@
 'use client'
 
-import { Download, FileText, Pencil, Trash2 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Check, Download, FileText, Pencil, Trash2, X } from 'lucide-react'
 import type { Message } from '@/types/chat'
 
 interface Props {
@@ -8,7 +9,7 @@ interface Props {
   isOwn: boolean
   showSender: boolean
   onImageClick?: (url: string) => void
-  onEdit?: (msg: Message) => void
+  onEdit?: (msgId: number, newText: string) => void
   onDelete?: (msg: Message) => void
 }
 
@@ -23,6 +24,43 @@ function formatFileSize(bytes: number) {
 }
 
 export default function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDelete }: Props) {
+  const [editing, setEditing] = useState(false)
+  const [editText, setEditText] = useState('')
+  const editRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (editing && editRef.current) {
+      editRef.current.focus()
+      editRef.current.selectionStart = editRef.current.value.length
+    }
+  }, [editing])
+
+  const startEdit = () => {
+    setEditText(message.text)
+    setEditing(true)
+  }
+
+  const confirmEdit = () => {
+    const trimmed = editText.trim()
+    if (trimmed && trimmed !== message.text) {
+      onEdit?.(message.id, trimmed)
+    }
+    setEditing(false)
+  }
+
+  const cancelEdit = () => {
+    setEditing(false)
+  }
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      confirmEdit()
+    }
+    if (e.key === 'Escape') {
+      cancelEdit()
+    }
+  }
 
   if (message.type === 'system') {
     return (
@@ -47,9 +85,7 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} px-4 py-0.5 group`}>
-      <div
-        className={`max-w-[75%] relative ${isOwn ? 'order-1' : ''}`}
-      >
+      <div className={`max-w-[75%] relative ${isOwn ? 'order-1' : ''}`}>
         {showSender && !isOwn && message.sender && (
           <p className="text-xs font-medium text-primary mb-0.5 px-1">
             {message.sender.first_name || message.sender.username}
@@ -57,7 +93,7 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
         )}
 
         {message.parent && (
-          <div className={`mx-1 mb-1 px-2 py-1 rounded-lg border-l-2 border-primary/40 bg-base-200/50 text-xs`}>
+          <div className="mx-1 mb-1 px-2 py-1 rounded-lg border-l-2 border-primary/40 bg-base-200/50 text-xs">
             <span className="font-medium text-primary/70">
               {message.parent.sender?.first_name || 'Видалений'}
             </span>
@@ -117,7 +153,39 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
             </div>
           )}
 
-          {message.text && <p className="whitespace-pre-wrap">{message.text}</p>}
+          {editing ? (
+            <div>
+              <textarea
+                ref={editRef}
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                onKeyDown={handleEditKeyDown}
+                className={`
+                  w-full bg-transparent border-0 outline-none resize-none text-sm leading-snug
+                  ${isOwn ? 'text-primary-content placeholder:text-primary-content/40' : 'text-base-content'}
+                `}
+                rows={Math.min(editText.split('\n').length, 5)}
+              />
+              <div className="flex items-center justify-end gap-1 mt-1">
+                <button
+                  onClick={cancelEdit}
+                  className={`btn btn-xs btn-circle ${isOwn ? 'btn-ghost text-primary-content/60 hover:text-primary-content' : 'btn-ghost'}`}
+                  title="Скасувати (Esc)"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={confirmEdit}
+                  className={`btn btn-xs btn-circle ${isOwn ? 'btn-ghost text-primary-content/60 hover:text-primary-content' : 'btn-ghost'}`}
+                  title="Зберегти (Enter)"
+                >
+                  <Check className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            message.text && <p className="whitespace-pre-wrap">{message.text}</p>
+          )}
 
           <div className={`flex items-center justify-end gap-1 mt-0.5 ${isOwn ? 'text-primary-content/60' : 'text-base-content/40'}`}>
             {message.is_edited && <span className="text-[10px]">ред.</span>}
@@ -125,10 +193,10 @@ export default function MessageBubble({ message, isOwn, showSender, onImageClick
           </div>
         </div>
 
-        {isOwn && (
+        {isOwn && !editing && (
           <div className="absolute -left-16 top-1 flex gap-0.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
-              onClick={() => onEdit?.(message)}
+              onClick={startEdit}
               className="btn btn-ghost btn-xs btn-circle"
               title="Редагувати"
             >
