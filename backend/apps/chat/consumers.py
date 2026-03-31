@@ -161,8 +161,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @sync_to_async
     def _is_participant(self, room_id):
-        if self.user.role == 'admin':
-            return True
         return ChatParticipant.objects.filter(
             room_id=room_id, user=self.user
         ).exists()

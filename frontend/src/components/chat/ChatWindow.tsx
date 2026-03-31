@@ -18,13 +18,15 @@ interface Props {
 }
 
 export default function ChatWindow({ send, onBack, onInfo }: Props) {
-  const { activeRoomId, typingUsers, markRoomRead, editMessage, deleteMessage } = useChatStore()
+  const { activeRoomId, rooms, typingUsers, markRoomRead, editMessage, deleteMessage } = useChatStore()
   const user = useAuthStore((s) => s.user)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [replyTo, setReplyTo] = useState<Message | null>(null)
 
   if (!activeRoomId) return null
 
+  const room = rooms.find((r) => r.id === activeRoomId)
+  const isParticipant = room?.participants.some((p) => p.user.id === user?.id) ?? false
   const typing = (typingUsers[activeRoomId] || []).filter((id) => id !== user?.id)
 
   const handleEdit = async (msgId: number, newText: string) => {
@@ -59,12 +61,18 @@ export default function ChatWindow({ send, onBack, onInfo }: Props) {
 
       <TypingIndicator visible={typing.length > 0} />
 
-      <MessageInput
-        roomId={activeRoomId}
-        send={send}
-        replyTo={replyTo}
-        onCancelReply={() => setReplyTo(null)}
-      />
+      {isParticipant ? (
+        <MessageInput
+          roomId={activeRoomId}
+          send={send}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
+        />
+      ) : (
+        <div className="px-4 py-3 border-t border-base-300/40 text-center">
+          <p className="text-xs text-base-content/40">Режим перегляду</p>
+        </div>
+      )}
 
       <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
     </div>
