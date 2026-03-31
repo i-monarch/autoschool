@@ -5,10 +5,11 @@ import { useRouter, usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, ClipboardCheck, Users,
   CreditCard, LogOut, User, Settings, Bell,
-  ChevronLeft, Menu, GraduationCap, MapPin, Video,
+  ChevronLeft, Menu, GraduationCap, MapPin, Video, MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chat'
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Дашборд', icon: LayoutDashboard },
@@ -18,6 +19,7 @@ const navItems = [
   { href: '/admin/tests', label: 'Тести', icon: ClipboardCheck },
   { href: '/admin/routes', label: 'Маршрути', icon: MapPin },
   { href: '/admin/students', label: 'Учні', icon: Users },
+  { href: '/admin/chat', label: 'Повідомлення', icon: MessageCircle },
   { href: '/admin/payments', label: 'Платежі', icon: CreditCard },
 ]
 
@@ -27,6 +29,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const { user, loading, checked, fetchMe, logout } = useAuthStore()
+  const totalUnread = useChatStore((s) => s.totalUnread)
   const router = useRouter()
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
@@ -129,6 +132,11 @@ export default function AdminLayout({
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
+                {item.href === '/admin/chat' && totalUnread > 0 && !collapsed && (
+                  <span className="ml-auto bg-primary text-primary-content text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
+                    {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                )}
               </Link>
             )
           })}

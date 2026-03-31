@@ -201,6 +201,7 @@ CELERY_TASK_ROUTES = {
     'apps.video.tasks.*': {'queue': 'video'},
     'apps.notifications.tasks.*': {'queue': 'notifications'},
     'apps.payments.tasks.*': {'queue': 'payments'},
+    'apps.chat.tasks.*': {'queue': 'chat'},
 }
 
 

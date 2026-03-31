@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chat'
 
 const navItems = [
   { href: '/teacher/dashboard', label: 'Головна', icon: Home },
@@ -23,6 +24,7 @@ export default function TeacherLayout({
   children: React.ReactNode
 }) {
   const { user, loading, checked, fetchMe, logout } = useAuthStore()
+  const totalUnread = useChatStore((s) => s.totalUnread)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -90,6 +92,11 @@ export default function TeacherLayout({
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 <span>{item.label}</span>
+                {item.href === '/teacher/chat' && totalUnread > 0 && (
+                  <span className="ml-auto bg-secondary text-secondary-content text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
+                    {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                )}
               </Link>
             )
           })}

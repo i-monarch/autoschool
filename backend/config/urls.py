@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/admin/payments/', include('apps.payments.urls_admin')),
     path('api/v1/courses/', include('apps.courses.urls')),
     path('api/v1/routes/', include('apps.routes.urls')),
+    path('api/v1/chat/', include('apps.chat.urls')),
     path('api/v1/admin/routes/', include('apps.routes.urls_admin')),
 ]
 
