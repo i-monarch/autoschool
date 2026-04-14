@@ -227,7 +227,7 @@ export default function SchedulePage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {weekDates.map((date, i) => {
                 const dateStr = formatDate(date)
                 const isToday = dateStr === today
@@ -236,21 +236,20 @@ export default function SchedulePage() {
 
                 return (
                   <div key={dateStr}>
-                    <div className={`flex items-center gap-3 mb-3 ${isToday ? 'text-primary' : 'text-base-content/70'}`}>
-                      <div className={`flex items-center justify-center w-10 h-10 rounded-xl text-sm font-bold ${
-                        isToday ? 'bg-primary text-primary-content' : 'bg-base-200'
+                    <div className={`flex items-center gap-3 mb-3 pb-2 border-b ${
+                      isToday ? 'border-primary/20' : 'border-base-300/60'
+                    }`}>
+                      <div className={`flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold ${
+                        isToday ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content/70'
                       }`}>
                         {date.getDate()}
                       </div>
-                      <div>
-                        <p className={`text-sm font-semibold ${isToday ? 'text-primary' : ''}`}>
-                          {DAY_NAMES[i]}, {date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}
-                        </p>
-                        <p className="text-xs text-base-content/40">{daySlots.length} {daySlots.length === 1 ? 'слот' : daySlots.length < 5 ? 'слоти' : 'слотів'}</p>
-                      </div>
+                      <p className={`text-sm font-semibold ${isToday ? 'text-primary' : 'text-base-content/70'}`}>
+                        {DAY_NAMES[i]}, {date.toLocaleDateString('uk-UA', { month: 'long' })}
+                      </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ml-[52px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {daySlots.map(slot => {
                         const typeInfo = LESSON_TYPE_INFO[slot.lesson_type] || LESSON_TYPE_INFO.online
                         const TypeIcon = typeInfo.icon
@@ -259,12 +258,15 @@ export default function SchedulePage() {
                         return (
                           <div
                             key={slot.id}
-                            className="card bg-base-100 border border-base-300/60 p-4 hover:border-primary/30 transition-colors"
+                            className="flex flex-col p-4 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 transition-colors"
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold">
-                                {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-base-content/30" />
+                                <span className="text-sm font-bold">
+                                  {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                                </span>
+                              </div>
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
                                 <TypeIcon className="w-3 h-3" />
                                 {typeInfo.short}
@@ -277,12 +279,12 @@ export default function SchedulePage() {
 
                             <p className="text-xs text-base-content/50 mb-3">{slot.teacher_name}</p>
 
-                            <div className="flex items-center justify-between mt-auto">
+                            <div className="flex items-center justify-between mt-auto pt-3 border-t border-base-300/40">
                               <span className="text-xs text-base-content/40">
                                 {slot.spots_left} з {slot.max_students} місць
                               </span>
                               <button
-                                className="btn btn-xs btn-primary"
+                                className="btn btn-sm btn-primary"
                                 onClick={() => handleBook(slot.id)}
                                 disabled={isBookingSlot || slot.spots_left === 0}
                               >

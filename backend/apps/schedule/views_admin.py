@@ -16,7 +16,7 @@ class AdminSlotListView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = TimeSlot.objects.select_related('teacher').annotate(
-            bookings_count=Count('bookings', filter=Q(bookings__status='booked')),
+            active_bookings_count=Count('bookings', filter=Q(bookings__status='booked')),
         )
 
         date_from = self.request.query_params.get('date_from')

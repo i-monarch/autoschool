@@ -26,7 +26,7 @@ class TeacherSlotListCreateView(generics.ListCreateAPIView):
         qs = TimeSlot.objects.filter(
             teacher=self.request.user,
         ).annotate(
-            bookings_count=Count('bookings', filter=Q(bookings__status='booked')),
+            active_bookings_count=Count('bookings', filter=Q(bookings__status='booked')),
         )
 
         date_from = self.request.query_params.get('date_from')

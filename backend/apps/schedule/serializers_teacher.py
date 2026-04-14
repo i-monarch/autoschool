@@ -15,7 +15,7 @@ class SlotBookingSerializer(serializers.ModelSerializer):
 
 
 class TeacherSlotListSerializer(serializers.ModelSerializer):
-    bookings_count = serializers.IntegerField(read_only=True)
+    bookings_count = serializers.IntegerField(source='active_bookings_count', read_only=True)
 
     class Meta:
         model = TimeSlot
