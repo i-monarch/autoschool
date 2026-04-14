@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Flag, AlertCircle, Bookmark } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Flag, AlertCircle, Bookmark, X, LogOut } from 'lucide-react'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 
@@ -38,6 +38,7 @@ export default function TestSessionPage() {
   const [loading, setLoading] = useState(true)
   const [finishing, setFinishing] = useState(false)
   const [showConfirmFinish, setShowConfirmFinish] = useState(false)
+  const [showConfirmExit, setShowConfirmExit] = useState(false)
   const [autoAdvance, setAutoAdvance] = useState(false)
 
   const [answered, setAnswered] = useState<Record<number, {
@@ -172,6 +173,14 @@ export default function TestSessionPage() {
       {/* Header bar */}
       <div className="sticky top-16 z-20 bg-base-200/80 backdrop-blur-md -mx-4 px-4 py-3 mb-4 border-b border-base-300/40">
         <div className="flex items-center justify-between gap-3">
+          <button
+            onClick={() => setShowConfirmExit(true)}
+            className="btn btn-ghost btn-sm btn-square flex-shrink-0"
+            title="Вийти з тесту"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           <div className="text-base">
             <span className="font-bold text-lg">{currentIndex + 1}</span>
             <span className="text-base-content/40"> / {questions.length}</span>
@@ -396,6 +405,48 @@ export default function TestSessionPage() {
           </span>
         )}
       </div>
+
+      {/* Confirm exit modal */}
+      {showConfirmExit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="card bg-base-100 shadow-xl max-w-sm mx-4">
+            <div className="card-body">
+              <div className="flex items-center gap-3 mb-2">
+                <LogOut className="w-6 h-6 text-warning" />
+                <h3 className="font-semibold text-lg">Вийти з тесту?</h3>
+              </div>
+              <p className="text-sm text-base-content/60 mb-4">
+                {isExamMode
+                  ? 'Якщо ви вийдете, тест буде завершено. Питання без відповіді зараховуються як неправильні.'
+                  : 'Ваш прогрес буде втрачено. Ви зможете розпочати тест заново.'
+                }
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setShowConfirmExit(false)}
+                  className="btn btn-ghost btn-sm"
+                >
+                  Залишитися
+                </button>
+                <button
+                  onClick={() => {
+                    setShowConfirmExit(false)
+                    if (isExamMode) {
+                      doFinish()
+                    } else {
+                      sessionStorage.removeItem(`test_${attemptId}`)
+                      router.push('/tests')
+                    }
+                  }}
+                  className="btn btn-error btn-sm"
+                >
+                  Вийти
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm finish modal (exam mode) */}
       {showConfirmFinish && (
