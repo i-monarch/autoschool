@@ -1,18 +1,27 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.core.permissions import IsAdmin
+from apps.users.models import User
 from .models import TimeSlot, Booking
-from .serializers_admin import AdminSlotListSerializer, AdminSlotDetailSerializer
+from .serializers_admin import (
+    AdminSlotListSerializer,
+    AdminSlotDetailSerializer,
+    AdminSlotCreateSerializer,
+)
 
 
-class AdminSlotListView(generics.ListAPIView):
+class AdminSlotListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdmin]
-    serializer_class = AdminSlotListSerializer
     pagination_class = None
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AdminSlotCreateSerializer
+        return AdminSlotListSerializer
 
     def get_queryset(self):
         qs = TimeSlot.objects.select_related('teacher').annotate(
@@ -31,19 +40,62 @@ class AdminSlotListView(generics.ListAPIView):
         if lesson_type:
             qs = qs.filter(lesson_type=lesson_type)
 
-        status = self.request.query_params.get('status')
-        if status:
-            qs = qs.filter(status=status)
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
 
         return qs
 
 
-class AdminSlotDetailView(generics.RetrieveAPIView):
+class AdminSlotDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdmin]
-    serializer_class = AdminSlotDetailSerializer
     queryset = TimeSlot.objects.select_related('teacher').prefetch_related(
         'bookings', 'bookings__student',
     )
+
+    def get_serializer_class(self):
+        if self.request.method in ('PUT', 'PATCH'):
+            return AdminSlotCreateSerializer
+        return AdminSlotDetailSerializer
+
+    def perform_destroy(self, instance):
+        if instance.bookings.filter(status='booked').exists():
+            instance.status = 'cancelled'
+            instance.save(update_fields=['status'])
+            Booking.objects.filter(slot=instance, status='booked').update(
+                status='cancelled', cancelled_at=timezone.now(),
+            )
+        else:
+            instance.delete()
+
+
+class AdminCancelSlotView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        try:
+            slot = TimeSlot.objects.get(id=pk)
+        except TimeSlot.DoesNotExist:
+            return Response({'detail': 'Слот не знайдено.'}, status=status.HTTP_404_NOT_FOUND)
+
+        slot.status = 'cancelled'
+        slot.save(update_fields=['status'])
+        Booking.objects.filter(slot=slot, status='booked').update(
+            status='cancelled', cancelled_at=timezone.now(),
+        )
+        return Response({'status': 'cancelled'})
+
+
+class AdminTeachersListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        teachers = User.objects.filter(role='teacher').values('id', 'first_name', 'last_name', 'username')
+        result = [
+            {'id': t['id'], 'name': f"{t['first_name']} {t['last_name']}".strip() or t['username']}
+            for t in teachers
+        ]
+        return Response(result)
 
 
 class AdminScheduleStatsView(APIView):

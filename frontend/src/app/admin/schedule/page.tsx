@@ -3,10 +3,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   Calendar, Clock, ChevronLeft, ChevronRight,
-  Video, BookOpen, Car, Users, X,
+  Video, BookOpen, Car, Users, X, Plus, Pencil, Trash2,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
+import SlotModal from './SlotModal'
 
 interface SlotBooking {
   id: number
@@ -81,6 +82,9 @@ export default function AdminSchedulePage() {
   const [selectedSlot, setSelectedSlot] = useState<AdminSlot | null>(null)
   const [detailSlot, setDetailSlot] = useState<AdminSlot | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [creatingSlot, setCreatingSlot] = useState(false)
+  const [editingSlot, setEditingSlot] = useState<AdminSlot | null>(null)
+  const [createDate, setCreateDate] = useState<string | undefined>()
 
   const weekDates = getWeekDates(currentDate)
   const weekStart = formatDate(weekDates[0])
@@ -143,6 +147,45 @@ export default function AdminSchedulePage() {
     fetchSlotDetail(slot.id)
   }
 
+  const handleCancelSlot = async (slotId: number) => {
+    try {
+      await api.post(`/admin/schedule/slots/${slotId}/cancel/`)
+      toast.add('Слот скасовано', 'success')
+      fetchSlots()
+      fetchStats()
+      setDetailSlot(null)
+      setSelectedSlot(null)
+    } catch {
+      toast.add('Помилка скасування', 'error')
+    }
+  }
+
+  const handleDeleteSlot = async (slotId: number) => {
+    try {
+      await api.delete(`/admin/schedule/slots/${slotId}/`)
+      toast.add('Слот видалено', 'success')
+      fetchSlots()
+      fetchStats()
+      setDetailSlot(null)
+      setSelectedSlot(null)
+    } catch {
+      toast.add('Помилка видалення', 'error')
+    }
+  }
+
+  const handleSlotSaved = () => {
+    setCreatingSlot(false)
+    setEditingSlot(null)
+    setCreateDate(undefined)
+    fetchSlots()
+    fetchStats()
+  }
+
+  const handleDayHeaderClick = (date: string) => {
+    setCreateDate(date)
+    setCreatingSlot(true)
+  }
+
   const today = formatDate(new Date())
 
   const monthRange = (() => {
@@ -160,6 +203,13 @@ export default function AdminSchedulePage() {
           <h1 className="text-2xl font-bold">Розклад</h1>
           <p className="text-base-content/60 text-sm mt-1">Всі заняття та бронювання</p>
         </div>
+        <button
+          className="btn btn-primary btn-sm gap-2"
+          onClick={() => { setCreateDate(undefined); setCreatingSlot(true) }}
+        >
+          <Plus className="w-4 h-4" />
+          Додати слот
+        </button>
       </div>
 
       {/* Stats */}
@@ -212,12 +262,16 @@ export default function AdminSchedulePage() {
 
                 return (
                   <div key={dateStr} className="min-h-[140px]">
-                    <div className={`text-center py-2 rounded-lg mb-1 text-sm ${
-                      isToday ? 'bg-primary text-primary-content font-bold' : 'text-base-content/70'
-                    }`}>
+                    <button
+                      className={`w-full text-center py-2 rounded-lg mb-1 text-sm transition-colors hover:bg-primary/10 ${
+                        isToday ? 'bg-primary text-primary-content font-bold' : 'text-base-content/70'
+                      }`}
+                      onClick={() => handleDayHeaderClick(dateStr)}
+                      title="Натисніть щоб створити слот"
+                    >
                       <div className="text-xs">{DAY_NAMES[i]}</div>
                       <div className="text-lg">{date.getDate()}</div>
-                    </div>
+                    </button>
 
                     <div className="space-y-1">
                       {daySlots.map(slot => {
@@ -375,6 +429,40 @@ export default function AdminSchedulePage() {
                     {detailSlot.bookings && detailSlot.bookings.length === 0 && (
                       <p className="text-sm text-base-content/50">Ніхто не записався</p>
                     )}
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-3 border-t border-base-300/60">
+                      {detailSlot.status !== 'cancelled' && (
+                        <>
+                          <button
+                            className="btn btn-sm btn-ghost flex-1 gap-1"
+                            onClick={() => {
+                              setEditingSlot(detailSlot)
+                              setSelectedSlot(null)
+                              setDetailSlot(null)
+                            }}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            Редагувати
+                          </button>
+                          <button
+                            className="btn btn-sm btn-error btn-outline flex-1"
+                            onClick={() => handleCancelSlot(detailSlot.id)}
+                          >
+                            Скасувати
+                          </button>
+                        </>
+                      )}
+                      {detailSlot.status === 'cancelled' && (
+                        <button
+                          className="btn btn-sm btn-error btn-outline flex-1 gap-1"
+                          onClick={() => handleDeleteSlot(detailSlot.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Видалити
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -382,6 +470,27 @@ export default function AdminSchedulePage() {
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      {(creatingSlot || editingSlot) && (
+        <SlotModal
+          slot={editingSlot ? {
+            id: editingSlot.id,
+            date: editingSlot.date,
+            start_time: editingSlot.start_time,
+            end_time: editingSlot.end_time,
+            lesson_type: editingSlot.lesson_type,
+            title: editingSlot.title,
+            description: editingSlot.description,
+            meet_url: editingSlot.meet_url,
+            max_students: editingSlot.max_students,
+            teacher_id: (editingSlot as any).teacher_id,
+          } : null}
+          defaultDate={createDate}
+          onClose={() => { setCreatingSlot(false); setEditingSlot(null); setCreateDate(undefined) }}
+          onSaved={handleSlotSaved}
+        />
+      )}
     </div>
   )
 }
