@@ -35,10 +35,10 @@ interface MyBooking {
   teacher_name: string
 }
 
-const LESSON_TYPE_INFO: Record<string, { text: string; icon: typeof Video; cls: string }> = {
-  online: { text: 'Онлайн-консультація', icon: Video, cls: 'badge-info' },
-  theory: { text: 'Теорія', icon: BookOpen, cls: 'badge-primary' },
-  practice: { text: 'Практика', icon: Car, cls: 'badge-secondary' },
+const LESSON_TYPE_INFO: Record<string, { text: string; short: string; icon: typeof Video; bg: string; color: string }> = {
+  online: { text: 'Онлайн-консультація', short: 'Онлайн', icon: Video, bg: 'bg-info/10', color: 'text-info' },
+  theory: { text: 'Теорія', short: 'Теорія', icon: BookOpen, bg: 'bg-primary/10', color: 'text-primary' },
+  practice: { text: 'Практика', short: 'Практика', icon: Car, bg: 'bg-secondary/10', color: 'text-secondary' },
 }
 
 function getWeekDates(baseDate: Date): Date[] {
@@ -227,60 +227,66 @@ export default function SchedulePage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="space-y-4">
               {weekDates.map((date, i) => {
                 const dateStr = formatDate(date)
                 const isToday = dateStr === today
                 const daySlots = slots.filter(s => s.date === dateStr)
+                if (daySlots.length === 0) return null
 
                 return (
                   <div key={dateStr}>
-                    <div className={`text-center py-2 rounded-lg mb-2 text-sm ${
-                      isToday ? 'bg-primary/10 font-bold text-primary' : 'text-base-content/70'
-                    }`}>
-                      <div className="text-xs">{DAY_NAMES[i]}</div>
-                      <div className="text-lg">{date.getDate()}</div>
+                    <div className={`flex items-center gap-3 mb-3 ${isToday ? 'text-primary' : 'text-base-content/70'}`}>
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-xl text-sm font-bold ${
+                        isToday ? 'bg-primary text-primary-content' : 'bg-base-200'
+                      }`}>
+                        {date.getDate()}
+                      </div>
+                      <div>
+                        <p className={`text-sm font-semibold ${isToday ? 'text-primary' : ''}`}>
+                          {DAY_NAMES[i]}, {date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })}
+                        </p>
+                        <p className="text-xs text-base-content/40">{daySlots.length} {daySlots.length === 1 ? 'слот' : daySlots.length < 5 ? 'слоти' : 'слотів'}</p>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ml-[52px]">
                       {daySlots.map(slot => {
                         const typeInfo = LESSON_TYPE_INFO[slot.lesson_type] || LESSON_TYPE_INFO.online
                         const TypeIcon = typeInfo.icon
-                        const isBooking = bookingInProgress === slot.id
+                        const isBookingSlot = bookingInProgress === slot.id
 
                         return (
                           <div
                             key={slot.id}
-                            className="card bg-base-100 border border-base-300/60 p-3"
+                            className="card bg-base-100 border border-base-300/60 p-4 hover:border-primary/30 transition-colors"
                           >
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <Clock className="w-3 h-3 text-base-content/40" />
-                              <span className="text-sm font-medium">
-                                {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-semibold">
+                                {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                              </span>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
+                                <TypeIcon className="w-3 h-3" />
+                                {typeInfo.short}
                               </span>
                             </div>
 
-                            <span className={`badge badge-xs ${typeInfo.cls} mb-1.5`}>
-                              <TypeIcon className="w-2.5 h-2.5 mr-0.5" />
-                              {typeInfo.text}
-                            </span>
-
                             {slot.title && (
-                              <p className="text-xs font-medium mb-1 line-clamp-2">{slot.title}</p>
+                              <p className="text-sm font-medium mb-1 line-clamp-2">{slot.title}</p>
                             )}
 
-                            <p className="text-xs text-base-content/50 mb-2">{slot.teacher_name}</p>
+                            <p className="text-xs text-base-content/50 mb-3">{slot.teacher_name}</p>
 
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mt-auto">
                               <span className="text-xs text-base-content/40">
                                 {slot.spots_left} з {slot.max_students} місць
                               </span>
                               <button
                                 className="btn btn-xs btn-primary"
                                 onClick={() => handleBook(slot.id)}
-                                disabled={isBooking || slot.spots_left === 0}
+                                disabled={isBookingSlot || slot.spots_left === 0}
                               >
-                                {isBooking
+                                {isBookingSlot
                                   ? <span className="loading loading-spinner loading-xs" />
                                   : 'Записатися'
                                 }
@@ -334,15 +340,15 @@ export default function SchedulePage() {
                           key={b.id}
                           className="card bg-base-100 border border-base-300/60 p-4"
                         >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className={`badge badge-sm ${typeInfo.cls}`}>
-                                  <TypeIcon className="w-3 h-3 mr-1" />
-                                  {typeInfo.text}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
+                                  <TypeIcon className="w-3 h-3" />
+                                  {typeInfo.short}
                                 </span>
-                                <span className="badge badge-sm badge-success">
-                                  <Check className="w-3 h-3 mr-0.5" />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-success/10 text-success">
+                                  <Check className="w-3 h-3" />
                                   Записано
                                 </span>
                               </div>
@@ -369,7 +375,7 @@ export default function SchedulePage() {
                                   href={b.meet_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="btn btn-sm btn-info btn-outline mt-2 gap-1"
+                                  className="btn btn-sm btn-outline mt-3 gap-1.5"
                                 >
                                   <Video className="w-3.5 h-3.5" />
                                   Приєднатися
@@ -378,9 +384,10 @@ export default function SchedulePage() {
                             </div>
 
                             <button
-                              className="btn btn-sm btn-ghost text-error"
+                              className="btn btn-sm btn-ghost btn-square text-base-content/40 hover:text-error"
                               onClick={() => handleCancel(b.id)}
                               disabled={isCancelling}
+                              title="Скасувати запис"
                             >
                               {isCancelling
                                 ? <span className="loading loading-spinner loading-xs" />
@@ -406,15 +413,17 @@ export default function SchedulePage() {
                       return (
                         <div
                           key={b.id}
-                          className="card bg-base-100 border border-base-300/60 p-4 opacity-50"
+                          className="card bg-base-100 border border-base-300/60 p-4 opacity-60"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className={`badge badge-sm badge-ghost`}>
-                                  {typeInfo.text}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-base-200 text-base-content/60">
+                                  {typeInfo.short}
                                 </span>
-                                <span className={`badge badge-sm ${b.status === 'completed' ? 'badge-success' : 'badge-error'}`}>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
+                                  b.status === 'completed' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
+                                }`}>
                                   {b.status === 'completed' ? 'Завершено' : 'Скасовано'}
                                 </span>
                               </div>
