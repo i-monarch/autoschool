@@ -1,0 +1,65 @@
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.db.models import Count, Q
+from django.utils import timezone
+
+from apps.core.permissions import IsAdmin
+from .models import TimeSlot, Booking
+from .serializers_admin import AdminSlotListSerializer, AdminSlotDetailSerializer
+
+
+class AdminSlotListView(generics.ListAPIView):
+    permission_classes = [IsAdmin]
+    serializer_class = AdminSlotListSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = TimeSlot.objects.select_related('teacher').annotate(
+            bookings_count=Count('bookings', filter=Q(bookings__status='booked')),
+        )
+
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            qs = qs.filter(date__gte=date_from)
+
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            qs = qs.filter(date__lte=date_to)
+
+        lesson_type = self.request.query_params.get('type')
+        if lesson_type:
+            qs = qs.filter(lesson_type=lesson_type)
+
+        status = self.request.query_params.get('status')
+        if status:
+            qs = qs.filter(status=status)
+
+        return qs
+
+
+class AdminSlotDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAdmin]
+    serializer_class = AdminSlotDetailSerializer
+    queryset = TimeSlot.objects.select_related('teacher').prefetch_related(
+        'bookings', 'bookings__student',
+    )
+
+
+class AdminScheduleStatsView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        today = timezone.now().date()
+        slots = TimeSlot.objects.all()
+        upcoming = slots.filter(date__gte=today).exclude(status='cancelled')
+        active_bookings = Booking.objects.filter(status='booked', slot__date__gte=today)
+
+        return Response({
+            'total_slots': upcoming.count(),
+            'total_bookings': active_bookings.count(),
+            'this_week': upcoming.filter(
+                date__lte=today + timezone.timedelta(days=7),
+            ).count(),
+            'cancelled': slots.filter(status='cancelled').count(),
+        })
