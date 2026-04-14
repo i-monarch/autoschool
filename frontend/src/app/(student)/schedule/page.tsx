@@ -249,7 +249,7 @@ export default function SchedulePage() {
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' }}>
                       {daySlots.map(slot => {
                         const typeInfo = LESSON_TYPE_INFO[slot.lesson_type] || LESSON_TYPE_INFO.online
                         const TypeIcon = typeInfo.icon
