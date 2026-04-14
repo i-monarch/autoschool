@@ -1,10 +1,40 @@
 'use client'
 
-import { User, Mail, Phone, Shield } from 'lucide-react'
+import { useState } from 'react'
+import { User, Mail, Phone, Shield, Save, X } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/lib/api'
 
 export default function TeacherProfilePage() {
-  const user = useAuthStore((s) => s.user)
+  const { user, fetchMe } = useAuthStore()
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    first_name: user?.first_name || '',
+    last_name: user?.last_name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  })
+
+  const startEdit = () => {
+    setForm({
+      first_name: user?.first_name || '',
+      last_name: user?.last_name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    })
+    setEditing(true)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await api.patch('/teacher/profile/', form)
+      await fetchMe()
+      setEditing(false)
+    } catch { /* ignore */ }
+    setSaving(false)
+  }
 
   return (
     <div>
@@ -21,32 +51,83 @@ export default function TeacherProfilePage() {
                 <User className="w-4.5 h-4.5 text-base-content/60" />
                 Особисті дані
               </h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-base-content/50 mb-1">Ім'я</p>
-                  <p className="text-sm font-medium">{user?.first_name || '---'}</p>
+
+              {editing ? (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-base-content/50 mb-1 block">Ім&apos;я</label>
+                    <input
+                      className="input input-bordered input-sm w-full"
+                      value={form.first_name}
+                      onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-base-content/50 mb-1 block">Прізвище</label>
+                    <input
+                      className="input input-bordered input-sm w-full"
+                      value={form.last_name}
+                      onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-base-content/50 mb-1 block">Email</label>
+                    <input
+                      className="input input-bordered input-sm w-full"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-base-content/50 mb-1 block">Телефон</label>
+                    <input
+                      className="input input-bordered input-sm w-full"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-base-content/50 mb-1">Прізвище</p>
-                  <p className="text-sm font-medium">{user?.last_name || '---'}</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-base-content/50 mb-1">Ім&apos;я</p>
+                    <p className="text-sm font-medium">{user?.first_name || '---'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-base-content/50 mb-1">Прізвище</p>
+                    <p className="text-sm font-medium">{user?.last_name || '---'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-base-content/50 mb-1">Email</p>
+                    <p className="text-sm font-medium flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-base-content/40" />
+                      {user?.email || '---'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-base-content/50 mb-1">Телефон</p>
+                    <p className="text-sm font-medium flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-base-content/40" />
+                      {user?.phone || 'Не вказано'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-base-content/50 mb-1">Email</p>
-                  <p className="text-sm font-medium flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-base-content/40" />
-                    {user?.email || '---'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-base-content/50 mb-1">Телефон</p>
-                  <p className="text-sm font-medium flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-base-content/40" />
-                    {user?.phone || 'Не вказано'}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <button className="btn btn-sm btn-outline">Редагувати</button>
+              )}
+
+              <div className="mt-4 flex gap-2">
+                {editing ? (
+                  <>
+                    <button onClick={handleSave} disabled={saving} className="btn btn-sm btn-primary gap-1">
+                      <Save className="w-3.5 h-3.5" />
+                      {saving ? 'Збереження...' : 'Зберегти'}
+                    </button>
+                    <button onClick={() => setEditing(false)} className="btn btn-sm btn-ghost gap-1">
+                      <X className="w-3.5 h-3.5" /> Скасувати
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={startEdit} className="btn btn-sm btn-outline">Редагувати</button>
+                )}
               </div>
             </div>
           </div>
@@ -82,7 +163,6 @@ export default function TeacherProfilePage() {
                 {user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username}
               </p>
               <span className="badge badge-secondary badge-sm mt-1">Викладач</span>
-              <button className="btn btn-sm btn-ghost mt-3 text-xs">Змінити фото</button>
             </div>
           </div>
         </div>
