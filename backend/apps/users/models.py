@@ -23,6 +23,7 @@ class User(AbstractUser):
     is_paid = models.BooleanField(_('paid'), default=False)
     paid_until = models.DateTimeField(_('paid until'), null=True, blank=True)
     access_type = models.CharField(_('access type'), max_length=10, choices=ACCESS_CHOICES, default='free')
+    default_meet_url = models.URLField(_('default meeting link'), blank=True, help_text='Permanent Zoom/Meet link for teachers')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

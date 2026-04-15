@@ -43,6 +43,8 @@ class TeacherSlotListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         repeat_weeks = serializer.validated_data.pop('repeat_weeks', 0)
+        if not serializer.validated_data.get('meet_url') and self.request.user.default_meet_url:
+            serializer.validated_data['meet_url'] = self.request.user.default_meet_url
         slot = serializer.save(teacher=self.request.user)
 
         if repeat_weeks > 0:

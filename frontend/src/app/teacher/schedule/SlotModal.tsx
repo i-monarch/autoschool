@@ -159,7 +159,10 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
           </div>
 
           <div>
-            <label className="label"><span className="label-text">Посилання на Zoom / Google Meet</span></label>
+            <label className="label">
+              <span className="label-text">Посилання на Zoom / Google Meet</span>
+              {!isEdit && !meetUrl && <span className="label-text-alt text-success">з профілю</span>}
+            </label>
             <input
               type="url"
               className="input input-bordered w-full"

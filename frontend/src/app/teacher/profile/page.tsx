@@ -1,14 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Mail, Phone, Shield, Save, X } from 'lucide-react'
+import { User, Mail, Phone, Shield, Save, X, Video } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/lib/api'
 
 export default function TeacherProfilePage() {
   const { user, fetchMe } = useAuthStore()
+  const toast = useToast()
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [meetUrl, setMeetUrl] = useState((user as any)?.default_meet_url || '')
+  const [savingMeet, setSavingMeet] = useState(false)
   const [form, setForm] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
@@ -24,6 +28,18 @@ export default function TeacherProfilePage() {
       phone: user?.phone || '',
     })
     setEditing(true)
+  }
+
+  const handleSaveMeetUrl = async () => {
+    setSavingMeet(true)
+    try {
+      await api.patch('/teacher/profile/', { default_meet_url: meetUrl })
+      await fetchMe()
+      toast.add('Посилання збережено', 'success')
+    } catch {
+      toast.add('Помилка збереження', 'error')
+    }
+    setSavingMeet(false)
   }
 
   const handleSave = async () => {
@@ -127,6 +143,40 @@ export default function TeacherProfilePage() {
                   </>
                 ) : (
                   <button onClick={startEdit} className="btn btn-sm btn-outline">Редагувати</button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="card bg-base-100 border border-base-300/60">
+            <div className="card-body p-5">
+              <h2 className="font-semibold flex items-center gap-2 mb-4">
+                <Video className="w-4.5 h-4.5 text-base-content/60" />
+                Онлайн-заняття
+              </h2>
+              <div>
+                <p className="text-sm text-base-content/60 mb-2">
+                  Постійне посилання на Zoom або Google Meet. Буде автоматично підставлятися при створенні нових слотів.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    className="input input-bordered input-sm flex-1"
+                    placeholder="https://zoom.us/j/1234567890"
+                    value={meetUrl}
+                    onChange={e => setMeetUrl(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSaveMeetUrl}
+                    disabled={savingMeet}
+                    className="btn btn-sm btn-primary gap-1"
+                  >
+                    {savingMeet ? <span className="loading loading-spinner loading-xs" /> : <Save className="w-3.5 h-3.5" />}
+                    Зберегти
+                  </button>
+                </div>
+                {meetUrl && (
+                  <p className="text-xs text-success mt-2">Посилання встановлено. Нові слоти будуть створюватися з цим посиланням.</p>
                 )}
               </div>
             </div>

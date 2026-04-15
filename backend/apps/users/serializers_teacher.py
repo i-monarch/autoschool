@@ -35,5 +35,5 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email',
-                  'phone', 'avatar']
+                  'phone', 'avatar', 'default_meet_url']
         read_only_fields = ['id', 'username']

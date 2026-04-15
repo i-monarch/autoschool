@@ -50,6 +50,9 @@ class AdminSlotListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         repeat_weeks = serializer.validated_data.pop('repeat_weeks', 0)
+        teacher = serializer.validated_data.get('teacher')
+        if not serializer.validated_data.get('meet_url') and teacher and teacher.default_meet_url:
+            serializer.validated_data['meet_url'] = teacher.default_meet_url
         slot = serializer.save()
 
         if repeat_weeks > 0:
@@ -110,9 +113,13 @@ class AdminTeachersListView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
-        teachers = User.objects.filter(role='teacher').values('id', 'first_name', 'last_name', 'username')
+        teachers = User.objects.filter(role='teacher').values('id', 'first_name', 'last_name', 'username', 'default_meet_url')
         result = [
-            {'id': t['id'], 'name': f"{t['first_name']} {t['last_name']}".strip() or t['username']}
+            {
+                'id': t['id'],
+                'name': f"{t['first_name']} {t['last_name']}".strip() or t['username'],
+                'default_meet_url': t['default_meet_url'] or '',
+            }
             for t in teachers
         ]
         return Response(result)
