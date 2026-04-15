@@ -55,9 +55,12 @@ export default function StudentLayout({
     if (checked && !user) {
       router.push('/login')
     }
+    if (checked && user && user.role !== 'student') {
+      router.push(user.role === 'admin' ? '/admin/dashboard' : '/teacher/dashboard')
+    }
   }, [checked, user, router])
 
-  if (!checked || loading || !user) {
+  if (!checked || loading || !user || user.role !== 'student') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg text-primary" />

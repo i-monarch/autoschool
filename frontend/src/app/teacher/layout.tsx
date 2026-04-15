@@ -48,12 +48,12 @@ export default function TeacherLayout({
     if (checked && !user) {
       router.push('/login')
     }
-    if (checked && user && user.role !== 'teacher' && user.role !== 'admin') {
-      router.push('/dashboard')
+    if (checked && user && user.role !== 'teacher') {
+      router.push(user.role === 'admin' ? '/admin/dashboard' : '/dashboard')
     }
   }, [checked, user, router])
 
-  if (!checked || loading || !user) {
+  if (!checked || loading || !user || user.role !== 'teacher') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg text-secondary" />

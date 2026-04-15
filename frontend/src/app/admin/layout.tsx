@@ -58,7 +58,7 @@ export default function AdminLayout({
       router.push('/login')
     }
     if (checked && user && user.role !== 'admin') {
-      router.push('/dashboard')
+      router.push(user.role === 'teacher' ? '/teacher/dashboard' : '/dashboard')
     }
   }, [checked, user, router])
 
@@ -66,7 +66,7 @@ export default function AdminLayout({
     setMobileOpen(false)
   }, [pathname])
 
-  if (!checked || loading || !user) {
+  if (!checked || loading || !user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral">
         <span className="loading loading-spinner loading-lg text-primary" />
