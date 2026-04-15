@@ -155,6 +155,19 @@ export default function TeacherSchedulePage() {
     }
   }
 
+  const handleRestoreSlot = async (slotId: number) => {
+    try {
+      await api.post(`/teacher/schedule/slots/${slotId}/restore/`)
+      toast.add('Слот відновлено', 'success')
+      fetchSlots()
+      fetchStats()
+      setDetailSlot(null)
+      setSelectedSlot(null)
+    } catch {
+      toast.add('Помилка відновлення', 'error')
+    }
+  }
+
   const handleDeleteSlot = async (slotId: number) => {
     try {
       await api.delete(`/teacher/schedule/slots/${slotId}/`)
@@ -422,13 +435,21 @@ export default function TeacherSchedulePage() {
                         </>
                       )}
                       {detailSlot.status === 'cancelled' && (
-                        <button
-                          className="btn btn-sm btn-error btn-outline flex-1 gap-1"
-                          onClick={() => handleDeleteSlot(detailSlot.id)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Видалити
-                        </button>
+                        <>
+                          <button
+                            className="btn btn-sm btn-primary btn-outline flex-1"
+                            onClick={() => handleRestoreSlot(detailSlot.id)}
+                          >
+                            Відновити
+                          </button>
+                          <button
+                            className="btn btn-sm btn-error btn-outline flex-1 gap-1"
+                            onClick={() => handleDeleteSlot(detailSlot.id)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Видалити
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

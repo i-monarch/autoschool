@@ -7,4 +7,5 @@ urlpatterns = [
     path('slots/', views.AdminSlotListCreateView.as_view()),
     path('slots/<int:pk>/', views.AdminSlotDetailView.as_view()),
     path('slots/<int:pk>/cancel/', views.AdminCancelSlotView.as_view()),
+    path('slots/<int:pk>/restore/', views.AdminRestoreSlotView.as_view()),
 ]

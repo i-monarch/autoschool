@@ -109,6 +109,20 @@ class AdminCancelSlotView(APIView):
         return Response({'status': 'cancelled'})
 
 
+class AdminRestoreSlotView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        try:
+            slot = TimeSlot.objects.get(id=pk)
+        except TimeSlot.DoesNotExist:
+            return Response({'detail': 'Слот не знайдено.'}, status=status.HTTP_404_NOT_FOUND)
+
+        slot.status = 'available'
+        slot.save(update_fields=['status'])
+        return Response({'status': 'available'})
+
+
 class AdminTeachersListView(APIView):
     permission_classes = [IsAdmin]
 
