@@ -189,9 +189,13 @@ export default function DashboardPage() {
                       <td className="text-sm font-medium">{a.score}/{a.total}</td>
                       <td>
                         {a.is_passed ? (
-                          <span className="badge badge-success badge-sm gap-1"><CheckCircle className="w-3 h-3" />Здано</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-success/10 text-success">
+                            <CheckCircle className="w-3 h-3" />Здано
+                          </span>
                         ) : (
-                          <span className="badge badge-error badge-sm gap-1"><XCircle className="w-3 h-3" />Не здано</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-error/10 text-error">
+                            <XCircle className="w-3 h-3" />Не здано
+                          </span>
                         )}
                       </td>
                     </tr>
