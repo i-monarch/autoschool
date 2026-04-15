@@ -73,8 +73,8 @@ class TeacherDashboardView(APIView):
             'finished_at': a.finished_at.isoformat(),
         } for a in recent]
 
-        # Top weak categories (overall)
-        categories = TestCategory.objects.filter(question_count__gt=0)
+        # Top weak categories (overall, exclude "Без теми")
+        categories = TestCategory.objects.filter(question_count__gt=0).exclude(name='Без теми')
         category_stats = []
         for cat in categories:
             cat_attempts = TestAttempt.objects.filter(

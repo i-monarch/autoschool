@@ -196,7 +196,7 @@ class TestStatsView(APIView):
 
         # Stats by category — sorted weakest first
         category_stats = []
-        categories = TestCategory.objects.filter(question_count__gt=0)
+        categories = TestCategory.objects.filter(question_count__gt=0).exclude(name='Без теми')
         for cat in categories:
             cat_attempts = attempts.filter(category=cat)
             if cat_attempts.exists():
