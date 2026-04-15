@@ -50,12 +50,14 @@ class AdminSlotDetailSerializer(serializers.ModelSerializer):
 
 
 class AdminSlotCreateSerializer(serializers.ModelSerializer):
+    repeat_weeks = serializers.IntegerField(required=False, default=0, min_value=0, max_value=12)
+
     class Meta:
         model = TimeSlot
         fields = [
             'teacher', 'date', 'start_time', 'end_time',
             'lesson_type', 'title', 'description',
-            'meet_url', 'max_students',
+            'meet_url', 'max_students', 'repeat_weeks',
         ]
 
     def validate(self, data):

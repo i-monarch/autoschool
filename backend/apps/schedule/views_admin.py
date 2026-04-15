@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,6 +47,24 @@ class AdminSlotListCreateView(generics.ListCreateAPIView):
             qs = qs.filter(status=status_filter)
 
         return qs
+
+    def perform_create(self, serializer):
+        repeat_weeks = serializer.validated_data.pop('repeat_weeks', 0)
+        slot = serializer.save()
+
+        if repeat_weeks > 0:
+            for week in range(1, repeat_weeks + 1):
+                TimeSlot.objects.create(
+                    teacher=slot.teacher,
+                    date=slot.date + timedelta(weeks=week),
+                    start_time=slot.start_time,
+                    end_time=slot.end_time,
+                    lesson_type=slot.lesson_type,
+                    title=slot.title,
+                    description=slot.description,
+                    meet_url=slot.meet_url,
+                    max_students=slot.max_students,
+                )
 
 
 class AdminSlotDetailView(generics.RetrieveUpdateDestroyAPIView):

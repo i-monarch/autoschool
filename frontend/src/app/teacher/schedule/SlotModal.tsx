@@ -42,6 +42,7 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
   const [description, setDescription] = useState('')
   const [meetUrl, setMeetUrl] = useState('')
   const [maxStudents, setMaxStudents] = useState(1)
+  const [repeatWeeks, setRepeatWeeks] = useState(0)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
 
     setSaving(true)
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         date,
         start_time: startTime,
         end_time: endTime,
@@ -75,12 +76,18 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
         meet_url: meetUrl,
         max_students: maxStudents,
       }
+      if (!isEdit && repeatWeeks > 0) {
+        payload.repeat_weeks = repeatWeeks
+      }
       if (isEdit) {
         await api.put(`/teacher/schedule/slots/${slot.id}/`, payload)
         toast.add('Слот оновлено', 'success')
       } else {
+        const msg = repeatWeeks > 0
+          ? `Створено ${repeatWeeks + 1} слотів`
+          : 'Слот створено'
         await api.post('/teacher/schedule/slots/', payload)
-        toast.add('Слот створено', 'success')
+        toast.add(msg, 'success')
       }
       onSaved()
     } catch (err: any) {
@@ -183,16 +190,34 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
             />
           </div>
 
-          <div>
-            <label className="label"><span className="label-text">Макс. учнів</span></label>
-            <input
-              type="number"
-              className="input input-bordered w-20"
-              min={1}
-              max={50}
-              value={maxStudents}
-              onChange={e => setMaxStudents(parseInt(e.target.value) || 1)}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label"><span className="label-text">Макс. учнів</span></label>
+              <input
+                type="number"
+                className="input input-bordered w-full"
+                min={1}
+                max={50}
+                value={maxStudents}
+                onChange={e => setMaxStudents(parseInt(e.target.value) || 1)}
+              />
+            </div>
+            {!isEdit && (
+              <div>
+                <label className="label"><span className="label-text">Повторювати (тижнів)</span></label>
+                <select
+                  className="select select-bordered w-full"
+                  value={repeatWeeks}
+                  onChange={e => setRepeatWeeks(parseInt(e.target.value))}
+                >
+                  <option value={0}>Не повторювати</option>
+                  <option value={2}>2 тижні</option>
+                  <option value={4}>4 тижні</option>
+                  <option value={8}>8 тижнів</option>
+                  <option value={12}>12 тижнів</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
