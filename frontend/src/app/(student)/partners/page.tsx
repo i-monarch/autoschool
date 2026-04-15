@@ -45,7 +45,7 @@ export default function PartnersPage() {
       )
     : partners
 
-  const cities = [...new Set(partners.map(p => p.city))].sort()
+  const cities = Array.from(new Set(partners.map(p => p.city))).sort()
 
   return (
     <div>
