@@ -41,7 +41,7 @@ export default function WeeklyActivity({ weekly }: { weekly: DayData[] }) {
               {/* Tooltip */}
               {d.active && (
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 hidden group-hover:block z-10">
-                  <div className="bg-neutral text-neutral-content text-[10px] rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg">
+                  <div className="bg-neutral text-neutral-content text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg">
                     <p className="font-semibold">{d.questions} питань ({accuracy}%)</p>
                     <p className="text-neutral-content/60">+{d.xp} XP</p>
                   </div>
@@ -49,7 +49,7 @@ export default function WeeklyActivity({ weekly }: { weekly: DayData[] }) {
               )}
 
               {/* Value label */}
-              <span className="text-[11px] font-semibold tabular-nums min-h-[16px]">
+              <span className="text-xs font-semibold tabular-nums min-h-[16px]">
                 {d.questions > 0 ? d.questions : ''}
               </span>
 
@@ -68,7 +68,7 @@ export default function WeeklyActivity({ weekly }: { weekly: DayData[] }) {
               </div>
 
               {/* Day label */}
-              <span className={`text-[11px] font-medium ${
+              <span className={`text-xs font-medium ${
                 isToday ? 'text-primary font-bold' : d.active ? 'text-base-content/60' : 'text-base-content/30'
               }`}>
                 {DAY_LABELS[d.day] || d.day}

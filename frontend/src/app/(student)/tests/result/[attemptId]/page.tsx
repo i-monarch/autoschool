@@ -253,7 +253,7 @@ export default function TestResultPage() {
                       <div key={c.id} className="bg-base-200/50 rounded-lg p-2">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="text-xs font-medium">{c.user_name}</span>
-                          <span className="text-[10px] text-base-content/30">
+                          <span className="text-xs text-base-content/30">
                             {new Date(c.created_at).toLocaleDateString('uk-UA')}
                           </span>
                         </div>

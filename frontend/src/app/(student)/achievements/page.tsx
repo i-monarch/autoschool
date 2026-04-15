@@ -98,9 +98,9 @@ export default function AchievementsPage() {
                     </div>
                     <p className="text-xs text-base-content/50 mt-0.5">{ach.description}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] text-base-content/40">+{ach.xp_reward} XP</span>
+                      <span className="text-xs text-base-content/40">+{ach.xp_reward} XP</span>
                       {ach.earned && ach.earned_at && (
-                        <span className="text-[10px] text-base-content/40">
+                        <span className="text-xs text-base-content/40">
                           {new Date(ach.earned_at).toLocaleDateString('uk-UA')}
                         </span>
                       )}

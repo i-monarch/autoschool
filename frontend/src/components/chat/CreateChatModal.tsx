@@ -216,7 +216,7 @@ export default function CreateChatModal({ open, onClose }: Props) {
                       {u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username}
                     </p>
                   </div>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${roleBadgeClass(u.role)}`}>
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${roleBadgeClass(u.role)}`}>
                     {roleLabel(u.role)}
                   </span>
                   {mode === 'group' && isSelected && (

@@ -31,12 +31,12 @@ export default function XPLevelBar({ xp }: { xp: XPData }) {
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[11px] text-base-content/40 tabular-nums flex-shrink-0">
+        <span className="text-xs text-base-content/40 tabular-nums flex-shrink-0">
           {xp.xp_in_current_level}/{xp.xp_for_next_level}
         </span>
       </div>
 
-      <p className="text-[11px] text-base-content/40">
+      <p className="text-xs text-base-content/40">
         {xp.xp_for_next_level - xp.xp_in_current_level} XP до рівня {xp.level + 1}
       </p>
     </div>

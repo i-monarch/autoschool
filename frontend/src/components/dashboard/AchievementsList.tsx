@@ -94,7 +94,7 @@ export default function AchievementsList({ achievements }: { achievements: Achie
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{a.name}</p>
-                  <p className="text-[10px] text-base-content/40">
+                  <p className="text-xs text-base-content/40">
                     {new Date(a.earned_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
                   </p>
                 </div>

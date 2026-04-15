@@ -106,10 +106,10 @@ function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDel
           <p className="text-xs font-medium text-primary mb-0.5 px-1">
             {message.sender.first_name || message.sender.username}
             {message.sender.role === 'admin' && (
-              <span className="ml-1 text-[10px] font-normal bg-warning/20 text-warning-content px-1 py-0.5 rounded">Адмін</span>
+              <span className="ml-1 text-xs font-normal bg-warning/20 text-warning-content px-1 py-0.5 rounded">Адмін</span>
             )}
             {message.sender.role === 'teacher' && (
-              <span className="ml-1 text-[10px] font-normal bg-secondary/15 text-secondary px-1 py-0.5 rounded">Викладач</span>
+              <span className="ml-1 text-xs font-normal bg-secondary/15 text-secondary px-1 py-0.5 rounded">Викладач</span>
             )}
           </p>
         )}
@@ -187,7 +187,7 @@ function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDel
                     <FileText className="w-4 h-4 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium truncate">{a.filename}</p>
-                      <p className="text-[10px] opacity-60">{formatFileSize(a.file_size)}</p>
+                      <p className="text-xs opacity-60">{formatFileSize(a.file_size)}</p>
                     </div>
                     <Download className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
                   </a>
@@ -228,8 +228,8 @@ function MessageBubble({ message, isOwn, showSender, onImageClick, onEdit, onDel
 
           {!editing && (
             <div className={`flex items-center justify-end gap-1 mt-0.5 ${isOwn ? 'text-primary-content/60' : 'text-base-content/40'}`}>
-              {message.is_edited && <span className="text-[10px]">ред.</span>}
-              <span className="text-[10px]">{formatTime(message.created_at)}</span>
+              {message.is_edited && <span className="text-xs">ред.</span>}
+              <span className="text-xs">{formatTime(message.created_at)}</span>
             </div>
           )}
         </div>

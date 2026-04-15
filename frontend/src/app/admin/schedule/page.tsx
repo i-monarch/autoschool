@@ -416,7 +416,7 @@ export default function AdminSchedulePage() {
                                 )}
                               </div>
                               {b.status === 'cancelled' && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-error/10 text-error">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-error/10 text-error">
                                   Скасовано
                                 </span>
                               )}

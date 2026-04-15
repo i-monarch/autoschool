@@ -109,7 +109,7 @@ export default function AdminLayout({
               </div>
               <div>
                 <span className="font-bold text-sm">AutoSchool</span>
-                <span className="text-[10px] text-gray-400 block -mt-0.5">Адміністрування</span>
+                <span className="text-xs text-gray-400 block -mt-0.5">Адміністрування</span>
               </div>
             </Link>
           )}

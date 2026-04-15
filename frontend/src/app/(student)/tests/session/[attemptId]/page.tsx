@@ -203,7 +203,7 @@ export default function TestSessionPage() {
                 <button
                   key={q.id}
                   onClick={() => setCurrentIndex(i)}
-                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-[10px] font-semibold leading-none ${bg}`}
+                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-xs font-semibold leading-none ${bg}`}
                 >
                   {i + 1}
                 </button>

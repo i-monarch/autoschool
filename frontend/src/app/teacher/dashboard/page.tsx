@@ -194,7 +194,7 @@ export default function TeacherDashboardPage() {
                     }`}
                     value={cat.percent} max={100}
                   />
-                  <p className="text-[10px] text-base-content/40 mt-1">{cat.attempts} спроб</p>
+                  <p className="text-xs text-base-content/40 mt-1">{cat.attempts} спроб</p>
                 </div>
               ))}
             </div>
@@ -233,7 +233,7 @@ function StatCard({ icon, label, value, sub, color }: {
       </div>
       <p className="text-2xl font-bold">{value}</p>
       <p className="text-xs text-base-content/50 mt-0.5">{label}</p>
-      <p className="text-[10px] text-base-content/40 mt-0.5">{sub}</p>
+      <p className="text-xs text-base-content/40 mt-0.5">{sub}</p>
     </div>
   )
 }

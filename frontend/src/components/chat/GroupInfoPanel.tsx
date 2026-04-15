@@ -136,7 +136,7 @@ export default function GroupInfoPanel({ open, onClose }: Props) {
                   >
                     <div className="avatar placeholder">
                       <div className="w-6 h-6 rounded-full bg-primary text-primary-content">
-                        <span className="text-[10px]">{(u.first_name?.[0] || u.username[0]).toUpperCase()}</span>
+                        <span className="text-xs">{(u.first_name?.[0] || u.username[0]).toUpperCase()}</span>
                       </div>
                     </div>
                     <span className="text-xs flex-1 truncate">

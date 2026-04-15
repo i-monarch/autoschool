@@ -297,7 +297,7 @@ export default function AdminRoutesPage() {
                               <span className="flex-1 truncate text-xs">{center.name}</span>
                               <div className="flex items-center gap-1">
                                 {center.images_count > 0 && (
-                                  <span className="text-[10px] text-base-content/40">{center.images_count} img</span>
+                                  <span className="text-xs text-base-content/40">{center.images_count} img</span>
                                 )}
                                 <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
@@ -452,7 +452,7 @@ export default function AdminRoutesPage() {
                             <div className="flex items-center justify-between">
                               <span className="text-white text-xs font-medium">Маршрут {idx + 1}</span>
                               {img.video_url && (
-                                <div className="flex items-center gap-0.5 bg-secondary/90 text-secondary-content rounded-full px-1.5 py-0.5 text-[10px]">
+                                <div className="flex items-center gap-0.5 bg-secondary/90 text-secondary-content rounded-full px-1.5 py-0.5 text-xs">
                                   <Play className="w-2.5 h-2.5" />
                                 </div>
                               )}

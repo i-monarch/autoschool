@@ -275,7 +275,7 @@ function QuickAction({ href, icon, label, desc }: {
       <div className="w-10 h-10 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0 text-base-content/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">{icon}</div>
       <div className="flex-1 min-w-0">
         <span className="text-sm font-medium block">{label}</span>
-        <span className="text-[11px] text-base-content/40">{desc}</span>
+        <span className="text-xs text-base-content/40">{desc}</span>
       </div>
     </Link>
   )
