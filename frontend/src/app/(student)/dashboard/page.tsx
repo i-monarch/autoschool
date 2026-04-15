@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import {
   ClipboardCheck, BookOpen, Bookmark, Trophy, FileText, MapPin,
-  ArrowRight, AlertTriangle, CheckCircle, XCircle,
+  ArrowRight, AlertTriangle, CheckCircle, XCircle, ChevronRight,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 import Link from 'next/link'
@@ -147,12 +147,10 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <StatCard label="Тестів пройдено" value={String(stats?.total_attempts ?? 0)} color="primary" />
-          <StatCard label="Середній результат" value={`${stats?.avg_percent ?? 0}%`} color="info" progress={stats?.avg_percent} />
-          <StatCard label="Правильних відповідей" value={String(stats?.total_correct ?? 0)} color="success" />
-          <Link href="/tests" className="block">
-            <StatCard label="Помилок" value={String(stats?.total_wrong ?? 0)} color="error" clickable />
-          </Link>
+          <StatCard label="Тестів пройдено" value={String(stats?.total_attempts ?? 0)} accent="bg-base-100 border-base-300/60" />
+          <StatCard label="Середній результат" value={`${stats?.avg_percent ?? 0}%`} sub="правильних відповідей" accent="bg-base-100 border-base-300/60" />
+          <StatCard label="Правильних" value={String(stats?.total_correct ?? 0)} accent="bg-base-100 border-base-300/60" />
+          <StatCard label="Помилок" value={String(stats?.total_wrong ?? 0)} accent="bg-base-100 border-base-300/60" />
         </div>
       )}
 
@@ -208,12 +206,12 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-lg font-semibold mb-4">Швидкі дії</h2>
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-            <QuickAction href="/tests/exam" icon={<ClipboardCheck className="w-5 h-5" />} label="Екзамен" color="error" />
-            <QuickAction href="/theory" icon={<BookOpen className="w-5 h-5" />} label="Теорія" color="primary" />
-            <QuickAction href="/tests" icon={<Bookmark className="w-5 h-5" />} label="Збережені питання" color="warning" />
-            <QuickAction href="/tests/leaderboard" icon={<Trophy className="w-5 h-5" />} label="Рейтинг" color="accent" />
-            <QuickAction href="/europrotocol" icon={<FileText className="w-5 h-5" />} label="Європротокол" color="info" />
-            <QuickAction href="/routes" icon={<MapPin className="w-5 h-5" />} label="Маршрути" color="success" />
+            <QuickAction href="/tests/exam" icon={<ClipboardCheck className="w-5 h-5" />} label="Екзамен" desc="20 питань, 20 хв" />
+            <QuickAction href="/theory" icon={<BookOpen className="w-5 h-5" />} label="Теорія" desc="Конспекти ПДР" />
+            <QuickAction href="/tests" icon={<Bookmark className="w-5 h-5" />} label="Тренування" desc="Тести по темах" />
+            <QuickAction href="/tests/leaderboard" icon={<Trophy className="w-5 h-5" />} label="Рейтинг" desc="Таблиця лідерів" />
+            <QuickAction href="/europrotocol" icon={<FileText className="w-5 h-5" />} label="Європротокол" desc="Онлайн-заповнення" />
+            <QuickAction href="/routes" icon={<MapPin className="w-5 h-5" />} label="Маршрути" desc="Екзаменаційні маршрути" />
           </div>
         </div>
       </div>
@@ -253,28 +251,28 @@ export default function DashboardPage() {
   )
 }
 
-function StatCard({ label, value, color, progress, clickable }: {
-  label: string; value: string; color: string; progress?: number; clickable?: boolean
+function StatCard({ label, value, sub, accent }: {
+  label: string; value: string; sub?: string; accent: string
 }) {
   return (
-    <div className={`card bg-base-100 border border-base-300/60 p-4 ${clickable ? 'hover:border-error/40 hover:shadow-sm transition-all cursor-pointer' : ''}`}>
-      <p className={`text-2xl sm:text-3xl font-bold text-${color}`}>{value}</p>
-      <p className="text-xs sm:text-sm text-base-content/50 mt-1">{label}</p>
-      {typeof progress === 'number' && (
-        <progress className={`progress progress-${color} w-full mt-2 h-1.5`} value={progress} max={100} />
-      )}
+    <div className={`rounded-xl border p-4 ${accent}`}>
+      <p className="text-xs text-base-content/50 mb-1">{label}</p>
+      <p className="text-2xl sm:text-3xl font-bold">{value}</p>
+      {sub && <p className="text-xs text-base-content/40 mt-0.5">{sub}</p>}
     </div>
   )
 }
 
-function QuickAction({ href, icon, label, color }: {
-  href: string; icon: React.ReactNode; label: string; color: string
+function QuickAction({ href, icon, label, desc }: {
+  href: string; icon: React.ReactNode; label: string; desc: string
 }) {
   return (
-    <Link href={href} className="flex items-center gap-3 p-3 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary/30 hover:bg-primary/5 transition-colors group">
-      <div className={`w-10 h-10 rounded-lg bg-${color}/10 text-${color} flex items-center justify-center flex-shrink-0`}>{icon}</div>
-      <span className="text-sm font-medium">{label}</span>
-      <ArrowRight className="w-4 h-4 text-base-content/20 ml-auto group-hover:text-primary/60 transition-colors" />
+    <Link href={href} className="flex items-center gap-3 p-3 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary/30 transition-colors group">
+      <div className="w-10 h-10 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0 text-base-content/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-medium block">{label}</span>
+        <span className="text-[11px] text-base-content/40">{desc}</span>
+      </div>
     </Link>
   )
 }
