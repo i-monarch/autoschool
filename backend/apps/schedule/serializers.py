@@ -33,6 +33,7 @@ class AvailableSlotSerializer(serializers.ModelSerializer):
 
 
 class BookingListSerializer(serializers.ModelSerializer):
+    slot_id = serializers.IntegerField(source='slot.id')
     date = serializers.DateField(source='slot.date')
     start_time = serializers.TimeField(source='slot.start_time')
     end_time = serializers.TimeField(source='slot.end_time')
@@ -44,7 +45,7 @@ class BookingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'status', 'created_at',
+            'id', 'slot_id', 'status', 'created_at',
             'date', 'start_time', 'end_time',
             'lesson_type', 'title', 'meet_url',
             'teacher_name',

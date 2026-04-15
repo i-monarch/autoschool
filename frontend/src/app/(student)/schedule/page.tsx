@@ -24,6 +24,7 @@ interface AvailableSlot {
 
 interface MyBooking {
   id: number
+  slot_id: number
   status: string
   created_at: string
   date: string
@@ -101,11 +102,8 @@ export default function SchedulePage() {
 
   useEffect(() => {
     fetchSlots()
+    fetchBookings()
   }, [fetchSlots])
-
-  useEffect(() => {
-    if (tab === 'my') fetchBookings()
-  }, [tab, fetchBookings])
 
   const prevWeek = () => {
     const d = new Date(currentDate)
@@ -161,6 +159,7 @@ export default function SchedulePage() {
 
   const upcomingBookings = bookings.filter(b => b.status === 'booked')
   const pastBookings = bookings.filter(b => b.status !== 'booked')
+  const bookedSlotIds = new Set(upcomingBookings.map(b => b.slot_id))
 
   return (
     <div>
@@ -277,16 +276,23 @@ export default function SchedulePage() {
                               <span className="text-xs text-base-content/40">
                                 {slot.spots_left} з {slot.max_students} місць
                               </span>
-                              <button
-                                className="btn btn-sm btn-primary"
-                                onClick={() => handleBook(slot.id)}
-                                disabled={isBookingSlot || slot.spots_left === 0}
-                              >
-                                {isBookingSlot
-                                  ? <span className="loading loading-spinner loading-xs" />
-                                  : 'Записатися'
-                                }
-                              </button>
+                              {bookedSlotIds.has(slot.id) ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-success/10 text-success">
+                                  <Check className="w-3.5 h-3.5" />
+                                  Записано
+                                </span>
+                              ) : (
+                                <button
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() => handleBook(slot.id)}
+                                  disabled={isBookingSlot || slot.spots_left === 0}
+                                >
+                                  {isBookingSlot
+                                    ? <span className="loading loading-spinner loading-xs" />
+                                    : 'Записатися'
+                                  }
+                                </button>
+                              )}
                             </div>
                           </div>
                         )
