@@ -260,9 +260,9 @@ function StatCard({ label, value, sub, accent }: {
 }) {
   return (
     <div className={`rounded-xl border p-4 ${accent}`}>
-      <p className="text-xs text-base-content/50 mb-1">{label}</p>
+      <p className="text-sm text-base-content/50 mb-1">{label}</p>
       <p className="text-2xl sm:text-3xl font-bold">{value}</p>
-      {sub && <p className="text-xs text-base-content/40 mt-0.5">{sub}</p>}
+      {sub && <p className="text-sm text-base-content/40 mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -271,11 +271,11 @@ function QuickAction({ href, icon, label, desc }: {
   href: string; icon: React.ReactNode; label: string; desc: string
 }) {
   return (
-    <Link href={href} className="flex items-center gap-3 p-3 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary/30 transition-colors group">
+    <Link href={href} className="flex items-center gap-3 p-3.5 rounded-xl border border-base-300/60 bg-base-100 hover:border-primary/30 transition-colors group">
       <div className="w-10 h-10 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0 text-base-content/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">{icon}</div>
       <div className="flex-1 min-w-0">
-        <span className="text-sm font-medium block">{label}</span>
-        <span className="text-xs text-base-content/40">{desc}</span>
+        <span className="text-base font-medium block">{label}</span>
+        <span className="text-sm text-base-content/40">{desc}</span>
       </div>
     </Link>
   )

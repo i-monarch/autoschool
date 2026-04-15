@@ -12,15 +12,15 @@ export default function XPLevelBar({ xp }: { xp: XPData }) {
 
   return (
     <div className="card bg-gradient-to-br from-violet-50 to-purple-50/50 border border-violet-200/60 p-5">
-      <p className="text-xs text-base-content/50 mb-2">Рівень та досвід</p>
+      <p className="text-sm text-base-content/60 mb-2">Рівень та досвід</p>
 
       <div className="flex items-center gap-3 mb-3">
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shadow-violet-200">
           <span className="text-white text-lg font-bold">{xp.level}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold">Рівень {xp.level}</p>
-          <p className="text-xs text-base-content/40 tabular-nums">{xp.total_xp.toLocaleString()} XP загалом</p>
+          <p className="text-base font-semibold">Рівень {xp.level}</p>
+          <p className="text-sm text-base-content/40 tabular-nums">{xp.total_xp.toLocaleString()} XP загалом</p>
         </div>
       </div>
 
@@ -36,7 +36,7 @@ export default function XPLevelBar({ xp }: { xp: XPData }) {
         </span>
       </div>
 
-      <p className="text-xs text-base-content/40">
+      <p className="text-sm text-base-content/40">
         {xp.xp_for_next_level - xp.xp_in_current_level} XP до рівня {xp.level + 1}
       </p>
     </div>

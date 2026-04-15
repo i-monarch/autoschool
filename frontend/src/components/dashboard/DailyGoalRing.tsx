@@ -33,14 +33,14 @@ export default function DailyGoalRing({ goal, onUpdate }: { goal: DailyGoalData;
         ? 'bg-gradient-to-br from-emerald-50 to-green-50/50 border-emerald-200/60'
         : 'bg-base-100 border-base-300/60'
     }`}>
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs text-base-content/50">Мета на сьогодні</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm text-base-content/60">Мета на сьогодні</p>
         <button
           onClick={() => setShowSelector(!showSelector)}
-          className="btn btn-ghost btn-xs gap-0.5 text-base-content/40"
+          className="btn btn-ghost btn-sm gap-1 text-base-content/50"
         >
-          {goal.target} пит.
-          <ChevronDown className={`w-3 h-3 transition-transform ${showSelector ? 'rotate-180' : ''}`} />
+          {goal.target} питань
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSelector ? 'rotate-180' : ''}`} />
         </button>
       </div>
 
@@ -50,7 +50,7 @@ export default function DailyGoalRing({ goal, onUpdate }: { goal: DailyGoalData;
             <button
               key={n}
               onClick={() => handleChangeGoal(n)}
-              className={`btn btn-xs ${n === goal.target ? 'btn-primary' : 'btn-ghost border border-base-300/60'}`}
+              className={`btn btn-sm ${n === goal.target ? 'btn-primary' : 'btn-ghost border border-base-300/60'}`}
             >
               {n}
             </button>
@@ -84,9 +84,9 @@ export default function DailyGoalRing({ goal, onUpdate }: { goal: DailyGoalData;
         <div className="flex-1 min-w-0">
           <p className="text-2xl font-bold tabular-nums">
             {goal.current}
-            <span className="text-sm text-base-content/30 font-normal"> / {goal.target}</span>
+            <span className="text-base text-base-content/30 font-normal"> / {goal.target}</span>
           </p>
-          <p className="text-xs text-base-content/50 mt-0.5">
+          <p className="text-sm text-base-content/50 mt-0.5">
             {goal.completed ? 'Мета досягнута!' : `Ще ${goal.target - goal.current} питань`}
           </p>
           {!goal.completed && (

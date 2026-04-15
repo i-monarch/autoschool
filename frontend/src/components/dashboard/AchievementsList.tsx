@@ -67,10 +67,10 @@ export default function AchievementsList({ achievements }: { achievements: Achie
     <div className="card bg-base-100 border border-base-300/60 p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs text-base-content/50 mb-0.5">Досягнення</p>
+          <p className="text-sm text-base-content/60 mb-0.5">Досягнення</p>
           <p className="text-sm font-medium">{achievements.earned} з {achievements.total} <span className="text-base-content/30">({pct}%)</span></p>
         </div>
-        <Link href="/achievements" className="btn btn-ghost btn-xs text-primary">
+        <Link href="/achievements" className="btn btn-ghost btn-sm text-primary">
           Всі
         </Link>
       </div>
@@ -107,7 +107,7 @@ export default function AchievementsList({ achievements }: { achievements: Achie
           <div className="w-12 h-12 rounded-xl bg-base-200 flex items-center justify-center mx-auto mb-2">
             <Lock className="w-5 h-5 text-base-content/20" />
           </div>
-          <p className="text-xs text-base-content/40">Пройдіть тест, щоб отримати першу нагороду</p>
+          <p className="text-sm text-base-content/40">Пройдіть тест, щоб отримати першу нагороду</p>
         </div>
       )}
     </div>

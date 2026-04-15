@@ -21,10 +21,10 @@ export default function StreakCard({ streak }: { streak: StreakData }) {
     }`}>
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-xs text-base-content/50 mb-1">Серія навчання</p>
+          <p className="text-sm text-base-content/60 mb-1">Серія навчання</p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-bold tabular-nums">{streak.current_streak}</span>
-            <span className="text-sm text-base-content/40">
+            <span className="text-base text-base-content/40">
               {streak.current_streak === 1 ? 'день' : streak.current_streak < 5 ? 'дні' : 'днів'}
             </span>
           </div>
@@ -38,7 +38,6 @@ export default function StreakCard({ streak }: { streak: StreakData }) {
         </div>
       </div>
 
-      {/* Streak dots */}
       <div className="flex gap-1 mb-3">
         {days.map((active, i) => (
           <div
@@ -50,18 +49,18 @@ export default function StreakCard({ streak }: { streak: StreakData }) {
         ))}
       </div>
 
-      <p className="text-xs text-base-content/50 mb-3">
+      <p className="text-sm text-base-content/50 mb-3">
         {isActiveToday ? 'Сьогодні ви вже навчалися!' : 'Пройдіть тест, щоб продовжити серію'}
       </p>
 
       <div className="flex gap-4 pt-3 border-t border-orange-200/40">
         <div className="flex items-center gap-1.5">
-          <Trophy className="w-3.5 h-3.5 text-amber-500" />
-          <span className="text-xs text-base-content/60">Рекорд <b>{streak.longest_streak}</b></span>
+          <Trophy className="w-4 h-4 text-amber-500" />
+          <span className="text-sm text-base-content/60">Рекорд <b>{streak.longest_streak}</b></span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Calendar className="w-3.5 h-3.5 text-base-content/40" />
-          <span className="text-xs text-base-content/60">Всього <b>{streak.total_study_days}</b></span>
+          <Calendar className="w-4 h-4 text-base-content/40" />
+          <span className="text-sm text-base-content/60">Всього <b>{streak.total_study_days}</b></span>
         </div>
       </div>
     </div>

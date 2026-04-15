@@ -26,7 +26,7 @@ export default function WeeklyActivity({ weekly }: { weekly: DayData[] }) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium">Активність за тиждень</h3>
         {activeDays > 0 && (
-          <span className="text-xs text-base-content/40">{activeDays} з 7 днів</span>
+          <span className="text-sm text-base-content/40">{activeDays} з 7 днів</span>
         )}
       </div>
 
@@ -83,17 +83,17 @@ export default function WeeklyActivity({ weekly }: { weekly: DayData[] }) {
         {totalQuestions > 0 ? (
           <>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-base-content/50">
+              <span className="text-sm text-base-content/50">
                 <b className="text-base-content">{totalQuestions}</b> питань
               </span>
-              <span className="text-xs text-base-content/50">
+              <span className="text-sm text-base-content/50">
                 <b className="text-success">{totalCorrect}</b> вірних
               </span>
             </div>
-            <span className="text-xs font-semibold text-primary">+{totalXp} XP</span>
+            <span className="text-sm font-semibold text-primary">+{totalXp} XP</span>
           </>
         ) : (
-          <span className="text-xs text-base-content/40">Пройдіть тест, щоб побачити активність</span>
+          <span className="text-sm text-base-content/40">Пройдіть тест, щоб побачити активність</span>
         )}
       </div>
     </div>
