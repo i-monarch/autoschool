@@ -19,10 +19,10 @@ interface Student {
   tests_passed: number
 }
 
-const ACCESS_LABELS: Record<string, { text: string; cls: string }> = {
-  free: { text: 'Безкоштовний', cls: 'badge-ghost' },
-  trial: { text: 'Пробний', cls: 'badge-warning' },
-  paid: { text: 'Оплачений', cls: 'badge-success' },
+const ACCESS_LABELS: Record<string, { text: string; bg: string }> = {
+  free: { text: 'Безкоштовний', bg: 'bg-base-200 text-base-content/60' },
+  trial: { text: 'Пробний', bg: 'bg-warning/10 text-warning' },
+  paid: { text: 'Оплачений', bg: 'bg-success/10 text-success' },
 }
 
 export default function TeacherStudentsPage() {
@@ -137,7 +137,7 @@ export default function TeacherStudentsPage() {
                       </div>
                     </td>
                     <td>
-                      <span className={`badge badge-sm ${ACCESS_LABELS[s.access_type]?.cls || ''}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${ACCESS_LABELS[s.access_type]?.bg || 'bg-base-200'}`}>
                         {ACCESS_LABELS[s.access_type]?.text || s.access_type}
                       </span>
                     </td>

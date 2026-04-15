@@ -1,10 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  Users, MessageCircle, ClipboardCheck, TrendingUp,
-  ArrowRight, CheckCircle, XCircle, BarChart3,
-} from 'lucide-react'
+import { ArrowRight, CheckCircle, XCircle } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 import Link from 'next/link'
 import api from '@/lib/api'
@@ -53,60 +50,41 @@ export default function TeacherDashboardPage() {
 
   return (
     <div>
-      {/* Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 border border-indigo-200/60 mb-6">
-        <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          <svg className="absolute bottom-0 right-0 w-[300px] h-full opacity-[0.06]" viewBox="0 0 300 120" fill="none">
-            <rect x="20" y="30" width="80" height="60" rx="8" stroke="currentColor" strokeWidth="4" className="text-indigo-800" />
-            <rect x="30" y="10" width="60" height="30" rx="6" stroke="currentColor" strokeWidth="3" className="text-indigo-800" />
-            <circle cx="180" cy="60" r="30" stroke="currentColor" strokeWidth="4" className="text-indigo-800" />
-            <path d="M165 60 L175 70 L195 50" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-indigo-800" />
-            <path d="M230 20 L270 20 M230 40 L260 40 M230 60 L270 60 M230 80 L250 80" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-indigo-800" />
-          </svg>
-        </div>
-        <div className="relative px-6 py-6 sm:px-8 sm:py-7">
-          <h1 className="text-2xl sm:text-3xl font-bold text-base-content mb-1">
-            Привіт, {user?.first_name || user?.username}!
-          </h1>
-          <p className="text-base-content/60 text-sm">Панель викладача</p>
-        </div>
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-1">
+          Привіт, {user?.first_name || user?.username}
+        </h1>
+        <p className="text-sm text-base-content/50">Панель викладача</p>
       </div>
 
       {/* Stats */}
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          {[...Array(4)].map((_, i) => <div key={i} className="skeleton h-28 rounded-xl" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="skeleton h-24 rounded-xl" />)}
         </div>
       ) : data && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <StatCard
-            icon={<Users className="w-5 h-5" />}
-            label="Всього учнів"
-            value={String(data.stats.total_students)}
-            sub={`${data.stats.paid_students} оплачених`}
-            color="secondary"
-          />
-          <StatCard
-            icon={<ClipboardCheck className="w-5 h-5" />}
-            label="Тестів сьогодні"
-            value={String(data.stats.tests_today)}
-            sub={`${data.stats.weekly_tests} за тиждень`}
-            color="primary"
-          />
-          <StatCard
-            icon={<MessageCircle className="w-5 h-5" />}
-            label="Повідомлень"
-            value={String(data.stats.new_messages_today)}
-            sub="нових сьогодні"
-            color="info"
-          />
-          <StatCard
-            icon={<TrendingUp className="w-5 h-5" />}
-            label="Середній бал"
-            value={`${data.stats.avg_score}%`}
-            sub={`${data.stats.weekly_active_students} активних за тиждень`}
-            color="success"
-          />
+          <div className="rounded-xl border border-base-300/60 bg-base-100 p-4">
+            <p className="text-sm text-base-content/50 mb-1">Учні</p>
+            <p className="text-2xl font-bold">{data.stats.total_students}</p>
+            <p className="text-sm text-base-content/40">{data.stats.paid_students} оплачених</p>
+          </div>
+          <div className="rounded-xl border border-base-300/60 bg-base-100 p-4">
+            <p className="text-sm text-base-content/50 mb-1">Тести сьогодні</p>
+            <p className="text-2xl font-bold">{data.stats.tests_today}</p>
+            <p className="text-sm text-base-content/40">{data.stats.weekly_tests} за тиждень</p>
+          </div>
+          <div className="rounded-xl border border-base-300/60 bg-base-100 p-4">
+            <p className="text-sm text-base-content/50 mb-1">Повідомлення</p>
+            <p className="text-2xl font-bold">{data.stats.new_messages_today}</p>
+            <p className="text-sm text-base-content/40">нових сьогодні</p>
+          </div>
+          <div className="rounded-xl border border-base-300/60 bg-base-100 p-4">
+            <p className="text-sm text-base-content/50 mb-1">Середній бал</p>
+            <p className="text-2xl font-bold">{data.stats.avg_score}%</p>
+            <p className="text-sm text-base-content/40">{data.stats.weekly_active_students} активних за тиждень</p>
+          </div>
         </div>
       )}
 
@@ -114,126 +92,104 @@ export default function TeacherDashboardPage() {
         {/* Recent results */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Останні результати учнів</h2>
-            <Link href="/teacher/students" className="text-sm text-secondary hover:underline flex items-center gap-1">
-              Всі учні <ArrowRight className="w-3.5 h-3.5" />
+            <h2 className="text-lg font-semibold">Останні результати</h2>
+            <Link href="/teacher/students" className="text-sm text-primary hover:underline">
+              Всі учні
             </Link>
           </div>
 
           {loading ? (
             <div className="skeleton h-72 rounded-xl" />
           ) : !data || data.recent_results.length === 0 ? (
-            <div className="card bg-base-100 border border-base-300/60">
-              <div className="card-body items-center text-center py-12">
-                <ClipboardCheck className="w-12 h-12 text-base-content/20 mb-3" />
-                <p className="text-base-content/50">Ще немає результатів</p>
-              </div>
-            </div>
-          ) : (
-            <div className="card bg-base-100 border border-base-300/60 overflow-x-auto">
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Учень</th>
-                    <th>Тип</th>
-                    <th>Результат</th>
-                    <th>Статус</th>
-                    <th>Дата</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.recent_results.map((r, i) => (
-                    <tr key={i} className="hover">
-                      <td className="text-sm font-medium">{r.student_name}</td>
-                      <td className="text-sm text-base-content/70">{TEST_TYPE_LABELS[r.test_type] ?? r.test_type}</td>
-                      <td className="text-sm font-medium">{r.score}/{r.total}</td>
-                      <td>
-                        {r.is_passed ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-success/10 text-success"><CheckCircle className="w-3 h-3" />Здано</span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-error/10 text-error"><XCircle className="w-3 h-3" />Не здано</span>
-                        )}
-                      </td>
-                      <td className="text-xs text-base-content/50">
-                        {new Date(r.finished_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Weak categories */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-5 h-5 text-warning" />
-            <h2 className="text-lg font-semibold">Слабкі теми</h2>
-          </div>
-
-          {loading ? (
-            <div className="skeleton h-48 rounded-xl" />
-          ) : !data || data.weak_categories.length === 0 ? (
-            <div className="card bg-base-100 border border-base-300/60 p-6 text-center">
-              <p className="text-sm text-base-content/50">Поки немає даних</p>
+            <div className="card bg-base-100 border border-base-300/60 p-12 text-center">
+              <p className="text-base-content/40">Ще немає результатів тестів</p>
             </div>
           ) : (
             <div className="space-y-2">
-              {data.weak_categories.map((cat, i) => (
-                <div key={i} className="card bg-base-100 border border-base-300/60 p-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium truncate">{cat.category_name}</span>
-                    <span className={`text-sm font-semibold ${
-                      cat.percent < 50 ? 'text-error' : cat.percent < 70 ? 'text-warning' : 'text-base-content/70'
-                    }`}>{cat.percent}%</span>
+              {data.recent_results.map((r, i) => (
+                <div key={i} className="flex items-center gap-4 p-3.5 rounded-xl bg-base-100 border border-base-300/60">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{r.student_name}</p>
+                    <p className="text-xs text-base-content/40">
+                      {TEST_TYPE_LABELS[r.test_type] ?? r.test_type}
+                      {r.category_name ? ` / ${r.category_name}` : ''}
+                    </p>
                   </div>
-                  <progress
-                    className={`progress w-full h-2 ${
-                      cat.percent < 50 ? 'progress-error' : cat.percent < 70 ? 'progress-warning' : 'progress-primary'
-                    }`}
-                    value={cat.percent} max={100}
-                  />
-                  <p className="text-xs text-base-content/40 mt-1">{cat.attempts} спроб</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold tabular-nums">{r.score}/{r.total}</p>
+                    <p className="text-xs text-base-content/40">
+                      {new Date(r.finished_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
+                    </p>
+                  </div>
+                  {r.is_passed ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-success/10 text-success flex-shrink-0">
+                      <CheckCircle className="w-3 h-3" />Здано
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-error/10 text-error flex-shrink-0">
+                      <XCircle className="w-3 h-3" />Не здано
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
           )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Weak categories */}
+          {!loading && data && data.weak_categories.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Слабкі теми учнів</h2>
+              <div className="space-y-2">
+                {data.weak_categories.slice(0, 5).map((cat, i) => (
+                  <div key={i} className="p-3 rounded-xl bg-base-100 border border-base-300/60">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm truncate">{cat.category_name}</span>
+                      <span className={`text-sm font-bold tabular-nums ${
+                        cat.percent < 50 ? 'text-error' : cat.percent < 70 ? 'text-warning' : 'text-base-content/60'
+                      }`}>{cat.percent}%</span>
+                    </div>
+                    <div className="w-full bg-base-200 rounded-full h-1.5">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          cat.percent < 50 ? 'bg-error' : cat.percent < 70 ? 'bg-warning' : 'bg-primary'
+                        }`}
+                        style={{ width: `${cat.percent}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-base-content/40 mt-1">{cat.attempts} спроб</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Quick links */}
-          <div className="mt-6 space-y-2">
-            <Link href="/teacher/chat" className="flex items-center gap-3 p-3 rounded-xl border border-base-300/60 bg-base-100 hover:border-secondary/30 hover:bg-secondary/5 transition-colors group">
-              <div className="w-10 h-10 rounded-lg bg-info/10 text-info flex items-center justify-center">
-                <MessageCircle className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-medium">Повідомлення</span>
-              <ArrowRight className="w-4 h-4 text-base-content/20 ml-auto group-hover:text-secondary/60" />
-            </Link>
-            <Link href="/teacher/students" className="flex items-center gap-3 p-3 rounded-xl border border-base-300/60 bg-base-100 hover:border-secondary/30 hover:bg-secondary/5 transition-colors group">
-              <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
-                <Users className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-medium">Список учнів</span>
-              <ArrowRight className="w-4 h-4 text-base-content/20 ml-auto group-hover:text-secondary/60" />
-            </Link>
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Швидкий доступ</h2>
+            <div className="space-y-1.5">
+              <Link href="/teacher/schedule" className="flex items-center justify-between p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 transition-colors text-sm font-medium">
+                Розклад занять
+                <ArrowRight className="w-4 h-4 text-base-content/20" />
+              </Link>
+              <Link href="/teacher/chat" className="flex items-center justify-between p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 transition-colors text-sm font-medium">
+                Повідомлення
+                <ArrowRight className="w-4 h-4 text-base-content/20" />
+              </Link>
+              <Link href="/teacher/students" className="flex items-center justify-between p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 transition-colors text-sm font-medium">
+                Список учнів
+                <ArrowRight className="w-4 h-4 text-base-content/20" />
+              </Link>
+              <Link href="/teacher/profile" className="flex items-center justify-between p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 transition-colors text-sm font-medium">
+                Налаштування профілю
+                <ArrowRight className="w-4 h-4 text-base-content/20" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function StatCard({ icon, label, value, sub, color }: {
-  icon: React.ReactNode; label: string; value: string; sub: string; color: string
-}) {
-  return (
-    <div className="card bg-base-100 border border-base-300/60 p-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-${color}/10 text-${color}`}>
-        {icon}
-      </div>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs text-base-content/50 mt-0.5">{label}</p>
-      <p className="text-xs text-base-content/40 mt-0.5">{sub}</p>
     </div>
   )
 }

@@ -38,9 +38,9 @@ interface PaginatedResponse {
 }
 
 const ACCESS_CONFIG = {
-  paid: { label: 'Оплачено', badge: 'badge-success', icon: CheckCircle },
-  trial: { label: 'Пробний', badge: 'badge-warning', icon: Clock },
-  free: { label: 'Безкоштовний', badge: 'badge-ghost', icon: XCircle },
+  paid: { label: 'Оплачено', bg: 'bg-success/10 text-success' },
+  trial: { label: 'Пробний', bg: 'bg-warning/10 text-warning' },
+  free: { label: 'Безкоштовний', bg: 'bg-base-200 text-base-content/60' },
 } as const
 
 export default function AdminStudentsPage() {
@@ -196,7 +196,6 @@ export default function AdminStudentsPage() {
             ) : (
               students.map(s => {
                 const config = ACCESS_CONFIG[s.access_type] || ACCESS_CONFIG.free
-                const Icon = config.icon
                 return (
                   <tr key={s.id} className="hover">
                     <td>
@@ -218,8 +217,7 @@ export default function AdminStudentsPage() {
                       {s.phone || '—'}
                     </td>
                     <td className="text-center">
-                      <span className={`badge ${config.badge} badge-sm gap-1`}>
-                        <Icon className="w-3 h-3" />
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${config.bg}`}>
                         {config.label}
                       </span>
                     </td>
