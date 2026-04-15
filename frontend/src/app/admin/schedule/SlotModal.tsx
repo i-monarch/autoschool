@@ -30,12 +30,6 @@ interface SlotModalProps {
   onSaved: () => void
 }
 
-const LESSON_TYPES = [
-  { value: 'online', label: 'Онлайн-консультація' },
-  { value: 'theory', label: 'Теоретичне заняття' },
-  { value: 'practice', label: 'Практичне заняття' },
-]
-
 export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotModalProps) {
   const toast = useToast()
   const isEdit = !!slot
@@ -45,7 +39,6 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
   const [date, setDate] = useState(defaultDate || '')
   const [startTime, setStartTime] = useState('10:00')
   const [endTime, setEndTime] = useState('11:00')
-  const [lessonType, setLessonType] = useState('online')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [meetUrl, setMeetUrl] = useState('')
@@ -68,7 +61,6 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
       setDate(slot.date)
       setStartTime(slot.start_time.slice(0, 5))
       setEndTime(slot.end_time.slice(0, 5))
-      setLessonType(slot.lesson_type)
       setTitle(slot.title)
       setDescription(slot.description)
       setMeetUrl(slot.meet_url)
@@ -89,7 +81,7 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
         date,
         start_time: startTime,
         end_time: endTime,
-        lesson_type: lessonType,
+        lesson_type: 'online',
         title,
         description,
         meet_url: meetUrl,
@@ -176,19 +168,6 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
                 onChange={e => setEndTime(e.target.value)}
               />
             </div>
-          </div>
-
-          <div>
-            <label className="label"><span className="label-text">Тип заняття</span></label>
-            <select
-              className="select select-bordered w-full"
-              value={lessonType}
-              onChange={e => setLessonType(e.target.value)}
-            >
-              {LESSON_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
           </div>
 
           <div>

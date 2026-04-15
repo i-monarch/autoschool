@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   Calendar, Clock, ChevronLeft, ChevronRight,
-  Video, BookOpen, Car, Users, X, Plus, Pencil, Trash2,
+  Video, Users, X, Plus, Pencil, Trash2,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
@@ -38,12 +38,6 @@ interface Stats {
   total_bookings: number
   this_week: number
   cancelled: number
-}
-
-const LESSON_TYPE_INFO: Record<string, { text: string; short: string; icon: typeof Video; bg: string; color: string }> = {
-  online: { text: 'Онлайн-консультація', short: 'Онлайн', icon: Video, bg: 'bg-info/10', color: 'text-info' },
-  theory: { text: 'Теоретичне заняття', short: 'Теорія', icon: BookOpen, bg: 'bg-primary/10', color: 'text-primary' },
-  practice: { text: 'Практичне заняття', short: 'Практика', icon: Car, bg: 'bg-secondary/10', color: 'text-secondary' },
 }
 
 const STATUS_INFO: Record<string, { text: string; bg: string; color: string }> = {
@@ -275,8 +269,6 @@ export default function AdminSchedulePage() {
 
                     <div className="space-y-1">
                       {daySlots.map(slot => {
-                        const typeInfo = LESSON_TYPE_INFO[slot.lesson_type] || LESSON_TYPE_INFO.online
-                        const TypeIcon = typeInfo.icon
                         const isSelected = selectedSlot?.id === slot.id
 
                         return (
@@ -292,7 +284,7 @@ export default function AdminSchedulePage() {
                             onClick={() => handleSlotClick(slot)}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <TypeIcon className={`w-3 h-3 flex-shrink-0 ${typeInfo.color}`} />
+                              <Video className="w-3 h-3 flex-shrink-0 text-info" />
                               <span className="truncate font-medium">
                                 {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
                               </span>
@@ -359,17 +351,11 @@ export default function AdminSchedulePage() {
 
                     <div className="flex items-center gap-2">
                       {(() => {
-                        const typeInfo = LESSON_TYPE_INFO[detailSlot.lesson_type] || LESSON_TYPE_INFO.online
                         const statusInfo = STATUS_INFO[detailSlot.status] || STATUS_INFO.available
                         return (
-                          <>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
-                              {typeInfo.short}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}>
-                              {statusInfo.text}
-                            </span>
-                          </>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}>
+                            {statusInfo.text}
+                          </span>
                         )
                       })()}
                     </div>

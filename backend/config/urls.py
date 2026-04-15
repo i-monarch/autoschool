@@ -23,6 +23,8 @@ urlpatterns = [
     path('api/v1/schedule/', include('apps.schedule.urls')),
     path('api/v1/teacher/schedule/', include('apps.schedule.urls_teacher')),
     path('api/v1/admin/schedule/', include('apps.schedule.urls_admin')),
+    path('api/v1/partners/', include('apps.partners.urls')),
+    path('api/v1/admin/partners/', include('apps.partners.urls_admin')),
     path('api/v1/teacher/', include('apps.users.urls_teacher')),
 ]
 

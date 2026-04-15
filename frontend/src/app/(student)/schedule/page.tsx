@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import {
-  Calendar, Clock, Video, BookOpen, Car,
+  Calendar, Clock, Video,
   ChevronLeft, ChevronRight, Check, X as XIcon,
 } from 'lucide-react'
 import api from '@/lib/api'
@@ -35,11 +35,7 @@ interface MyBooking {
   teacher_name: string
 }
 
-const LESSON_TYPE_INFO: Record<string, { text: string; short: string; icon: typeof Video; bg: string; color: string }> = {
-  online: { text: 'Онлайн-консультація', short: 'Онлайн', icon: Video, bg: 'bg-info/10', color: 'text-info' },
-  theory: { text: 'Теорія', short: 'Теорія', icon: BookOpen, bg: 'bg-primary/10', color: 'text-primary' },
-  practice: { text: 'Практика', short: 'Практика', icon: Car, bg: 'bg-secondary/10', color: 'text-secondary' },
-}
+// All slots are online lessons
 
 function getWeekDates(baseDate: Date): Date[] {
   const start = new Date(baseDate)
@@ -251,8 +247,6 @@ export default function SchedulePage() {
 
                     <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' }}>
                       {daySlots.map(slot => {
-                        const typeInfo = LESSON_TYPE_INFO[slot.lesson_type] || LESSON_TYPE_INFO.online
-                        const TypeIcon = typeInfo.icon
                         const isBookingSlot = bookingInProgress === slot.id
 
                         return (
@@ -267,9 +261,9 @@ export default function SchedulePage() {
                                   {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                                 </span>
                               </div>
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
-                                <TypeIcon className="w-3 h-3" />
-                                {typeInfo.short}
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-info/10 text-info">
+                                <Video className="w-3 h-3" />
+                                Онлайн
                               </span>
                             </div>
 
@@ -333,8 +327,6 @@ export default function SchedulePage() {
                   <h3 className="font-semibold text-sm mb-3">Майбутні заняття</h3>
                   <div className="space-y-2">
                     {upcomingBookings.map(b => {
-                      const typeInfo = LESSON_TYPE_INFO[b.lesson_type] || LESSON_TYPE_INFO.online
-                      const TypeIcon = typeInfo.icon
                       const isCancelling = cancellingId === b.id
 
                       return (
@@ -345,9 +337,9 @@ export default function SchedulePage() {
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2 mb-2">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
-                                  <TypeIcon className="w-3 h-3" />
-                                  {typeInfo.short}
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-info/10 text-info">
+                                  <Video className="w-3 h-3" />
+                                  Онлайн
                                 </span>
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-success/10 text-success">
                                   <Check className="w-3 h-3" />
@@ -410,8 +402,6 @@ export default function SchedulePage() {
                   <h3 className="font-semibold text-sm mb-3 text-base-content/50">Минулі / Скасовані</h3>
                   <div className="space-y-2">
                     {pastBookings.map(b => {
-                      const typeInfo = LESSON_TYPE_INFO[b.lesson_type] || LESSON_TYPE_INFO.online
-
                       return (
                         <div
                           key={b.id}
@@ -421,7 +411,7 @@ export default function SchedulePage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2 mb-1">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-base-200 text-base-content/60">
-                                  {typeInfo.short}
+                                  Онлайн
                                 </span>
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
                                   b.status === 'completed' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'

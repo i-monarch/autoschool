@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   Plus, ChevronLeft, ChevronRight, Clock,
-  Users, Video, BookOpen, Car, X, Trash2,
+  Users, Video, X, Trash2,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
@@ -36,12 +36,6 @@ interface Stats {
   total_slots: number
   total_bookings: number
   this_week: number
-}
-
-const LESSON_TYPE_LABELS: Record<string, { text: string; icon: typeof Video }> = {
-  online: { text: 'Онлайн', icon: Video },
-  theory: { text: 'Теорія', icon: BookOpen },
-  practice: { text: 'Практика', icon: Car },
 }
 
 const STATUS_BADGES: Record<string, string> = {
@@ -279,8 +273,6 @@ export default function TeacherSchedulePage() {
                     {/* Slots */}
                     <div className="space-y-1">
                       {daySlots.map(slot => {
-                        const typeInfo = LESSON_TYPE_LABELS[slot.lesson_type] || LESSON_TYPE_LABELS.online
-                        const TypeIcon = typeInfo.icon
                         const isSelected = selectedSlot?.id === slot.id
 
                         return (
@@ -296,7 +288,7 @@ export default function TeacherSchedulePage() {
                             onClick={() => handleSlotClick(slot)}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <TypeIcon className="w-3 h-3 flex-shrink-0" />
+                              <Video className="w-3 h-3 flex-shrink-0 text-info" />
                               <span className="truncate font-medium">
                                 {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
                               </span>
@@ -351,11 +343,6 @@ export default function TeacherSchedulePage() {
                         <Clock className="w-3.5 h-3.5" />
                         {detailSlot.start_time.slice(0, 5)} - {detailSlot.end_time.slice(0, 5)}
                       </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-base-content/50">Тип</p>
-                      <p className="text-sm">{LESSON_TYPE_LABELS[detailSlot.lesson_type]?.text}</p>
                     </div>
 
                     {detailSlot.title && (
