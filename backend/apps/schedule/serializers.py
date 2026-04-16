@@ -29,6 +29,8 @@ class AvailableSlotSerializer(serializers.ModelSerializer):
         return obj.teacher.get_full_name() or obj.teacher.username
 
     def get_spots_left(self, obj):
+        if obj.max_students == 0:
+            return -1
         return obj.max_students - obj.bookings_count
 
 

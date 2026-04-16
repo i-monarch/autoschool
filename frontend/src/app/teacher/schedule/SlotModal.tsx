@@ -34,7 +34,8 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [meetUrl, setMeetUrl] = useState('')
-  const [maxStudents, setMaxStudents] = useState(1)
+  const [limitEnabled, setLimitEnabled] = useState(false)
+  const [maxStudents, setMaxStudents] = useState(10)
   const [repeatWeeks, setRepeatWeeks] = useState(0)
   const [saving, setSaving] = useState(false)
 
@@ -46,7 +47,8 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
       setTitle(slot.title)
       setDescription(slot.description)
       setMeetUrl(slot.meet_url)
-      setMaxStudents(slot.max_students)
+      setLimitEnabled(slot.max_students > 0)
+      setMaxStudents(slot.max_students || 10)
     }
   }, [slot])
 
@@ -66,7 +68,7 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
         title,
         description,
         meet_url: meetUrl,
-        max_students: maxStudents,
+        max_students: limitEnabled ? maxStudents : 0,
       }
       if (!isEdit && repeatWeeks > 0) {
         payload.repeat_weeks = repeatWeeks
@@ -172,18 +174,27 @@ export default function SlotModal({ slot, defaultDate, onClose, onSaved }: SlotM
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label"><span className="label-text">Макс. учнів</span></label>
+          <div className="flex items-center gap-3 py-1">
+            <input
+              type="checkbox"
+              className="toggle toggle-primary toggle-sm"
+              checked={limitEnabled}
+              onChange={e => setLimitEnabled(e.target.checked)}
+            />
+            <span className="text-sm">Обмежити кількість учнів</span>
+            {limitEnabled && (
               <input
                 type="number"
-                className="input input-bordered w-full"
+                className="input input-bordered input-sm w-20"
                 min={1}
-                max={50}
+                max={200}
                 value={maxStudents}
                 onChange={e => setMaxStudents(parseInt(e.target.value) || 1)}
               />
-            </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             {!isEdit && (
               <div>
                 <label className="label"><span className="label-text">Повторювати (тижнів)</span></label>

@@ -31,7 +31,7 @@ class TimeSlot(models.Model):
     title = models.CharField(_('title'), max_length=200, blank=True)
     description = models.TextField(_('description'), blank=True)
     meet_url = models.URLField(_('meeting link'), blank=True)
-    max_students = models.PositiveIntegerField(_('max students'), default=1)
+    max_students = models.PositiveIntegerField(_('max students'), default=0, help_text='0 = unlimited')
     status = models.CharField(
         _('status'), max_length=20,
         choices=STATUS_CHOICES, default='available',
@@ -52,6 +52,8 @@ class TimeSlot(models.Model):
 
     @property
     def is_full(self):
+        if self.max_students == 0:
+            return False
         return self.bookings_count >= self.max_students
 
     def update_status(self):

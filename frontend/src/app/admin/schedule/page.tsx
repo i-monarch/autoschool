@@ -309,7 +309,7 @@ export default function AdminSchedulePage() {
                               <span className="text-base-content/40 truncate">{slot.teacher_name}</span>
                               <span className="flex items-center gap-0.5 flex-shrink-0">
                                 <Users className="w-3 h-3" />
-                                {slot.bookings_count}/{slot.max_students}
+                                {slot.bookings_count}{slot.max_students > 0 ? `/${slot.max_students}` : ''}
                               </span>
                             </div>
                           </button>
@@ -448,7 +448,7 @@ export default function AdminSchedulePage() {
                             className="btn btn-sm btn-error btn-outline flex-1"
                             onClick={() => handleCancelSlot(detailSlot.id)}
                           >
-                            Скасувати
+                            Скасувати слот
                           </button>
                         </>
                       )}

@@ -274,7 +274,10 @@ export default function SchedulePage() {
 
                             <div className="flex items-center justify-between mt-auto pt-3 border-t border-base-300/40">
                               <span className="text-xs text-base-content/40">
-                                {slot.spots_left} з {slot.max_students} місць
+                                {slot.spots_left >= 0
+                                  ? `${slot.spots_left} з ${slot.max_students} місць`
+                                  : 'Без обмежень'
+                                }
                               </span>
                               {bookedSlotIds.has(slot.id) ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-success/10 text-success">
@@ -286,6 +289,7 @@ export default function SchedulePage() {
                                   className="btn btn-sm btn-primary"
                                   onClick={() => handleBook(slot.id)}
                                   disabled={isBookingSlot || slot.spots_left === 0}
+
                                 >
                                   {isBookingSlot
                                     ? <span className="loading loading-spinner loading-xs" />

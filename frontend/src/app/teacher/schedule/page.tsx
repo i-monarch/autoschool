@@ -311,7 +311,7 @@ export default function TeacherSchedulePage() {
                             )}
                             <div className="flex items-center gap-1 mt-0.5">
                               <Users className="w-3 h-3" />
-                              <span>{slot.bookings_count}/{slot.max_students}</span>
+                              <span>{slot.bookings_count}{slot.max_students > 0 ? `/${slot.max_students}` : ''}</span>
                             </div>
                           </button>
                         )
@@ -430,7 +430,7 @@ export default function TeacherSchedulePage() {
                             className="btn btn-sm btn-error btn-outline flex-1"
                             onClick={() => handleCancelSlot(detailSlot.id)}
                           >
-                            Скасувати
+                            Скасувати слот
                           </button>
                         </>
                       )}
