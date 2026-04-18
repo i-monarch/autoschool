@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, RotateCcw, ArrowLeft, Trophy, Bookmark, Send } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+import { normalizeQuestionImage } from '@/lib/image'
 
 interface QuestionCommentData {
   id: number
@@ -189,7 +190,7 @@ export default function TestResultPage() {
               </div>
 
               {a.question.image && (
-                <img src={a.question.image} alt="" className="rounded-lg mb-3 max-h-40 object-contain" />
+                <img src={normalizeQuestionImage(a.question.image) || ''} alt="" className="rounded-lg mb-3 max-h-40 object-contain" />
               )}
 
               <div className="space-y-1 ml-7">

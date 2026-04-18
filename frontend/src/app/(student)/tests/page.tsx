@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+import { normalizeQuestionImage } from '@/lib/image'
 import { useAuthStore } from '@/stores/auth'
 import { PaywallOverlay } from '@/components/ui/PaywallBanner'
 
@@ -645,7 +646,7 @@ export default function TestsPage() {
                     </div>
 
                     {item.question.image && (
-                      <img src={item.question.image} alt="" className="rounded-lg mb-3 max-h-48 object-contain" />
+                      <img src={normalizeQuestionImage(item.question.image) || ''} alt="" className="rounded-lg mb-3 max-h-48 object-contain" />
                     )}
 
                     <div className="space-y-1.5 mb-3">

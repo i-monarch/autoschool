@@ -7,6 +7,7 @@ import {
   Clock, Flag, Info, LogOut, SkipForward, X, XCircle,
 } from 'lucide-react'
 import api from '@/lib/api'
+import { normalizeQuestionImage } from '@/lib/image'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/components/ui/Toast'
 
@@ -395,7 +396,7 @@ export default function TestSessionPage() {
       {currentQuestion.image && (
         <div className="mb-6 rounded-xl overflow-hidden border border-base-300/60 bg-base-200">
           <img
-            src={currentQuestion.image}
+            src={normalizeQuestionImage(currentQuestion.image) || ''}
             alt="Ілюстрація до питання"
             className="w-full object-contain max-h-64"
           />
