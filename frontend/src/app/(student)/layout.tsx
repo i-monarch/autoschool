@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useWebSocket } from '@/hooks/useWebSocket'
+import { useStudyReminder } from '@/hooks/useStudyReminder'
 import { RoadDecor } from '@/components/ui/RoadPattern'
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { href: '/europrotocol', label: 'Європротокол', icon: FileText },
   { href: '/routes', label: 'Маршрути', icon: Navigation },
   { href: '/partners', label: 'Автошколи', icon: Building2 },
+  { href: '/reminders', label: 'Нагадування', icon: Bell },
   { href: '/chat', label: 'Повідомлення', icon: MessageCircle },
   { href: '/payments', label: 'Оплата', icon: CreditCard },
 ]
@@ -34,6 +36,7 @@ export default function StudentLayout({
   const totalUnread = useChatStore((s) => s.totalUnread)
   const fetchRooms = useChatStore((s) => s.fetchRooms)
   useWebSocket()
+  useStudyReminder(user?.role)
   const router = useRouter()
   const pathname = usePathname()
 

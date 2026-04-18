@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/partners/', include('apps.partners.urls')),
     path('api/v1/admin/partners/', include('apps.partners.urls_admin')),
     path('api/v1/teacher/', include('apps.users.urls_teacher')),
+    path('api/v1/notifications/', include('apps.notifications.urls')),
 ]
 
 if settings.DEBUG:

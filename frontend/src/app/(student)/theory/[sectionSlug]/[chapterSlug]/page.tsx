@@ -67,6 +67,17 @@ export default function ChapterPage() {
       .finally(() => setLoading(false))
   }, [sectionSlug, chapterSlug])
 
+  const isFinesSection = sectionSlug === 'shtrafi'
+  const isRulesSection = sectionSlug === 'pravila-dorozhnogo-ruhu'
+
+  const processedContent = useMemo(() => {
+    if (!chapter) return ''
+    let html = chapter.content
+    if (isFinesSection) html = highlightLawArticles(html)
+    if (isRulesSection) html = highlightRuleSections(html)
+    return html
+  }, [chapter, isFinesSection, isRulesSection])
+
   if (loading || !chapter) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -78,17 +89,6 @@ export default function ChapterPage() {
   const currentIdx = allChapters.findIndex(c => c.slug === chapterSlug)
   const prevChapter = currentIdx > 0 ? allChapters[currentIdx - 1] : null
   const nextChapter = currentIdx < allChapters.length - 1 ? allChapters[currentIdx + 1] : null
-
-  const isFinesSection = sectionSlug === 'shtrafi'
-  const isRulesSection = sectionSlug === 'pravila-dorozhnogo-ruhu'
-
-  const processedContent = useMemo(() => {
-    if (!chapter) return ''
-    let html = chapter.content
-    if (isFinesSection) html = highlightLawArticles(html)
-    if (isRulesSection) html = highlightRuleSections(html)
-    return html
-  }, [chapter, isFinesSection, isRulesSection])
 
   return (
     <div>
