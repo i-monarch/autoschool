@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
   AlertCircle, AlertTriangle, Bookmark, CheckCircle, ChevronLeft, ChevronRight,
-  Clock, Flag, Info, LogOut, X, XCircle,
+  Clock, Flag, Info, LogOut, SkipForward, X, XCircle,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/components/ui/Toast'
 
 interface AnswerOption {
   id: number
@@ -39,6 +40,7 @@ const EXAM_MISTAKE_LIMIT = 3
 export default function TestSessionPage() {
   const params = useParams()
   const router = useRouter()
+  const toast = useToast()
   const attemptId = params.attemptId as string
 
   const [questions, setQuestions] = useState<Question[]>([])
@@ -127,14 +129,13 @@ export default function TestSessionPage() {
     }
   }
 
-  // Training mode: pick = submit immediately (existing behavior)
-  // Exam mode: pick = local select only; submit happens on "Далі"
+  // Training: pick = submit immediately (existing behavior)
+  // Exam: pick = local select only; submit happens on "Далі"
   const handleAnswer = async (questionId: number, answerId: number) => {
     const state = answered[questionId]
     if (state?.result) return
 
     if (isExamMode) {
-      // Allow user to change selection until "Далі" pressed
       setAnswered(prev => ({
         ...prev,
         [questionId]: { selectedId: answerId, result: null },
@@ -142,7 +143,6 @@ export default function TestSessionPage() {
       return
     }
 
-    // Training: keep instant submit
     if (state?.selectedId) return
     const result = await submitAnswer(questionId, answerId)
     if (!result) return
@@ -157,29 +157,21 @@ export default function TestSessionPage() {
 
   const wrongCount = Object.values(answered).filter(a => a.result && !a.result.is_correct).length
 
-  const confirmExamAnswer = async () => {
-    const q = questions[currentIndex]
-    if (!q) return
-    const state = answered[q.id]
-    if (!state?.selectedId || state.result) return
-
-    setSubmittingAnswer(true)
-    const result = await submitAnswer(q.id, state.selectedId)
-    setSubmittingAnswer(false)
-    if (!result) return
-
-    setAnswered(prev => ({
-      ...prev,
-      [q.id]: { selectedId: state.selectedId, result },
-    }))
-
-    // Check exam mistake limit (use updated wrong count)
-    if (isExamMode && !result.is_correct) {
-      const newWrongCount = wrongCount + 1
-      if (newWrongCount >= EXAM_MISTAKE_LIMIT) {
-        setShowMistakeLimit(true)
-      }
+  const findNextUnanswered = (fromIdx: number): number => {
+    for (let i = fromIdx + 1; i < questions.length; i++) {
+      if (!answered[questions[i].id]?.result) return i
     }
+    for (let i = 0; i < fromIdx; i++) {
+      if (!answered[questions[i].id]?.result) return i
+    }
+    return -1
+  }
+
+  const findFirstUnanswered = (): number => {
+    for (let i = 0; i < questions.length; i++) {
+      if (!answered[questions[i].id]?.result) return i
+    }
+    return -1
   }
 
   const doFinish = async () => {
@@ -195,17 +187,69 @@ export default function TestSessionPage() {
   }
 
   const handleFinish = () => {
-    const unanswered = questions.length - Object.keys(answered).length
-    if (unanswered > 0) {
-      setShowConfirmFinish(true)
-    } else {
+    const firstUnanswered = findFirstUnanswered()
+    if (firstUnanswered !== -1) {
+      // Send user back to skipped question
+      setCurrentIndex(firstUnanswered)
+      const remaining = questions.filter(q => !answered[q.id]?.result).length
+      toast.add(`Поверніться: залишилось питань без відповіді — ${remaining}`, 'info')
+      return
+    }
+    if (isExamMode) {
       doFinish()
+    } else {
+      setShowConfirmFinish(true)
     }
   }
 
-  const goNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1)
+  // Single "Далі" button. In exam:
+  //   - selected but not submitted → submit (auto-advance if correct)
+  //   - already submitted (showing result) → next or finish
+  //   - nothing selected → just advance (skip)
+  const handleNext = async () => {
+    const q = questions[currentIndex]
+    if (!q) return
+    const state = answered[q.id]
+
+    // Exam: submit on first "Далі" if there's a pending selection
+    if (isExamMode && state?.selectedId && !state.result) {
+      setSubmittingAnswer(true)
+      const result = await submitAnswer(q.id, state.selectedId)
+      setSubmittingAnswer(false)
+      if (!result) return
+
+      setAnswered(prev => ({
+        ...prev,
+        [q.id]: { selectedId: state.selectedId, result },
+      }))
+
+      if (!result.is_correct) {
+        const newWrongCount = wrongCount + 1
+        if (newWrongCount >= EXAM_MISTAKE_LIMIT) {
+          setShowMistakeLimit(true)
+          return
+        }
+        // Wrong: stay on current question to show red highlight + explanation
+        return
+      }
+
+      // Correct: auto-advance immediately
+      const nextIdx = findNextUnanswered(currentIndex)
+      if (nextIdx === -1) {
+        handleFinish()
+      } else {
+        setCurrentIndex(nextIdx)
+      }
+      return
+    }
+
+    // Already submitted, or no selection: just move on
+    const nextIdx = findNextUnanswered(currentIndex)
+    if (nextIdx === -1) {
+      // No more unanswered ahead — try to finish
+      handleFinish()
+    } else {
+      setCurrentIndex(nextIdx)
     }
   }
 
@@ -222,8 +266,6 @@ export default function TestSessionPage() {
 
   const currentAnswer = answered[currentQuestion.id]
   const showResult = !!currentAnswer?.result
-  const examPendingConfirm = isExamMode && !!currentAnswer?.selectedId && !currentAnswer.result
-  const isLastQuestion = currentIndex === questions.length - 1
   const showExplanation = showResult && currentAnswer?.result?.explanation && (
     !isExamMode
       ? true
@@ -269,16 +311,12 @@ export default function TestSessionPage() {
               const isCurrent = i === currentIndex
               if (isCurrent && !a?.result) bg = 'bg-primary text-primary-content ring-2 ring-primary/30'
 
-              const allowJump = !isExamMode || !!a?.result
-
               return (
                 <button
                   key={q.id}
-                  onClick={() => { if (allowJump) setCurrentIndex(i) }}
-                  disabled={!allowJump && i !== currentIndex}
-                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-xs font-semibold leading-none ${bg} ${
-                    !allowJump && i !== currentIndex ? 'cursor-default opacity-70' : ''
-                  }`}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-xs font-semibold leading-none ${bg}`}
+                  title={`Питання ${i + 1}${a?.result ? '' : ' (без відповіді)'}`}
                 >
                   {i + 1}
                 </button>
@@ -470,7 +508,7 @@ export default function TestSessionPage() {
 
       {/* Navigation */}
       <div className="flex items-center justify-between gap-3 pb-4">
-        {/* Back: hidden in exam mode */}
+        {/* Back button: training only */}
         {!isExamMode ? (
           <button
             onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
@@ -497,47 +535,41 @@ export default function TestSessionPage() {
             </button>
           )}
 
-          {/* Exam: confirm pending answer */}
-          {examPendingConfirm ? (
-            <button
-              onClick={confirmExamAnswer}
-              disabled={submittingAnswer}
-              className="btn btn-primary btn-sm gap-1"
-            >
-              {submittingAnswer && <span className="loading loading-spinner loading-xs" />}
-              Зарахувати
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : !isLastQuestion ? (
-            <button
-              onClick={goNext}
-              disabled={isExamMode && !showResult}
-              className="btn btn-primary btn-sm gap-1"
-              title={isExamMode && !showResult ? 'Оберіть відповідь і натисніть «Зарахувати»' : ''}
-            >
-              Далі
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
+          {/* Exam: "Здати роботу" always visible — clicking with unanswered jumps to first */}
+          {isExamMode && (
             <button
               onClick={handleFinish}
-              disabled={finishing || (isExamMode && !showResult && !!currentAnswer?.selectedId)}
-              className="btn btn-primary btn-sm gap-1"
+              disabled={finishing}
+              className="btn btn-outline btn-error btn-sm gap-1"
+              title={answeredCount < questions.length ? 'Програма поверне до пропущених' : ''}
             >
-              {finishing && <span className="loading loading-spinner loading-xs" />}
               <Flag className="w-4 h-4" />
-              {isExamMode ? 'Здати роботу' : 'Завершити тест'}
+              Здати роботу
             </button>
           )}
+
+          <button
+            onClick={handleNext}
+            disabled={submittingAnswer || finishing}
+            className="btn btn-primary btn-sm gap-1"
+          >
+            {submittingAnswer && <span className="loading loading-spinner loading-xs" />}
+            {isExamMode && currentAnswer?.selectedId && !showResult
+              ? 'Далі'
+              : (currentIndex < questions.length - 1 || answeredCount < questions.length)
+                ? 'Далі'
+                : (isExamMode ? 'Здати роботу' : 'Завершити тест')}
+            {!finishing && <ChevronRight className="w-4 h-4" />}
+          </button>
         </div>
       </div>
 
       {/* Bottom stats */}
       <div className="text-center text-xs text-base-content/40 pb-4">
         Відповідей: {answeredCount} / {questions.length}
-        {isExamMode && answeredCount < questions.length && (
+        {answeredCount < questions.length && (
           <span className="text-warning ml-2">
-            (без відповіді: {questions.length - answeredCount})
+            <SkipForward className="inline w-3 h-3 -mt-0.5" /> пропущено: {questions.length - answeredCount}
           </span>
         )}
       </div>
