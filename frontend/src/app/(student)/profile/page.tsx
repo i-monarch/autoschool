@@ -1,10 +1,60 @@
 'use client'
 
-import { User, Mail, Phone, Shield, Monitor, LogOut } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Camera, LogOut, Mail, Monitor, Phone, Shield, User } from 'lucide-react'
+import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/components/ui/Toast'
+
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user)
+  const setUser = useAuthStore((s) => s.setUser)
+  const toast = useToast()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploading, setUploading] = useState(false)
+
+  const handleAvatarPick = () => fileInputRef.current?.click()
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.add('Файл має бути зображенням', 'error')
+      e.target.value = ''
+      return
+    }
+
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast.add('Розмір файлу до 5 МБ', 'error')
+      e.target.value = ''
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    setUploading(true)
+    try {
+      const res = await api.patch('/users/me/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setUser(res.data)
+      toast.add('Фото оновлено', 'success')
+    } catch {
+      toast.add('Не вдалося завантажити фото', 'error')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const initials = user?.first_name?.[0] || user?.username?.[0] || '?'
+  const fullName = user?.first_name
+    ? `${user.first_name} ${user.last_name || ''}`.trim()
+    : user?.username
 
   return (
     <div>
@@ -73,18 +123,56 @@ export default function ProfilePage() {
           {/* Avatar card */}
           <div className="card bg-base-100 border border-base-300/60">
             <div className="card-body p-5 items-center text-center">
-              <div className="avatar placeholder mb-3">
-                <div className="bg-neutral text-neutral-content rounded-full w-20">
-                  <span className="text-2xl font-medium">
-                    {user?.first_name?.[0] || user?.username[0]}
-                  </span>
+              <div className="relative mb-3">
+                <div className="avatar">
+                  <div className="w-24 h-24 rounded-full bg-neutral text-neutral-content flex items-center justify-center overflow-hidden">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={fullName || 'avatar'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl font-medium leading-none flex items-center justify-center w-full h-full">
+                        {initials}
+                      </span>
+                    )}
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleAvatarPick}
+                  disabled={uploading}
+                  className="absolute -bottom-1 -right-1 btn btn-circle btn-sm btn-primary shadow-md"
+                  title="Змінити фото"
+                >
+                  {uploading ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
               </div>
-              <p className="font-semibold">
-                {user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username}
-              </p>
-              <span className="badge badge-primary badge-sm mt-1">Учень</span>
-              <button className="btn btn-sm btn-ghost mt-3 text-xs">Змінити фото</button>
+
+              <p className="font-semibold">{fullName}</p>
+              <span className="badge badge-primary mt-1">Учень</span>
+              <button
+                type="button"
+                onClick={handleAvatarPick}
+                disabled={uploading}
+                className="btn btn-sm btn-ghost mt-3 text-xs gap-1.5"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                {user?.avatar ? 'Змінити фото' : 'Додати фото'}
+              </button>
+              <p className="text-[11px] text-base-content/40 mt-1">JPG, PNG до 5 МБ</p>
             </div>
           </div>
 

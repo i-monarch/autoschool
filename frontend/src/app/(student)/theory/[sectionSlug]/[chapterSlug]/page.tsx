@@ -1,10 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ChevronLeft, ChevronRight, List } from 'lucide-react'
+import { ArrowLeft, BookMarked, ChevronLeft, ChevronRight, List } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
+
+const ARTICLE_RE = /(Стаття\s+\d+(?:[\u2013\-\.]\d+)*(?:\s*КУпАП)?)/gi
+const RULE_SECTION_RE = /(Розділ\s+(?:\d+|[IVXLCDM]+)(?:\.|\b))/g
+
+function highlightLawArticles(html: string): string {
+  if (!html) return html
+  return html.replace(
+    ARTICLE_RE,
+    '<mark class="law-article">$1</mark>',
+  )
+}
+
+function highlightRuleSections(html: string): string {
+  if (!html) return html
+  return html.replace(
+    RULE_SECTION_RE,
+    '<span class="rule-section">$1</span>',
+  )
+}
 
 interface Chapter {
   id: number
@@ -60,6 +79,17 @@ export default function ChapterPage() {
   const prevChapter = currentIdx > 0 ? allChapters[currentIdx - 1] : null
   const nextChapter = currentIdx < allChapters.length - 1 ? allChapters[currentIdx + 1] : null
 
+  const isFinesSection = sectionSlug === 'shtrafi'
+  const isRulesSection = sectionSlug === 'pravila-dorozhnogo-ruhu'
+
+  const processedContent = useMemo(() => {
+    if (!chapter) return ''
+    let html = chapter.content
+    if (isFinesSection) html = highlightLawArticles(html)
+    if (isRulesSection) html = highlightRuleSections(html)
+    return html
+  }, [chapter, isFinesSection, isRulesSection])
+
   return (
     <div>
       {/* Breadcrumb */}
@@ -86,12 +116,18 @@ export default function ChapterPage() {
         <div className="flex-1 min-w-0">
           {/* Title */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-1">{chapter.title}</h1>
             {allChapters.length > 1 && (
-              <p className="text-sm text-base-content/40">
-                Розділ {chapter.number || (currentIdx + 1)} з {allChapters.length}
-              </p>
+              <div className="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
+                <BookMarked className="w-4 h-4" />
+                <span className="text-sm font-bold tracking-wide uppercase">
+                  Розділ {chapter.number || (currentIdx + 1)}
+                </span>
+                <span className="text-xs text-primary/60 font-medium">
+                  з {allChapters.length}
+                </span>
+              </div>
             )}
+            <h1 className="text-2xl font-bold">{chapter.title}</h1>
           </div>
 
           {/* Content */}
@@ -106,7 +142,7 @@ export default function ChapterPage() {
                   prose-table:text-sm
                   prose-th:bg-base-200 prose-th:p-2
                   prose-td:p-2 prose-td:border-base-300"
-                dangerouslySetInnerHTML={{ __html: chapter.content }}
+                dangerouslySetInnerHTML={{ __html: processedContent }}
               />
             </div>
           </div>

@@ -80,16 +80,16 @@ class UserAchievement(models.Model):
 
 class DailyGoal(models.Model):
     GOAL_CHOICES = [
-        (5, '5'),
-        (10, '10'),
         (20, '20'),
         (30, '30'),
+        (40, '40'),
         (50, '50'),
+        (60, '60'),
     ]
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='daily_goal',
     )
-    target_questions = models.PositiveIntegerField(default=10, choices=GOAL_CHOICES)
+    target_questions = models.PositiveIntegerField(default=20, choices=GOAL_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

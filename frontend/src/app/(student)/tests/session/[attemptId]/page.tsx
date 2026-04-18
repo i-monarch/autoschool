@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Flag, AlertCircle, Bookmark, X, LogOut } from 'lucide-react'
+import {
+  AlertCircle, AlertTriangle, Bookmark, CheckCircle, ChevronLeft, ChevronRight,
+  Clock, Flag, Info, LogOut, X, XCircle,
+} from 'lucide-react'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 
@@ -26,6 +29,13 @@ interface AnswerResult {
   explanation: string | null
 }
 
+interface QuestionState {
+  selectedId: number | null
+  result: AnswerResult | null
+}
+
+const EXAM_MISTAKE_LIMIT = 3
+
 export default function TestSessionPage() {
   const params = useParams()
   const router = useRouter()
@@ -37,14 +47,13 @@ export default function TestSessionPage() {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [finishing, setFinishing] = useState(false)
+  const [submittingAnswer, setSubmittingAnswer] = useState(false)
   const [showConfirmFinish, setShowConfirmFinish] = useState(false)
   const [showConfirmExit, setShowConfirmExit] = useState(false)
+  const [showMistakeLimit, setShowMistakeLimit] = useState(false)
   const [autoAdvance, setAutoAdvance] = useState(false)
 
-  const [answered, setAnswered] = useState<Record<number, {
-    selectedId: number | null
-    result: AnswerResult | null
-  }>>({})
+  const [answered, setAnswered] = useState<Record<number, QuestionState>>({})
   const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set())
   const [savingQuestion, setSavingQuestion] = useState<number | null>(null)
 
@@ -106,25 +115,70 @@ export default function TestSessionPage() {
     return () => clearInterval(timer)
   }, [secondsLeft !== null])
 
-  const handleAnswer = async (questionId: number, answerId: number) => {
-    if (answered[questionId]?.selectedId) return
-
+  const submitAnswer = async (questionId: number, answerId: number): Promise<AnswerResult | null> => {
     try {
       const res = await api.post(`/tests/attempts/${attemptId}/answer/`, {
         question_id: questionId,
         answer_id: answerId,
       })
+      return res.data as AnswerResult
+    } catch {
+      return null
+    }
+  }
 
+  // Training mode: pick = submit immediately (existing behavior)
+  // Exam mode: pick = local select only; submit happens on "Далі"
+  const handleAnswer = async (questionId: number, answerId: number) => {
+    const state = answered[questionId]
+    if (state?.result) return
+
+    if (isExamMode) {
+      // Allow user to change selection until "Далі" pressed
       setAnswered(prev => ({
         ...prev,
-        [questionId]: { selectedId: answerId, result: res.data },
+        [questionId]: { selectedId: answerId, result: null },
       }))
+      return
+    }
 
-      if (autoAdvance && currentIndex < questions.length - 1) {
-        setTimeout(() => setCurrentIndex(prev => prev + 1), 800)
+    // Training: keep instant submit
+    if (state?.selectedId) return
+    const result = await submitAnswer(questionId, answerId)
+    if (!result) return
+    setAnswered(prev => ({
+      ...prev,
+      [questionId]: { selectedId: answerId, result },
+    }))
+    if (autoAdvance && currentIndex < questions.length - 1) {
+      setTimeout(() => setCurrentIndex(prev => prev + 1), 800)
+    }
+  }
+
+  const wrongCount = Object.values(answered).filter(a => a.result && !a.result.is_correct).length
+
+  const confirmExamAnswer = async () => {
+    const q = questions[currentIndex]
+    if (!q) return
+    const state = answered[q.id]
+    if (!state?.selectedId || state.result) return
+
+    setSubmittingAnswer(true)
+    const result = await submitAnswer(q.id, state.selectedId)
+    setSubmittingAnswer(false)
+    if (!result) return
+
+    setAnswered(prev => ({
+      ...prev,
+      [q.id]: { selectedId: state.selectedId, result },
+    }))
+
+    // Check exam mistake limit (use updated wrong count)
+    if (isExamMode && !result.is_correct) {
+      const newWrongCount = wrongCount + 1
+      if (newWrongCount >= EXAM_MISTAKE_LIMIT) {
+        setShowMistakeLimit(true)
       }
-    } catch {
-      // handle error
     }
   }
 
@@ -149,8 +203,14 @@ export default function TestSessionPage() {
     }
   }
 
+  const goNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+    }
+  }
+
   const currentQuestion = questions[currentIndex]
-  const answeredCount = Object.keys(answered).length
+  const answeredCount = Object.values(answered).filter(a => a.result !== null).length
 
   if (loading || !currentQuestion) {
     return (
@@ -162,11 +222,21 @@ export default function TestSessionPage() {
 
   const currentAnswer = answered[currentQuestion.id]
   const showResult = !!currentAnswer?.result
+  const examPendingConfirm = isExamMode && !!currentAnswer?.selectedId && !currentAnswer.result
+  const isLastQuestion = currentIndex === questions.length - 1
+  const showExplanation = showResult && currentAnswer?.result?.explanation && (
+    !isExamMode
+      ? true
+      : (isPaid && !currentAnswer.result.is_correct)
+  )
+
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60)
     const sec = s % 60
     return `${m}:${sec.toString().padStart(2, '0')}`
   }
+
+  const remainingMistakes = Math.max(0, EXAM_MISTAKE_LIMIT - wrongCount)
 
   return (
     <div>
@@ -199,11 +269,16 @@ export default function TestSessionPage() {
               const isCurrent = i === currentIndex
               if (isCurrent && !a?.result) bg = 'bg-primary text-primary-content ring-2 ring-primary/30'
 
+              const allowJump = !isExamMode || !!a?.result
+
               return (
                 <button
                   key={q.id}
-                  onClick={() => setCurrentIndex(i)}
-                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-xs font-semibold leading-none ${bg}`}
+                  onClick={() => { if (allowJump) setCurrentIndex(i) }}
+                  disabled={!allowJump && i !== currentIndex}
+                  className={`w-6 h-6 rounded-full flex-shrink-0 transition-colors flex items-center justify-center text-xs font-semibold leading-none ${bg} ${
+                    !allowJump && i !== currentIndex ? 'cursor-default opacity-70' : ''
+                  }`}
                 >
                   {i + 1}
                 </button>
@@ -212,8 +287,15 @@ export default function TestSessionPage() {
           </div>
 
           {isExamMode && (
-            <div className="badge badge-error font-semibold text-xs px-3 py-3 flex-shrink-0">
-              Екзамен
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 ${
+              wrongCount === 0
+                ? 'bg-error/10 text-error'
+                : wrongCount === 1
+                  ? 'bg-warning/15 text-warning'
+                  : 'bg-error text-error-content'
+            }`}>
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Помилки: {wrongCount}/{EXAM_MISTAKE_LIMIT}
             </div>
           )}
 
@@ -223,15 +305,17 @@ export default function TestSessionPage() {
             </div>
           )}
 
-          <label className="flex items-center gap-2 cursor-pointer flex-shrink-0" title="Автоперехід до наступного питання">
-            <span className="text-xs text-base-content/50">Авто</span>
-            <input
-              type="checkbox"
-              className="toggle toggle-sm toggle-primary"
-              checked={autoAdvance}
-              onChange={(e) => setAutoAdvance(e.target.checked)}
-            />
-          </label>
+          {!isExamMode && (
+            <label className="flex items-center gap-2 cursor-pointer flex-shrink-0" title="Автоперехід до наступного питання">
+              <span className="text-xs text-base-content/50">Авто</span>
+              <input
+                type="checkbox"
+                className="toggle toggle-sm toggle-primary"
+                checked={autoAdvance}
+                onChange={(e) => setAutoAdvance(e.target.checked)}
+              />
+            </label>
+          )}
 
           {secondsLeft !== null && (
             <div className={`flex items-center gap-2 text-base font-mono font-semibold flex-shrink-0 ${secondsLeft < 120 ? 'text-error animate-pulse' : 'text-base-content/70'}`}>
@@ -284,9 +368,11 @@ export default function TestSessionPage() {
       <div className="space-y-2 mb-8">
         {currentQuestion.answers.map((answer) => {
           const isSelected = currentAnswer?.selectedId === answer.id
-          const hasAnswered = !!currentAnswer?.selectedId
+          const isLocked = !!currentAnswer?.result // submitted
 
-          // Training mode styles
+          // Highlight rules:
+          // - Before submit (training or exam pending): show selected highlight only
+          // - After submit: show correct/wrong (both modes)
           const isCorrectAnswer = showResult && currentAnswer?.result?.correct_answer_id === answer.id
           const isWrongSelected = showResult && isSelected && !currentAnswer?.result?.is_correct
 
@@ -294,29 +380,23 @@ export default function TestSessionPage() {
           let bgClass = 'bg-base-100'
           let indicatorClass = 'border-base-300'
 
-          if (isExamMode) {
-            // Exam: only highlight selected, no correct/wrong
-            if (isSelected) {
-              borderClass = 'border-primary/50'
-              bgClass = 'bg-primary/5'
-              indicatorClass = 'border-primary bg-primary text-white'
-            } else if (!hasAnswered) {
-              borderClass += ' hover:border-primary/40'
-            }
-          } else if (showResult) {
-            // Training: show correct/wrong
+          if (showResult) {
             if (isCorrectAnswer) {
-              borderClass = 'border-success/50'
+              borderClass = 'border-success/60'
               bgClass = 'bg-success/5'
               indicatorClass = 'border-success bg-success text-white'
             } else if (isWrongSelected) {
-              borderClass = 'border-error/50'
-              bgClass = 'bg-error/5'
+              borderClass = 'border-error/70'
+              bgClass = 'bg-error/10'
               indicatorClass = 'border-error bg-error text-white'
             } else {
               borderClass = 'border-base-300/40'
             }
-          } else if (!hasAnswered) {
+          } else if (isSelected) {
+            borderClass = 'border-primary/50'
+            bgClass = 'bg-primary/5'
+            indicatorClass = 'border-primary bg-primary text-white'
+          } else if (!isLocked) {
             borderClass += ' hover:border-primary/40'
           }
 
@@ -324,9 +404,9 @@ export default function TestSessionPage() {
             <button
               key={answer.id}
               onClick={() => handleAnswer(currentQuestion.id, answer.id)}
-              disabled={hasAnswered}
+              disabled={isLocked || submittingAnswer}
               className={`w-full text-left p-4 rounded-xl border transition-all ${borderClass} ${bgClass} ${
-                !hasAnswered ? 'cursor-pointer active:scale-[0.99]' : ''
+                !isLocked ? 'cursor-pointer active:scale-[0.99]' : ''
               }`}
             >
               <div className="flex items-start gap-3">
@@ -343,27 +423,70 @@ export default function TestSessionPage() {
         })}
       </div>
 
-      {/* Explanation (training mode only) */}
-      {showResult && currentAnswer?.result?.explanation && (
+      {/* Wrong-answer banner (exam, paid) */}
+      {isExamMode && showResult && !currentAnswer.result?.is_correct && (
+        <div className="mb-4 p-4 rounded-xl bg-error/5 border border-error/30">
+          <div className="flex items-start gap-3">
+            <XCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-error text-sm">Неправильна відповідь</p>
+              <p className="text-xs text-base-content/60 mt-0.5">
+                {remainingMistakes > 0
+                  ? `Залишилось спроб: ${remainingMistakes}`
+                  : 'Вичерпано ліміт помилок'}
+              </p>
+            </div>
+          </div>
+
+          {isPaid && currentAnswer.result?.explanation && (
+            <div className="mt-3 pt-3 border-t border-error/20">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-info mb-1">Робота над помилками — пояснення з ПДР</p>
+                  <p className="text-sm text-base-content/75 leading-relaxed">{currentAnswer.result.explanation}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isPaid && (
+            <div className="mt-3 pt-3 border-t border-error/20">
+              <p className="text-xs text-base-content/50">
+                Розгорнуте пояснення з ПДР доступне для оплачених акаунтів.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Explanation (training mode) */}
+      {!isExamMode && showExplanation && (
         <div className="mb-8 p-4 rounded-xl bg-info/5 border border-info/20 text-sm leading-relaxed">
           <p className="font-medium text-info mb-1">Пояснення</p>
-          <p className="text-base-content/70">{currentAnswer.result.explanation}</p>
+          <p className="text-base-content/70">{currentAnswer?.result?.explanation}</p>
         </div>
       )}
 
       {/* Navigation */}
       <div className="flex items-center justify-between gap-3 pb-4">
-        <button
-          onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-          disabled={currentIndex === 0}
-          className="btn btn-ghost btn-sm gap-1"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Назад
-        </button>
+        {/* Back: hidden in exam mode */}
+        {!isExamMode ? (
+          <button
+            onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+            disabled={currentIndex === 0}
+            className="btn btn-ghost btn-sm gap-1"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Назад
+          </button>
+        ) : (
+          <div />
+        )}
 
         <div className="flex gap-2">
-          {isExamMode && (
+          {/* Manual finish during training */}
+          {!isExamMode && (
             <button
               onClick={handleFinish}
               disabled={finishing}
@@ -374,10 +497,23 @@ export default function TestSessionPage() {
             </button>
           )}
 
-          {currentIndex < questions.length - 1 ? (
+          {/* Exam: confirm pending answer */}
+          {examPendingConfirm ? (
             <button
-              onClick={() => setCurrentIndex(currentIndex + 1)}
+              onClick={confirmExamAnswer}
+              disabled={submittingAnswer}
               className="btn btn-primary btn-sm gap-1"
+            >
+              {submittingAnswer && <span className="loading loading-spinner loading-xs" />}
+              Зарахувати
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : !isLastQuestion ? (
+            <button
+              onClick={goNext}
+              disabled={isExamMode && !showResult}
+              className="btn btn-primary btn-sm gap-1"
+              title={isExamMode && !showResult ? 'Оберіть відповідь і натисніть «Зарахувати»' : ''}
             >
               Далі
               <ChevronRight className="w-4 h-4" />
@@ -385,7 +521,7 @@ export default function TestSessionPage() {
           ) : (
             <button
               onClick={handleFinish}
-              disabled={finishing}
+              disabled={finishing || (isExamMode && !showResult && !!currentAnswer?.selectedId)}
               className="btn btn-primary btn-sm gap-1"
             >
               {finishing && <span className="loading loading-spinner loading-xs" />}
@@ -448,7 +584,7 @@ export default function TestSessionPage() {
         </div>
       )}
 
-      {/* Confirm finish modal (exam mode) */}
+      {/* Confirm finish modal (manual) */}
       {showConfirmFinish && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="card bg-base-100 shadow-xl max-w-sm mx-4">
@@ -473,6 +609,34 @@ export default function TestSessionPage() {
                   className="btn btn-primary btn-sm"
                 >
                   Завершити
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mistake limit reached modal (exam) */}
+      {showMistakeLimit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="card bg-base-100 shadow-xl max-w-sm mx-4">
+            <div className="card-body">
+              <div className="flex items-center gap-3 mb-2">
+                <AlertTriangle className="w-6 h-6 text-error" />
+                <h3 className="font-semibold text-lg">Ліміт помилок вичерпано</h3>
+              </div>
+              <p className="text-sm text-base-content/60 mb-4">
+                Ви припустилися {EXAM_MISTAKE_LIMIT} помилок — згідно правил екзамен завершено.
+                Перегляньте результати та повторіть тему.
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => { setShowMistakeLimit(false); doFinish() }}
+                  className="btn btn-error btn-sm"
+                  disabled={finishing}
+                >
+                  {finishing && <span className="loading loading-spinner loading-xs" />}
+                  Подивитися результати
                 </button>
               </div>
             </div>

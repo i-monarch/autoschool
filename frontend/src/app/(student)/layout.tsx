@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   Car, LogOut, User, BookOpen, ClipboardCheck,
-  MessageCircle, Home, Calendar, CreditCard, Building2,
+  MessageCircle, Home, CreditCard, Building2,
   ChevronRight, Bell, GraduationCap, FileText, Navigation,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -21,7 +21,6 @@ const navItems = [
   { href: '/europrotocol', label: 'Європротокол', icon: FileText },
   { href: '/routes', label: 'Маршрути', icon: Navigation },
   { href: '/partners', label: 'Автошколи', icon: Building2 },
-  { href: '/schedule', label: 'Розклад', icon: Calendar },
   { href: '/chat', label: 'Повідомлення', icon: MessageCircle },
   { href: '/payments', label: 'Оплата', icon: CreditCard },
 ]

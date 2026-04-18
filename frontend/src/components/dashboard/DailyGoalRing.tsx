@@ -10,7 +10,7 @@ interface DailyGoalData {
   completed: boolean
 }
 
-const GOAL_OPTIONS = [5, 10, 20, 30, 50]
+const GOAL_OPTIONS = [20, 30, 40, 50, 60]
 
 export default function DailyGoalRing({ goal, onUpdate }: { goal: DailyGoalData; onUpdate?: () => void }) {
   const [showSelector, setShowSelector] = useState(false)

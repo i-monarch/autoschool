@@ -13,6 +13,8 @@ interface AuthState {
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   fetchMe: () => Promise<void>
+  refreshMe: () => Promise<void>
+  setUser: (user: User) => void
   clearError: () => void
 }
 
@@ -72,6 +74,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     }
   },
+
+  refreshMe: async () => {
+    try {
+      const res = await api.get('/users/me/')
+      set({ user: res.data })
+    } catch {
+      // ignore
+    }
+  },
+
+  setUser: (user) => set({ user }),
 
   clearError: () => set({ error: null }),
 }))
