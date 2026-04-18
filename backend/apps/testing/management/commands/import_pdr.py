@@ -80,15 +80,20 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
 
-            # Replace answers
-            question.answers.all().delete()
+            # Update or create answers by (question, order) so that existing
+            # Answer PKs are preserved. This keeps AttemptAnswer.selected_answer
+            # references alive (FK is CASCADE). Drop any extra old answers.
+            new_count = len(q_data['answers'])
             for idx, a_data in enumerate(q_data['answers']):
-                Answer.objects.create(
+                Answer.objects.update_or_create(
                     question=question,
-                    text=a_data['text'],
-                    is_correct=a_data.get('is_correct', False),
                     order=idx,
+                    defaults={
+                        'text': a_data['text'],
+                        'is_correct': a_data.get('is_correct', False),
+                    },
                 )
+            question.answers.filter(order__gte=new_count).delete()
 
         # Update category question counts
         for cat in TestCategory.objects.all():

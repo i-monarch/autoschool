@@ -164,7 +164,9 @@ def get_theme_mapping():
     ]
 
     print('Building theme mapping...')
-    for theme_id, theme_name in theme_ids:
+    # Reversed so specific sub-themes (38-44, 45-46, 47-48) take precedence over
+    # umbrella themes (33, 34, 16). First match wins in question_theme_map.
+    for theme_id, theme_name in reversed(theme_ids):
         themes_data[theme_id] = theme_name
 
         # Fetch first page of theme to get question numbers
@@ -174,18 +176,18 @@ def get_theme_mapping():
             resp.encoding = 'utf-8'
             soup = BeautifulSoup(resp.text, 'html.parser')
 
-            # Get total pages
+            # Get total pages. Site uses &nbsp; between words, so match flexibly.
             page_count = 1
-            pt = soup.find(string=re.compile(r'Сторінка \d+ з \d+'))
+            pt = soup.find(string=re.compile(r'Сторінка[\s\u00a0]+\d+[\s\u00a0]+з[\s\u00a0]+\d+'))
             if pt:
-                m = re.search(r'Сторінка \d+ з (\d+)', pt)
+                m = re.search(r'Сторінка[\s\u00a0]+\d+[\s\u00a0]+з[\s\u00a0]+(\d+)', pt)
                 if m:
                     page_count = int(m.group(1))
 
-            # Collect question numbers from all pages
+            # Collect question numbers from all pages. Pagination param is `part`, not `page`.
             for page in range(1, page_count + 1):
                 if page > 1:
-                    resp = requests.get(f'{url}&page={page}', headers=HEADERS)
+                    resp = requests.get(f'{url}&part={page}', headers=HEADERS)
                     resp.encoding = 'utf-8'
                     soup = BeautifulSoup(resp.text, 'html.parser')
                     time.sleep(0.2)
@@ -195,7 +197,7 @@ def get_theme_mapping():
                     if qnum not in question_theme_map:
                         question_theme_map[qnum] = {'id': theme_id, 'name': theme_name}
 
-            print(f'  [{theme_id:>3}] {theme_name}')
+            print(f'  [{theme_id:>3}] {theme_name} ({page_count} part{"s" if page_count > 1 else ""})')
         except Exception as e:
             print(f'  [{theme_id:>3}] ERROR: {e}')
 
