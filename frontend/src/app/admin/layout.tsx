@@ -103,7 +103,7 @@ export default function AdminLayout({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${collapsed ? 'w-[4.5rem]' : 'w-64'}
       `}>
-        <div className="relative flex items-center justify-center h-20 px-2 border-b border-base-300/60">
+        <div className="relative flex items-center justify-center h-24 px-2 border-b border-base-300/60">
           <Link href="/admin/dashboard" className="flex items-center justify-center">
             <Image
               src="/logo.png"
@@ -111,7 +111,7 @@ export default function AdminLayout({
               width={1000}
               height={367}
               priority
-              className={collapsed ? 'h-7 w-auto' : 'h-12 w-auto'}
+              className={collapsed ? 'h-9 w-auto' : 'h-16 w-auto'}
             />
           </Link>
           <button
