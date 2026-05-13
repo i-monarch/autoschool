@@ -103,35 +103,33 @@ export default function AdminLayout({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${collapsed ? 'w-[4.5rem]' : 'w-64'}
       `}>
-        <div className={`flex items-center h-16 px-3 border-b border-white/10 ${collapsed ? 'justify-center' : 'justify-between gap-2'}`}>
+        <div className={`flex items-center h-24 px-4 bg-white border-b border-base-200 ${collapsed ? 'justify-center' : 'justify-between gap-2'}`}>
           {!collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center flex-1 min-w-0">
-              <div className="bg-white rounded-lg px-3 py-2 shadow-sm w-full flex items-center justify-center">
-                <Image
-                  src="/logo.png"
-                  alt="logicpdd"
-                  width={570}
-                  height={156}
-                  priority
-                  className="h-8 w-auto"
-                />
-              </div>
-            </Link>
-          )}
-          {collapsed && (
-            <div className="bg-white rounded-lg p-1.5 shadow-sm">
+            <Link href="/admin/dashboard" className="flex items-center flex-1 min-w-0 justify-center">
               <Image
                 src="/logo.png"
                 alt="logicpdd"
                 width={570}
                 height={156}
                 priority
-                className="h-5 w-auto"
+                className="h-12 w-auto"
               />
-            </div>
+            </Link>
+          )}
+          {collapsed && (
+            <Link href="/admin/dashboard" className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="logicpdd"
+                width={570}
+                height={156}
+                priority
+                className="h-7 w-auto"
+              />
+            </Link>
           )}
           <button
-            className="hidden lg:flex btn btn-ghost btn-sm btn-circle text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0"
+            className="hidden lg:flex btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-800 hover:bg-base-200 flex-shrink-0"
             onClick={() => setCollapsed(!collapsed)}
           >
             <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
