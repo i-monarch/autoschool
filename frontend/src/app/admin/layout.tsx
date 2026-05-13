@@ -98,12 +98,12 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 lg:z-auto
-        flex flex-col h-screen bg-neutral text-neutral-content overflow-y-auto
+        flex flex-col h-screen bg-base-100 border-r border-base-300/60 overflow-y-auto
         transition-all duration-200
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${collapsed ? 'w-[4.5rem]' : 'w-64'}
       `}>
-        <div className="relative flex items-center justify-center h-20 px-2 bg-white border-b border-base-200">
+        <div className="relative flex items-center justify-center h-20 px-2 border-b border-base-300/60">
           <Link href="/admin/dashboard" className="flex items-center justify-center">
             <Image
               src="/logo.png"
@@ -111,11 +111,11 @@ export default function AdminLayout({
               width={570}
               height={156}
               priority
-              className={collapsed ? 'h-7 w-auto' : 'h-14 w-auto'}
+              className={collapsed ? 'h-7 w-auto' : 'h-12 w-auto'}
             />
           </Link>
           <button
-            className="hidden lg:flex absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-base-200 transition-colors"
+            className="hidden lg:flex absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center rounded-full text-base-content/40 hover:text-base-content hover:bg-base-200 transition-colors"
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? 'Розгорнути' : 'Згорнути'}
           >
@@ -134,8 +134,8 @@ export default function AdminLayout({
                   flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative
                   ${collapsed ? 'justify-center' : ''}
                   ${active
-                    ? 'bg-white/10 text-white'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
                   }
                 `}
                 title={collapsed ? item.label : undefined}
@@ -155,11 +155,11 @@ export default function AdminLayout({
           })}
         </nav>
 
-        <div className="p-2 border-t border-white/10">
+        <div className="p-2 border-t border-base-300/60">
           {collapsed ? (
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center w-full px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-colors"
+              className="flex items-center justify-center w-full px-3 py-2.5 rounded-lg text-base-content/60 hover:bg-base-200 hover:text-error transition-colors"
               title="Вийти"
             >
               <LogOut className="w-5 h-5" />
@@ -172,14 +172,14 @@ export default function AdminLayout({
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-200 truncate">
+                <p className="text-sm font-medium truncate">
                   {user.first_name || user.username}
                 </p>
-                <p className="text-xs text-gray-500 truncate">Адміністратор</p>
+                <p className="text-xs text-base-content/50 truncate">Адміністратор</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="text-gray-500 hover:text-gray-300 transition-colors"
+                className="text-base-content/40 hover:text-error transition-colors"
                 title="Вийти"
               >
                 <LogOut className="w-4 h-4" />
