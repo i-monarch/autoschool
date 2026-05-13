@@ -108,8 +108,8 @@ export default function AdminLayout({
             <Image
               src="/logo.png"
               alt="logicpdd"
-              width={570}
-              height={156}
+              width={1000}
+              height={367}
               priority
               className={collapsed ? 'h-7 w-auto' : 'h-12 w-auto'}
             />

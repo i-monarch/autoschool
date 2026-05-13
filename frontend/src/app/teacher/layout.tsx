@@ -81,8 +81,8 @@ export default function TeacherLayout({
             <Image
               src="/logo.png"
               alt="logicpdd"
-              width={570}
-              height={156}
+              width={1000}
+              height={367}
               priority
               className="h-9 w-auto"
             />
@@ -150,8 +150,8 @@ export default function TeacherLayout({
               <Image
                 src="/logo.png"
                 alt="logicpdd"
-                width={570}
-                height={156}
+                width={1000}
+                height={367}
                 priority
                 className="h-8 w-auto"
               />
