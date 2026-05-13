@@ -1,8 +1,9 @@
-import { Car, Phone, Mail, MessageCircle } from 'lucide-react'
+import { Phone, Mail, MessageCircle } from 'lucide-react'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AutoSchool - Авторизацiя',
+  title: 'logicpdd — Авторизація',
 }
 
 export default function AuthLayout({
@@ -15,11 +16,15 @@ export default function AuthLayout({
       {/* Left side - branding + support */}
       <div className="hidden lg:flex lg:w-1/2 bg-neutral text-neutral-content flex-col justify-between p-12">
         <div>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-              <Car className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold">AutoSchool</span>
+          <div className="flex items-center mb-8">
+            <Image
+              src="/logo.png"
+              alt="logicpdd"
+              width={650}
+              height={236}
+              priority
+              className="h-12 w-auto invert brightness-0"
+            />
           </div>
 
           <h1 className="text-4xl font-bold leading-tight mb-4">
@@ -72,11 +77,15 @@ export default function AuthLayout({
       {/* Right side - form */}
       <div className="flex-1 flex flex-col">
         {/* Mobile header */}
-        <div className="lg:hidden p-4 flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-            <Car className="w-5 h-5 text-primary-content" />
-          </div>
-          <span className="text-xl font-bold">AutoSchool</span>
+        <div className="lg:hidden p-4 flex items-center">
+          <Image
+            src="/logo.png"
+            alt="logicpdd"
+            width={650}
+            height={236}
+            priority
+            className="h-9 w-auto"
+          />
         </div>
 
         <div className="flex-1 flex items-center justify-center p-4 sm:p-8">

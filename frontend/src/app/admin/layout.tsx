@@ -8,6 +8,7 @@ import {
   ChevronLeft, Menu, GraduationCap, MapPin, Video, MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useWebSocket } from '@/hooks/useWebSocket'
@@ -104,14 +105,16 @@ export default function AdminLayout({
       `}>
         <div className={`flex items-center h-16 px-4 border-b border-white/10 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Settings className="w-4 h-4 text-primary-content" />
-              </div>
-              <div>
-                <span className="font-bold text-sm">AutoSchool</span>
-                <span className="text-xs text-gray-400 block -mt-0.5">Адміністрування</span>
-              </div>
+            <Link href="/admin/dashboard" className="flex items-center gap-2.5 min-w-0">
+              <Image
+                src="/logo.png"
+                alt="logicpdd"
+                width={650}
+                height={236}
+                priority
+                className="h-8 w-auto invert brightness-0 flex-shrink-0"
+              />
+              <span className="text-xs text-gray-400 border-l border-white/10 pl-2.5 truncate">Адміністрування</span>
             </Link>
           )}
           {collapsed && (

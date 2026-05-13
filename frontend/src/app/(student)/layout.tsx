@@ -3,11 +3,12 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
-  Car, LogOut, User, BookOpen, ClipboardCheck,
+  LogOut, User, BookOpen, ClipboardCheck,
   MessageCircle, Home, CreditCard, Building2,
   ChevronRight, Bell, GraduationCap, FileText, Navigation,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useWebSocket } from '@/hooks/useWebSocket'
@@ -86,11 +87,15 @@ export default function StudentLayout({
       <aside className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-base-100 border-r border-base-300/60 h-screen sticky top-0 overflow-y-auto">
         {/* Logo */}
         <div className="p-5 pb-2">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Car className="w-5 h-5 text-primary-content" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">AutoSchool</span>
+          <Link href="/dashboard" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="logicpdd"
+              width={650}
+              height={236}
+              priority
+              className="h-10 w-auto"
+            />
           </Link>
         </div>
 
@@ -158,11 +163,15 @@ export default function StudentLayout({
         <header className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-base-300/60">
           <div className="flex items-center h-16 px-4 lg:px-6">
             {/* Mobile logo */}
-            <Link href="/dashboard" className="flex items-center gap-2 lg:hidden">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Car className="w-4.5 h-4.5 text-primary-content" />
-              </div>
-              <span className="text-lg font-bold">AutoSchool</span>
+            <Link href="/dashboard" className="flex items-center lg:hidden">
+              <Image
+                src="/logo.png"
+                alt="logicpdd"
+                width={650}
+                height={236}
+                priority
+                className="h-8 w-auto"
+              />
             </Link>
 
             {/* Desktop: page area */}

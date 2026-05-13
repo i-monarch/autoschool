@@ -3,10 +3,11 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
-  Car, LogOut, User, GraduationCap, Calendar,
+  LogOut, User, Calendar,
   Users, FolderOpen, MessageCircle, Bell, ChevronRight, Home,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useWebSocket } from '@/hooks/useWebSocket'
@@ -76,14 +77,16 @@ export default function TeacherLayout({
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-base-100 border-r border-base-300/60 h-screen sticky top-0 overflow-y-auto">
         <div className="p-5 pb-2">
-          <Link href="/teacher/dashboard" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-secondary-content" />
-            </div>
-            <div>
-              <span className="text-lg font-bold tracking-tight">AutoSchool</span>
-              <span className="text-xs text-base-content/40 block -mt-0.5">Викладач</span>
-            </div>
+          <Link href="/teacher/dashboard" className="flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="logicpdd"
+              width={650}
+              height={236}
+              priority
+              className="h-9 w-auto"
+            />
+            <span className="text-xs text-base-content/40 border-l border-base-300 pl-3">Викладач</span>
           </Link>
         </div>
 
@@ -143,11 +146,15 @@ export default function TeacherLayout({
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-base-300/60">
           <div className="flex items-center h-16 px-4 lg:px-6">
-            <Link href="/teacher/dashboard" className="flex items-center gap-2 lg:hidden">
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <GraduationCap className="w-4.5 h-4.5 text-secondary-content" />
-              </div>
-              <span className="text-lg font-bold">AutoSchool</span>
+            <Link href="/teacher/dashboard" className="flex items-center lg:hidden">
+              <Image
+                src="/logo.png"
+                alt="logicpdd"
+                width={650}
+                height={236}
+                priority
+                className="h-8 w-auto"
+              />
             </Link>
 
             <div className="hidden lg:block flex-1" />

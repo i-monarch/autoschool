@@ -56,7 +56,7 @@ function showNotification(message: string) {
   if (typeof window === 'undefined' || !('Notification' in window)) return
   if (Notification.permission !== 'granted') return
   try {
-    new Notification('AutoSchool — час навчання', {
+    new Notification('logicpdd — час навчання', {
       body: message || 'Час повчити ПДР! Декілька питань — і ви ближче до прав.',
       icon: '/favicon.ico',
       tag: 'study-reminder',

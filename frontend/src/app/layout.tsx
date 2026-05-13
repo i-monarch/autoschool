@@ -3,7 +3,7 @@ import './globals.css'
 import ToastContainer from '@/components/ui/Toast'
 
 export const metadata: Metadata = {
-  title: 'AutoSchool - Онлайн автошкола',
+  title: 'logicpdd — Онлайн автошкола',
   description: 'Онлайн-платформа для навчання водінню та підготовки до іспитів ПДР',
 }
 
