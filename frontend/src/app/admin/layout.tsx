@@ -110,8 +110,8 @@ export default function AdminLayout({
                 <Image
                   src="/logo.png"
                   alt="logicpdd"
-                  width={650}
-                  height={236}
+                  width={570}
+                  height={156}
                   priority
                   className="h-8 w-auto"
                 />
@@ -123,8 +123,8 @@ export default function AdminLayout({
               <Image
                 src="/logo.png"
                 alt="logicpdd"
-                width={650}
-                height={236}
+                width={570}
+                height={156}
                 priority
                 className="h-5 w-auto"
               />
