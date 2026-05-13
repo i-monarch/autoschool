@@ -105,16 +105,17 @@ export default function AdminLayout({
       `}>
         <div className={`flex items-center h-16 px-4 border-b border-white/10 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center gap-2.5 min-w-0">
-              <Image
-                src="/logo.png"
-                alt="logicpdd"
-                width={650}
-                height={236}
-                priority
-                className="h-8 w-auto invert brightness-0 flex-shrink-0"
-              />
-              <span className="text-xs text-gray-400 border-l border-white/10 pl-2.5 truncate">Адміністрування</span>
+            <Link href="/admin/dashboard" className="flex items-center">
+              <div className="bg-white rounded-lg px-2.5 py-1.5">
+                <Image
+                  src="/logo.png"
+                  alt="logicpdd"
+                  width={650}
+                  height={236}
+                  priority
+                  className="h-7 w-auto"
+                />
+              </div>
             </Link>
           )}
           {collapsed && (

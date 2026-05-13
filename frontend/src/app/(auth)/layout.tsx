@@ -17,14 +17,16 @@ export default function AuthLayout({
       <div className="hidden lg:flex lg:w-1/2 bg-neutral text-neutral-content flex-col justify-between p-12">
         <div>
           <div className="flex items-center mb-8">
-            <Image
-              src="/logo.png"
-              alt="logicpdd"
-              width={650}
-              height={236}
-              priority
-              className="h-12 w-auto invert brightness-0"
-            />
+            <div className="bg-white rounded-xl px-4 py-2.5">
+              <Image
+                src="/logo.png"
+                alt="logicpdd"
+                width={650}
+                height={236}
+                priority
+                className="h-10 w-auto"
+              />
+            </div>
           </div>
 
           <h1 className="text-4xl font-bold leading-tight mb-4">
