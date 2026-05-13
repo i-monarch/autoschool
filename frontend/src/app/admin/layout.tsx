@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, ClipboardCheck, Users,
-  CreditCard, LogOut, User, Settings, Bell, Calendar, Building2,
+  CreditCard, LogOut, User, Bell, Calendar, Building2,
   ChevronLeft, Menu, GraduationCap, MapPin, Video, MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -103,28 +103,35 @@ export default function AdminLayout({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${collapsed ? 'w-[4.5rem]' : 'w-64'}
       `}>
-        <div className={`flex items-center h-16 px-4 border-b border-white/10 ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`flex items-center h-16 px-3 border-b border-white/10 ${collapsed ? 'justify-center' : 'justify-between gap-2'}`}>
           {!collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center">
-              <div className="bg-white rounded-lg px-2.5 py-1.5">
+            <Link href="/admin/dashboard" className="flex items-center flex-1 min-w-0">
+              <div className="bg-white rounded-lg px-3 py-2 shadow-sm w-full flex items-center justify-center">
                 <Image
                   src="/logo.png"
                   alt="logicpdd"
                   width={650}
                   height={236}
                   priority
-                  className="h-7 w-auto"
+                  className="h-8 w-auto"
                 />
               </div>
             </Link>
           )}
           {collapsed && (
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Settings className="w-4 h-4 text-primary-content" />
+            <div className="bg-white rounded-lg p-1.5 shadow-sm">
+              <Image
+                src="/logo.png"
+                alt="logicpdd"
+                width={650}
+                height={236}
+                priority
+                className="h-5 w-auto"
+              />
             </div>
           )}
           <button
-            className="hidden lg:flex btn btn-ghost btn-xs btn-circle text-gray-400 hover:text-white"
+            className="hidden lg:flex btn btn-ghost btn-sm btn-circle text-gray-400 hover:text-white hover:bg-white/5 flex-shrink-0"
             onClick={() => setCollapsed(!collapsed)}
           >
             <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
