@@ -103,36 +103,23 @@ export default function AdminLayout({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${collapsed ? 'w-[4.5rem]' : 'w-64'}
       `}>
-        <div className={`flex items-center h-24 px-4 bg-white border-b border-base-200 ${collapsed ? 'justify-center' : 'justify-between gap-2'}`}>
-          {!collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center flex-1 min-w-0 justify-center">
-              <Image
-                src="/logo.png"
-                alt="logicpdd"
-                width={570}
-                height={156}
-                priority
-                className="h-12 w-auto"
-              />
-            </Link>
-          )}
-          {collapsed && (
-            <Link href="/admin/dashboard" className="flex items-center">
-              <Image
-                src="/logo.png"
-                alt="logicpdd"
-                width={570}
-                height={156}
-                priority
-                className="h-7 w-auto"
-              />
-            </Link>
-          )}
+        <div className="relative flex items-center justify-center h-20 px-2 bg-white border-b border-base-200">
+          <Link href="/admin/dashboard" className="flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="logicpdd"
+              width={570}
+              height={156}
+              priority
+              className={collapsed ? 'h-7 w-auto' : 'h-14 w-auto'}
+            />
+          </Link>
           <button
-            className="hidden lg:flex btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-800 hover:bg-base-200 flex-shrink-0"
+            className="hidden lg:flex absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-base-200 transition-colors"
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Розгорнути' : 'Згорнути'}
           >
-            <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+            <ChevronLeft className={`w-3.5 h-3.5 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
