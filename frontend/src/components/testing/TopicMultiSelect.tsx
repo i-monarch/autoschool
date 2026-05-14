@@ -61,8 +61,9 @@ export function TopicMultiSelect({ categories, isPaid }: TopicMultiSelectProps) 
           <div className="text-sm text-base-content/70 leading-relaxed">
             Оберіть одну або кілька тем — тест буде складено з питань
             <strong className="text-base-content"> лише обраних тем</strong>.
+            З кожної теми береться приблизно однакова кількість питань (випадково),
+            потім вони перемішуються. Усього в тесті — до 20 питань.
             Якщо позначите всі — отримаєте випадкові питання з усіх розділів ПДР.
-            Усього в тесті — близько 20 питань (рівномірно з ваших тем).
           </div>
         </div>
 

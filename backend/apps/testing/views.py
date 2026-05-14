@@ -1,3 +1,6 @@
+import math
+import random
+
 from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import generics, permissions, status
@@ -35,27 +38,36 @@ class StartTestView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        question_ids: list[int]
         if test_type == 'topic':
-            if category_ids:
-                questions = Question.objects.filter(category_id__in=category_ids)
-                attempt_category_id = category_ids[0] if len(category_ids) == 1 else None
-            elif category_id:
-                questions = Question.objects.filter(category_id=category_id)
-                attempt_category_id = category_id
-            else:
+            if not category_ids and category_id:
+                category_ids = [category_id]
+            if not category_ids:
                 return Response(
                     {'error': 'category_required', 'message': 'Оберіть хоча б одну тему'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            count = min(questions.count(), 20)
+            attempt_category_id = category_ids[0] if len(category_ids) == 1 else None
+            # Take roughly even slice from each selected topic, then shuffle and trim to 20
+            per_topic = math.ceil(20 / len(category_ids))
+            collected: list[int] = []
+            for cat_id in category_ids:
+                ids = list(
+                    Question.objects.filter(category_id=cat_id)
+                    .order_by('?')
+                    .values_list('id', flat=True)[:per_topic]
+                )
+                collected.extend(ids)
+            random.shuffle(collected)
+            question_ids = collected[:20]
         elif test_type == 'exam':
-            questions = Question.objects.all()
-            count = 20
+            question_ids = list(
+                Question.objects.order_by('?').values_list('id', flat=True)[:20]
+            )
         else:  # marathon
-            questions = Question.objects.all()
-            count = min(questions.count(), 100)
-
-        question_ids = list(questions.order_by('?').values_list('id', flat=True)[:count])
+            question_ids = list(
+                Question.objects.order_by('?').values_list('id', flat=True)[:100]
+            )
 
         attempt = TestAttempt.objects.create(
             user=request.user,
