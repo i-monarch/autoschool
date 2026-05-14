@@ -26,6 +26,8 @@ class StartTestView(APIView):
 
         test_type = ser.validated_data['test_type']
         category_id = ser.validated_data.get('category_id')
+        category_ids = list(dict.fromkeys(ser.validated_data.get('category_ids') or []))
+        attempt_category_id = category_id
 
         if test_type in ('topic', 'marathon') and not request.user.is_paid:
             return Response(
@@ -34,12 +36,17 @@ class StartTestView(APIView):
             )
 
         if test_type == 'topic':
-            if not category_id:
+            if category_ids:
+                questions = Question.objects.filter(category_id__in=category_ids)
+                attempt_category_id = category_ids[0] if len(category_ids) == 1 else None
+            elif category_id:
+                questions = Question.objects.filter(category_id=category_id)
+                attempt_category_id = category_id
+            else:
                 return Response(
-                    {'error': 'category_required', 'message': 'Оберіть тему'},
+                    {'error': 'category_required', 'message': 'Оберіть хоча б одну тему'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            questions = Question.objects.filter(category_id=category_id)
             count = min(questions.count(), 20)
         elif test_type == 'exam':
             questions = Question.objects.all()
@@ -53,7 +60,7 @@ class StartTestView(APIView):
         attempt = TestAttempt.objects.create(
             user=request.user,
             test_type=test_type,
-            category_id=category_id,
+            category_id=attempt_category_id,
             total=len(question_ids),
         )
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import {
-  ClipboardCheck, Clock, Target, TrendingUp, ChevronRight, BookOpen,
+  ClipboardCheck, ChevronRight,
   CheckCircle, XCircle, AlertTriangle, BarChart3, BookX, Bookmark, Trophy, Lock,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -10,6 +10,8 @@ import api from '@/lib/api'
 import { normalizeQuestionImage } from '@/lib/image'
 import { useAuthStore } from '@/stores/auth'
 import { PaywallOverlay } from '@/components/ui/PaywallBanner'
+import { TopicMultiSelect } from '@/components/testing/TopicMultiSelect'
+import type { TestCategory } from '@/types/testing'
 
 interface SavedQuestionItem {
   id: number
@@ -23,13 +25,6 @@ interface SavedQuestionItem {
     answers: Array<{ id: number; text: string; is_correct: boolean }>
   }
   created_at: string
-}
-
-interface Category {
-  id: number
-  name: string
-  slug: string
-  question_count: number
 }
 
 interface CategoryStat {
@@ -69,7 +64,7 @@ type Tab = 'modes' | 'stats' | 'mistakes' | 'saved'
 export default function TestsPage() {
   const user = useAuthStore(s => s.user)
   const isPaid = user?.is_paid ?? false
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<TestCategory[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([])
   const [wrongLoading, setWrongLoading] = useState(false)
@@ -325,31 +320,7 @@ export default function TestsPage() {
               </div>
             </div>
           ) : (
-            <>
-              <div className={`space-y-1.5 ${!isPaid ? 'opacity-50 pointer-events-none' : ''}`}>
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/tests/topic/${cat.id}`}
-                    className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-primary/30 hover:bg-primary/5 transition-colors group"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
-                      <Target className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{cat.name}</p>
-                      <p className="text-xs text-base-content/50">{cat.question_count} питань</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-primary/60 transition-colors flex-shrink-0" />
-                  </Link>
-                ))}
-              </div>
-              {!isPaid && (
-                <div className="mt-4 text-center">
-                  <Link href="/payments" className="btn btn-warning btn-sm">Оформити підписку</Link>
-                </div>
-              )}
-            </>
+            <TopicMultiSelect categories={categories} isPaid={isPaid} />
           )}
         </>
       )}

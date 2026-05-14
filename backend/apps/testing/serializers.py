@@ -46,6 +46,11 @@ class SubmitAnswerSerializer(serializers.Serializer):
 class StartTestSerializer(serializers.Serializer):
     test_type = serializers.ChoiceField(choices=['topic', 'exam', 'marathon'])
     category_id = serializers.IntegerField(required=False, allow_null=True)
+    category_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        allow_empty=True,
+    )
 
 
 class AttemptAnswerSerializer(serializers.ModelSerializer):
