@@ -397,12 +397,14 @@
 
 .theory-content .rule-section {
   display: inline-block;
-  padding: 2px 10px;
-  margin: 4px 0;
-  border-radius: 6px;
-  background: oklch(0.95 0.04 250);
-  color: oklch(0.4 0.15 250);
+  padding: 3px 12px;
+  margin: 4px 2px;
+  border-radius: 8px;
+  background: oklch(0.93 0.07 250);
+  color: oklch(0.35 0.18 250);
   font-weight: 700;
   font-size: 0.95em;
-  border-left: 3px solid oklch(0.55 0.18 250);
+  border: 1px solid oklch(0.78 0.12 250);
+  border-left: 4px solid oklch(0.55 0.2 250);
+  white-space: nowrap;
 }

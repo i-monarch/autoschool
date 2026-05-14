@@ -7,7 +7,7 @@ import Link from 'next/link'
 import api from '@/lib/api'
 
 const ARTICLE_RE = /(Стаття\s+\d+(?:[\u2013\-\.]\d+)*(?:\s*КУпАП)?)/gi
-const RULE_SECTION_RE = /(Розділ\s+(?:\d+|[IVXLCDM]+)(?:\.|\b))/g
+const RULE_SECTION_RE = /(Розділ\s*:?\s*(?:\d+(?:\.\d+)*|[IVXLCDM]+)(?:\.|\b))/g
 
 function highlightLawArticles(html: string): string {
   if (!html) return html
@@ -68,15 +68,14 @@ export default function ChapterPage() {
   }, [sectionSlug, chapterSlug])
 
   const isFinesSection = sectionSlug === 'shtrafi'
-  const isRulesSection = sectionSlug === 'pravila-dorozhnogo-ruhu'
 
   const processedContent = useMemo(() => {
     if (!chapter) return ''
     let html = chapter.content
     if (isFinesSection) html = highlightLawArticles(html)
-    if (isRulesSection) html = highlightRuleSections(html)
+    html = highlightRuleSections(html)
     return html
-  }, [chapter, isFinesSection, isRulesSection])
+  }, [chapter, isFinesSection])
 
   if (loading || !chapter) {
     return (
