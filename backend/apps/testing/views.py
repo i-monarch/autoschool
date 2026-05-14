@@ -1,25 +1,33 @@
 import math
 import random
 
-from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.permissions import IsPaid
-from .models import TestCategory, Question, Answer, TestAttempt, AttemptAnswer
+from .models import Question, Answer, TestAttempt, AttemptAnswer
 from .serializers import (
-    TestCategorySerializer, QuestionSerializer, QuestionWithExplanationSerializer,
+    TestCategorySerializer, QuestionSerializer,
     StartTestSerializer, SubmitAnswerSerializer,
     TestAttemptSerializer, TestAttemptDetailSerializer,
+)
+from .services import (
+    build_test_stats,
+    groups_for_user,
+    license_group_filter,
+    user_categories_queryset,
+    user_questions_queryset,
 )
 
 
 class CategoryListView(generics.ListAPIView):
     serializer_class = TestCategorySerializer
-    queryset = TestCategory.objects.filter(question_count__gt=0)
+    permission_classes = [permissions.AllowAny]
     pagination_class = None
+
+    def get_queryset(self):
+        return user_categories_queryset(self.request.user)
 
 
 class StartTestView(APIView):
@@ -32,11 +40,15 @@ class StartTestView(APIView):
         category_ids = list(dict.fromkeys(ser.validated_data.get('category_ids') or []))
         attempt_category_id = category_id
 
+        # paywall: topic and marathon require paid subscription
         if test_type in ('topic', 'marathon') and not request.user.is_paid:
             return Response(
                 {'error': 'payment_required', 'message': 'Цей режим доступний лише для оплачених акаунтів'},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+        user_groups = groups_for_user(request.user)
+        allowed_question_filter = license_group_filter(user_groups, 'category__license_groups')
 
         question_ids: list[int]
         if test_type == 'topic':
@@ -47,13 +59,23 @@ class StartTestView(APIView):
                     {'error': 'category_required', 'message': 'Оберіть хоча б одну тему'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            allowed_category_ids = set(
+                user_categories_queryset(request.user)
+                .filter(id__in=category_ids)
+                .values_list('id', flat=True)
+            )
+            if not allowed_category_ids or allowed_category_ids != set(category_ids):
+                return Response(
+                    {'error': 'invalid_categories'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             attempt_category_id = category_ids[0] if len(category_ids) == 1 else None
             # Take roughly even slice from each selected topic, then shuffle and trim to 20
             per_topic = math.ceil(20 / len(category_ids))
             collected: list[int] = []
             for cat_id in category_ids:
                 ids = list(
-                    Question.objects.filter(category_id=cat_id)
+                    Question.objects.filter(allowed_question_filter, category_id=cat_id)
                     .order_by('?')
                     .values_list('id', flat=True)[:per_topic]
                 )
@@ -62,11 +84,11 @@ class StartTestView(APIView):
             question_ids = collected[:20]
         elif test_type == 'exam':
             question_ids = list(
-                Question.objects.order_by('?').values_list('id', flat=True)[:20]
+                user_questions_queryset(request.user).order_by('?').values_list('id', flat=True)[:20]
             )
         else:  # marathon
             question_ids = list(
-                Question.objects.order_by('?').values_list('id', flat=True)[:100]
+                user_questions_queryset(request.user).order_by('?').values_list('id', flat=True)[:100]
             )
 
         attempt = TestAttempt.objects.create(
@@ -191,60 +213,15 @@ class AttemptDetailView(generics.RetrieveAPIView):
 
 class TestStatsView(APIView):
     def get(self, request):
-        attempts = TestAttempt.objects.filter(user=request.user, finished_at__isnull=False)
+        return Response(build_test_stats(request.user))
 
-        total_attempts = attempts.count()
-        if total_attempts == 0:
-            return Response({
-                'total_attempts': 0,
-                'total_correct': 0,
-                'total_wrong': 0,
-                'total_questions': 0,
-                'avg_percent': 0,
-                'passed_count': 0,
-                'failed_count': 0,
-                'by_category': [],
-            })
 
-        total_correct = sum(a.score for a in attempts)
-        total_questions = sum(a.total for a in attempts)
-        total_wrong = total_questions - total_correct
-        avg_percent = round(total_correct / total_questions * 100) if total_questions else 0
-        passed_count = attempts.filter(is_passed=True).count()
-        failed_count = total_attempts - passed_count
-
-        # Stats by category — sorted weakest first
-        category_stats = []
-        categories = TestCategory.objects.filter(question_count__gt=0).exclude(name='Без теми')
-        for cat in categories:
-            cat_attempts = attempts.filter(category=cat)
-            if cat_attempts.exists():
-                cat_correct = sum(a.score for a in cat_attempts)
-                cat_total = sum(a.total for a in cat_attempts)
-                cat_wrong = cat_total - cat_correct
-                pct = round(cat_correct / cat_total * 100) if cat_total else 0
-                category_stats.append({
-                    'category_id': cat.id,
-                    'category_name': cat.name,
-                    'attempts': cat_attempts.count(),
-                    'correct': cat_correct,
-                    'wrong': cat_wrong,
-                    'total': cat_total,
-                    'percent': pct,
-                })
-
-        category_stats.sort(key=lambda x: x['percent'])
-
-        return Response({
-            'total_attempts': total_attempts,
-            'total_correct': total_correct,
-            'total_wrong': total_wrong,
-            'total_questions': total_questions,
-            'avg_percent': avg_percent,
-            'passed_count': passed_count,
-            'failed_count': failed_count,
-            'by_category': category_stats,
-        })
+class ResetStatsView(APIView):
+    def post(self, request):
+        attempts = TestAttempt.objects.filter(user=request.user)
+        deleted = attempts.count()
+        attempts.delete()
+        return Response({'deleted': deleted})
 
 
 class WrongAnswersView(APIView):

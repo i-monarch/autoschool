@@ -1,71 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  ClipboardCheck, ChevronRight,
-  CheckCircle, XCircle, AlertTriangle, BarChart3, BookX, Bookmark, Trophy, Lock,
-} from 'lucide-react'
+import { BarChart3, Bookmark, BookX, ClipboardCheck } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
-import { normalizeQuestionImage } from '@/lib/image'
 import { useAuthStore } from '@/stores/auth'
-import { PaywallOverlay } from '@/components/ui/PaywallBanner'
-import { TopicMultiSelect } from '@/components/testing/TopicMultiSelect'
-import type { TestCategory } from '@/types/testing'
-
-interface SavedQuestionItem {
-  id: number
-  question: {
-    id: number
-    number: number
-    text: string
-    image: string | null
-    explanation: string | null
-    category_name: string | null
-    answers: Array<{ id: number; text: string; is_correct: boolean }>
-  }
-  created_at: string
-}
-
-interface CategoryStat {
-  category_id: number
-  category_name: string
-  attempts: number
-  correct: number
-  wrong: number
-  total: number
-  percent: number
-}
-
-interface Stats {
-  total_attempts: number
-  total_correct: number
-  total_wrong: number
-  total_questions: number
-  avg_percent: number
-  passed_count: number
-  failed_count: number
-  by_category: CategoryStat[]
-}
-
-interface WrongAnswer {
-  question_id: number
-  question_number: number
-  question_text: string
-  question_image: string | null
-  explanation: string | null
-  category_name: string | null
-  selected_answer_id: number | null
-  answers: Array<{ id: number; text: string; is_correct: boolean }>
-}
+import type { SavedQuestionItem, TestCategory, TestStats, WrongAnswer } from '@/types/testing'
+import { TestsMistakesTab } from './TestsMistakesTab'
+import { TestsModesTab } from './TestsModesTab'
+import { TestsSavedTab } from './TestsSavedTab'
+import { TestsStatsTab } from './TestsStatsTab'
 
 type Tab = 'modes' | 'stats' | 'mistakes' | 'saved'
 
 export default function TestsPage() {
-  const user = useAuthStore(s => s.user)
+  const user = useAuthStore((state) => state.user)
   const isPaid = user?.is_paid ?? false
   const [categories, setCategories] = useState<TestCategory[]>([])
-  const [stats, setStats] = useState<Stats | null>(null)
+  const [stats, setStats] = useState<TestStats | null>(null)
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([])
   const [wrongLoading, setWrongLoading] = useState(false)
   const [wrongLoaded, setWrongLoaded] = useState(false)
@@ -77,11 +29,11 @@ export default function TestsPage() {
 
   useEffect(() => {
     Promise.all([
-      api.get('/tests/categories/').then(r => r.data),
-      api.get('/tests/stats/').then(r => r.data).catch(() => null),
-    ]).then(([cats, st]) => {
-      setCategories(cats)
-      setStats(st)
+      api.get<TestCategory[]>('/tests/categories/').then((response) => response.data),
+      api.get<TestStats>('/tests/stats/').then((response) => response.data).catch(() => null),
+    ]).then(([loadedCategories, loadedStats]) => {
+      setCategories(loadedCategories)
+      setStats(loadedStats)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -89,9 +41,9 @@ export default function TestsPage() {
   const loadWrongAnswers = () => {
     if (wrongLoaded) return
     setWrongLoading(true)
-    api.get('/tests/wrong-answers/')
-      .then(res => {
-        setWrongAnswers(res.data.results)
+    api.get<{ results: WrongAnswer[] }>('/tests/wrong-answers/')
+      .then((response) => {
+        setWrongAnswers(response.data.results)
         setWrongLoaded(true)
       })
       .catch(() => {})
@@ -101,9 +53,9 @@ export default function TestsPage() {
   const loadSavedQuestions = () => {
     if (savedLoaded) return
     setSavedLoading(true)
-    api.get('/tests/saved/list/')
-      .then(res => {
-        setSavedItems(res.data.results)
+    api.get<{ results: SavedQuestionItem[] }>('/tests/saved/list/')
+      .then((response) => {
+        setSavedItems(response.data.results)
         setSavedLoaded(true)
       })
       .catch(() => {})
@@ -113,545 +65,123 @@ export default function TestsPage() {
   const removeSaved = (questionId: number) => {
     api.post('/tests/saved/', { question_id: questionId })
       .then(() => {
-        setSavedItems(prev => prev.filter(s => s.question.id !== questionId))
+        setSavedItems((current) => current.filter((item) => item.question.id !== questionId))
       })
       .catch(() => {})
   }
 
-  const handleTabChange = (t: Tab) => {
-    setTab(t)
-    if (t === 'mistakes' && !wrongLoaded) loadWrongAnswers()
-    if (t === 'saved' && !savedLoaded) loadSavedQuestions()
+  const handleTabChange = (nextTab: Tab) => {
+    setTab(nextTab)
+    if (nextTab === 'mistakes' && !wrongLoaded) loadWrongAnswers()
+    if (nextTab === 'saved' && !savedLoaded) loadSavedQuestions()
   }
+
+  const licenseCategories = user?.license_categories?.length ? user.license_categories : ['B']
+  const hasStats = Boolean(stats && stats.total_attempts > 0)
 
   if (loading) {
     return (
       <div>
+        <LicenseInfoBar categories={licenseCategories} />
         <h1 className="text-2xl font-bold mb-6">Тести ПДР</h1>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="skeleton h-32 rounded-xl" />
+          {[...Array(6)].map((_, index) => (
+            <div key={index} className="skeleton h-32 rounded-xl" />
           ))}
         </div>
       </div>
     )
   }
 
-  const hasStats = stats && stats.total_attempts > 0
-
   return (
     <div>
+      <LicenseInfoBar categories={licenseCategories} />
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Тести ПДР</h1>
         <p className="text-base-content/60 text-sm mt-1">Тренуйтесь та перевіряйте свої знання</p>
       </div>
 
-      {/* Tabs */}
       <div className="tabs tabs-bordered mb-6">
-        <button
-          className={`tab tab-lg ${tab === 'modes' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('modes')}
-        >
+        <TabButton active={tab === 'modes'} onClick={() => handleTabChange('modes')}>
           <ClipboardCheck className="w-4 h-4 mr-2" />
           Тести
-        </button>
-        <button
-          className={`tab tab-lg ${tab === 'stats' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('stats')}
-        >
+        </TabButton>
+        <TabButton active={tab === 'stats'} onClick={() => handleTabChange('stats')}>
           <BarChart3 className="w-4 h-4 mr-2" />
           Статистика
-          {hasStats && (
+          {hasStats && stats && (
             <span className="badge badge-sm badge-info ml-2">{stats.avg_percent}%</span>
           )}
-        </button>
-        <button
-          className={`tab tab-lg ${tab === 'mistakes' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('mistakes')}
-        >
+        </TabButton>
+        <TabButton active={tab === 'mistakes'} onClick={() => handleTabChange('mistakes')}>
           <BookX className="w-4 h-4 mr-2" />
           Помилки
-          {hasStats && stats.total_wrong > 0 && (
+          {hasStats && stats && stats.total_wrong > 0 && (
             <span className="badge badge-sm badge-error ml-2">{stats.total_wrong}</span>
           )}
-        </button>
-        <button
-          className={`tab tab-lg ${tab === 'saved' ? 'tab-active' : ''}`}
-          onClick={() => handleTabChange('saved')}
-        >
+        </TabButton>
+        <TabButton active={tab === 'saved'} onClick={() => handleTabChange('saved')}>
           <Bookmark className="w-4 h-4 mr-2" />
           Збережені
-        </button>
+        </TabButton>
       </div>
 
-      {/* === TAB: Modes === */}
       {tab === 'modes' && (
-        <>
-          {/* Test modes — unique cards with road sign decorations */}
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
-            {/* Exam — stop sign themed */}
-            <Link href="/tests/exam" className="group relative overflow-hidden card bg-gradient-to-br from-red-50 to-base-100 border-2 border-red-200/60 hover:border-red-400/60 hover:shadow-lg transition-all">
-              <div className="absolute -top-3 -right-3 opacity-[0.07]" aria-hidden>
-                <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-                  <polygon points="30,5 70,5 95,30 95,70 70,95 30,95 5,70 5,30" fill="currentColor" stroke="currentColor" strokeWidth="4" className="text-red-500" />
-                </svg>
-              </div>
-              <div className="card-body p-5 relative">
-                <div className="flex items-center gap-3 mb-3">
-                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="flex-shrink-0">
-                    <polygon points="13,3 31,3 41,13 41,31 31,41 13,41 3,31 3,13" fill="#fee2e2" stroke="#ef4444" strokeWidth="2.5" />
-                    <text x="22" y="27" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#dc2626">20</text>
-                  </svg>
-                  <div>
-                    <h3 className="font-bold text-base">Екзамен</h3>
-                    <span className="text-xs text-error/70 font-medium">20 хв</span>
-                  </div>
-                </div>
-                <p className="text-sm text-base-content/60">20 питань, 20 хвилин. Як у сервісному центрі.</p>
-              </div>
-            </Link>
-
-            {/* Marathon — priority road sign themed */}
-            {isPaid ? (
-              <Link href="/tests/marathon" className="group relative overflow-hidden card bg-gradient-to-br from-amber-50 to-base-100 border-2 border-amber-200/60 hover:border-amber-400/60 hover:shadow-lg transition-all">
-                <div className="absolute -top-2 -right-2 opacity-[0.07]" aria-hidden>
-                  <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
-                    <rect x="15" y="15" width="42" height="42" rx="5" transform="rotate(45, 36, 36)" fill="currentColor" className="text-amber-500" />
-                  </svg>
-                </div>
-                <div className="card-body p-5 relative">
-                  <div className="flex items-center gap-3 mb-3">
-                    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="flex-shrink-0">
-                      <rect x="6" y="6" width="22" height="22" rx="3" transform="rotate(45, 17, 17)" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2.5" />
-                      <text x="22" y="28" textAnchor="middle" fontSize="20" fill="#d97706">&#8734;</text>
-                    </svg>
-                    <div>
-                      <h3 className="font-bold text-base">Марафон</h3>
-                      <span className="text-xs text-amber-600/70 font-medium">без ліміту</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-base-content/60">Без обмежень часу. Тренування з поясненнями.</p>
-                </div>
-              </Link>
-            ) : (
-              <div className="relative overflow-hidden card bg-base-100 border border-base-300/60 opacity-60">
-                <div className="card-body p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-11 h-11 rounded-lg bg-base-200 text-base-content/30 flex items-center justify-center flex-shrink-0">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-base">Марафон</h3>
-                      <span className="text-xs text-base-content/40">після оплати</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-base-content/60">Доступний після оплати</p>
-                </div>
-              </div>
-            )}
-
-            {/* Results — speed sign themed */}
-            <Link href="/tests/history" className="group relative overflow-hidden card bg-gradient-to-br from-emerald-50 to-base-100 border-2 border-emerald-200/60 hover:border-emerald-400/60 hover:shadow-lg transition-all">
-              <div className="absolute -top-3 -right-3 opacity-[0.07]" aria-hidden>
-                <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
-                  <circle cx="45" cy="45" r="40" fill="currentColor" className="text-emerald-500" />
-                </svg>
-              </div>
-              <div className="card-body p-5 relative">
-                <div className="flex items-center gap-3 mb-3">
-                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="flex-shrink-0">
-                    <circle cx="22" cy="22" r="19" fill="#d1fae5" stroke="#10b981" strokeWidth="2.5" />
-                    <path d="M14 22 L19 27 L30 16" stroke="#059669" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  </svg>
-                  <div>
-                    <h3 className="font-bold text-base">Мої результати</h3>
-                    <span className="text-xs text-emerald-600/70 font-medium">
-                      {hasStats ? `${stats.avg_percent}% правильних` : 'історія'}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-sm text-base-content/60">
-                  {hasStats
-                    ? `${stats.total_attempts} спроб пройдено`
-                    : 'Історія ваших спроб'
-                  }
-                </p>
-              </div>
-            </Link>
-          </div>
-
-          {/* Leaderboard link */}
-          {isPaid ? (
-            <Link
-              href="/tests/leaderboard"
-              className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 hover:border-warning/30 hover:bg-warning/5 transition-colors group mb-8"
-            >
-              <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
-                <Trophy className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">Рейтинг</p>
-                <p className="text-xs text-base-content/50">Топ-50 учнів за кількістю правильних відповідей</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-base-content/20 group-hover:text-warning/60 transition-colors flex-shrink-0" />
-            </Link>
-          ) : (
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-base-100 border border-base-300/60 opacity-60 mb-8">
-              <div className="w-9 h-9 rounded-lg bg-base-200 text-base-content/30 flex items-center justify-center flex-shrink-0">
-                <Lock className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">Рейтинг</p>
-                <p className="text-xs text-base-content/50">Доступний після оплати</p>
-              </div>
-            </div>
-          )}
-
-          {/* Topics */}
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-semibold">За темами</h2>
-            {!isPaid && <Lock className="w-4 h-4 text-warning" />}
-          </div>
-          {categories.length === 0 ? (
-            <div className="card bg-base-100 border border-base-300/60">
-              <div className="card-body items-center text-center py-12">
-                <ClipboardCheck className="w-12 h-12 text-base-content/20 mb-3" />
-                <p className="text-base-content/50">Питання ще не завантажено</p>
-              </div>
-            </div>
-          ) : (
-            <TopicMultiSelect categories={categories} isPaid={isPaid} />
-          )}
-        </>
+        <TestsModesTab
+          categories={categories}
+          isPaid={isPaid}
+          hasStats={hasStats}
+          stats={stats}
+        />
       )}
-
-      {/* === TAB: Stats === */}
-      {tab === 'stats' && (
-        <>
-          {!hasStats ? (
-            <div className="card bg-base-100 border border-base-300/60">
-              <div className="card-body items-center text-center py-12">
-                <BarChart3 className="w-12 h-12 text-base-content/20 mb-3" />
-                <p className="text-base-content/50 mb-2">Ви ще не проходили тести</p>
-                <p className="text-sm text-base-content/40">Пройдіть хоча б один тест, щоб побачити статистику</p>
-              </div>
-            </div>
-          ) : !isPaid ? (
-            <PaywallOverlay message="Доступно в платній версії">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <p className="text-2xl font-bold">12</p>
-                  <p className="text-xs text-base-content/50">Тестів пройдено</p>
-                </div>
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <p className="text-2xl font-bold text-primary">78%</p>
-                  <p className="text-xs text-base-content/50">Середній результат</p>
-                </div>
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <p className="text-2xl font-bold text-success">186</p>
-                  <p className="text-xs text-base-content/50">Правильних</p>
-                </div>
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <p className="text-2xl font-bold text-error">54</p>
-                  <p className="text-xs text-base-content/50">Неправильних</p>
-                </div>
-              </div>
-              <div className="card bg-base-100 border border-base-300/60 p-5">
-                <h3 className="font-semibold text-sm mb-3">Результати за темами</h3>
-                <div className="space-y-3">
-                  {['Дорожні знаки', 'Проїзд перехресть', 'Швидкість руху'].map(name => (
-                    <div key={name}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm">{name}</span>
-                        <span className="text-sm font-semibold">75%</span>
-                      </div>
-                      <div className="w-full bg-base-300/50 rounded-full h-2 overflow-hidden">
-                        <div className="h-full bg-warning rounded-full" style={{ width: '75%' }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </PaywallOverlay>
-          ) : (
-            <>
-              {/* Summary cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <p className="text-2xl font-bold">{stats.total_attempts}</p>
-                  <p className="text-xs text-base-content/50">Тестів пройдено</p>
-                </div>
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <p className="text-2xl font-bold text-primary">{stats.avg_percent}%</p>
-                  <p className="text-xs text-base-content/50">Середній результат</p>
-                </div>
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-success">{stats.total_correct}</span>
-                    <span className="text-sm text-base-content/30">/ {stats.total_questions}</span>
-                  </div>
-                  <p className="text-xs text-base-content/50">Правильних</p>
-                </div>
-                <div className="card bg-base-100 border border-base-300/60 p-4">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-error">{stats.total_wrong}</span>
-                    <span className="text-sm text-base-content/30">/ {stats.total_questions}</span>
-                  </div>
-                  <p className="text-xs text-base-content/50">Неправильних</p>
-                </div>
-              </div>
-
-              {/* Pass/fail ratio */}
-              <div className="card bg-base-100 border border-base-300/60 p-5 mb-6">
-                <h3 className="font-semibold text-sm mb-3">Результати тестів</h3>
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span className="text-sm">Складено: <strong>{stats.passed_count}</strong></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-error" />
-                    <span className="text-sm">Не складено: <strong>{stats.failed_count}</strong></span>
-                  </div>
-                </div>
-                <div className="w-full bg-base-300/50 rounded-full h-3 overflow-hidden">
-                  <div
-                    className="h-full bg-success rounded-full transition-all"
-                    style={{ width: `${stats.total_attempts > 0 ? Math.round(stats.passed_count / stats.total_attempts * 100) : 0}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* By category */}
-              {stats.by_category.length > 0 && (
-                <div className="card bg-base-100 border border-base-300/60 p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-semibold text-sm">Результати за темами</h3>
-                    <span className="text-xs text-base-content/40">(слабкі теми зверху)</span>
-                  </div>
-                  <div className="space-y-3">
-                    {stats.by_category.map(cat => {
-                      const isWeak = cat.percent < 70
-                      const isMedium = cat.percent >= 70 && cat.percent < 85
-                      return (
-                        <div key={cat.category_id}>
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              {isWeak && <AlertTriangle className="w-3.5 h-3.5 text-error flex-shrink-0" />}
-                              <span className={`text-sm truncate ${isWeak ? 'text-error font-medium' : ''}`}>
-                                {cat.category_name}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 flex-shrink-0 ml-3">
-                              <span className="text-xs text-base-content/40">
-                                {cat.correct}/{cat.total}
-                              </span>
-                              <span className={`text-sm font-semibold min-w-[3rem] text-right ${
-                                isWeak ? 'text-error' : isMedium ? 'text-warning' : 'text-success'
-                              }`}>
-                                {cat.percent}%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="w-full bg-base-300/50 rounded-full h-2 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${
-                                isWeak ? 'bg-error' : isMedium ? 'bg-warning' : 'bg-success'
-                              }`}
-                              style={{ width: `${cat.percent}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
-
-      {/* === TAB: Mistakes === */}
+      {tab === 'stats' && <TestsStatsTab stats={stats} isPaid={isPaid} />}
       {tab === 'mistakes' && (
-        <>
-          {!isPaid ? (
-            <PaywallOverlay message="Доступно в платній версії">
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="card bg-base-100 border border-base-300/60 p-5">
-                    <p className="text-xs text-base-content/40 mb-1">Питання #{i * 7}</p>
-                    <p className="text-sm mb-3">Яка максимальна швидкість руху дозволена в населеному пункті?</p>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg bg-error/10 text-error">40 км/год</div>
-                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg bg-success/10 text-success">50 км/год</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </PaywallOverlay>
-          ) : wrongLoading ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
-          ) : wrongAnswers.length === 0 ? (
-            <div className="card bg-base-100 border border-base-300/60">
-              <div className="card-body items-center text-center py-12">
-                <CheckCircle className="w-12 h-12 text-success/30 mb-3" />
-                <p className="text-base-content/50 mb-1">Помилок немає</p>
-                <p className="text-sm text-base-content/40">Ви відповіли правильно на всі питання</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm text-base-content/50 mb-4">
-                {wrongAnswers.length} питань, на які ви відповіли неправильно. Розберіть кожне.
-              </p>
-              <div className="space-y-3">
-                {wrongAnswers.map(wa => (
-                  <div key={wa.question_id} className="card bg-base-100 border border-error/15 p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <span className="text-xs font-mono text-base-content/30 mt-0.5">#{wa.question_number}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium mb-1">{wa.question_text}</p>
-                        {wa.category_name && (
-                          <span className="badge badge-ghost badge-sm">{wa.category_name}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {wa.question_image && (
-                      <img src={wa.question_image} alt="" className="rounded-lg mb-3 max-h-48 object-contain" />
-                    )}
-
-                    <div className="space-y-1.5 mb-3">
-                      {wa.answers.map(ans => {
-                        const isSelected = ans.id === wa.selected_answer_id
-                        const isCorrect = ans.is_correct
-                        let cls = 'flex items-start gap-2 text-sm py-1.5 px-3 rounded-lg '
-                        if (isCorrect) cls += 'bg-success/10 text-success'
-                        else if (isSelected) cls += 'bg-error/10 text-error'
-                        else cls += 'text-base-content/50'
-
-                        return (
-                          <div key={ans.id} className={cls}>
-                            {isCorrect ? (
-                              <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            ) : isSelected ? (
-                              <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            ) : (
-                              <div className="w-4 h-4 flex-shrink-0" />
-                            )}
-                            <span>{ans.text}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {wa.explanation && (
-                      <div className="bg-base-200/50 rounded-lg p-3">
-                        <p className="text-xs text-base-content/60 leading-relaxed">{wa.explanation}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </>
+        <TestsMistakesTab
+          isPaid={isPaid}
+          loading={wrongLoading}
+          wrongAnswers={wrongAnswers}
+        />
       )}
-
-      {/* === TAB: Saved === */}
       {tab === 'saved' && (
-        <>
-          {!isPaid ? (
-            <PaywallOverlay message="Доступно в платній версії">
-              <div className="space-y-4">
-                {[1, 2].map(i => (
-                  <div key={i} className="card bg-base-100 border border-base-300/60 p-5">
-                    <p className="text-xs text-base-content/40 mb-1">Питання #{i * 12}</p>
-                    <p className="text-sm mb-3">Де заборонено зупинку транспортних засобів?</p>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg bg-success/10 text-success">На пішохідному переході</div>
-                      <div className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-lg text-base-content/50">На узбіччі</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </PaywallOverlay>
-          ) : savedLoading ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
-          ) : savedItems.length === 0 ? (
-            <div className="card bg-base-100 border border-base-300/60">
-              <div className="card-body items-center text-center py-12">
-                <Bookmark className="w-12 h-12 text-base-content/20 mb-3" />
-                <p className="text-base-content/50 mb-1">Збережених питань немає</p>
-                <p className="text-sm text-base-content/40">Натисніть на закладку біля питання, щоб зберегти його</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm text-base-content/50 mb-4">
-                {savedItems.length} збережених питань
-              </p>
-              <div className="space-y-3">
-                {savedItems.map(item => (
-                  <div key={item.id} className="card bg-base-100 border border-primary/15 p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <span className="text-xs font-mono text-base-content/30 mt-0.5">#{item.question.number}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium mb-1">{item.question.text}</p>
-                        {item.question.category_name && (
-                          <span className="badge badge-ghost badge-sm">{item.question.category_name}</span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => removeSaved(item.question.id)}
-                        className="btn btn-ghost btn-xs"
-                        title="Прибрати з збережених"
-                      >
-                        <Bookmark className="w-4 h-4 fill-primary text-primary" />
-                      </button>
-                    </div>
-
-                    {item.question.image && (
-                      <img src={normalizeQuestionImage(item.question.image) || ''} alt="" className="rounded-lg mb-3 max-h-48 object-contain" />
-                    )}
-
-                    <div className="space-y-1.5 mb-3">
-                      {item.question.answers.map(ans => {
-                        let cls = 'flex items-start gap-2 text-sm py-1.5 px-3 rounded-lg '
-                        if (ans.is_correct) cls += 'bg-success/10 text-success'
-                        else cls += 'text-base-content/50'
-
-                        return (
-                          <div key={ans.id} className={cls}>
-                            {ans.is_correct ? (
-                              <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            ) : (
-                              <div className="w-4 h-4 flex-shrink-0" />
-                            )}
-                            <span>{ans.text}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {item.question.explanation && (
-                      <div className="bg-base-200/50 rounded-lg p-3">
-                        <p className="text-xs text-base-content/60 leading-relaxed">{item.question.explanation}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </>
+        <TestsSavedTab
+          isPaid={isPaid}
+          loading={savedLoading}
+          savedItems={savedItems}
+          onRemoveSaved={removeSaved}
+        />
       )}
     </div>
   )
 }
 
+function LicenseInfoBar({ categories }: { categories: string[] }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-base-300/60 bg-base-100 px-4 py-3 text-sm">
+      <span className="text-base-content/70">Категорії: {categories.join(', ')}</span>
+      <Link href="/profile/categories" className="btn btn-ghost btn-xs">
+        Змінити
+      </Link>
+    </div>
+  )
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      className={`tab tab-lg ${active ? 'tab-active' : ''}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  )
+}

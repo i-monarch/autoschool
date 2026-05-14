@@ -3,6 +3,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+def list_with_b_default():
+    return ['B']
+
+
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('student', _('Student')),
@@ -23,6 +27,7 @@ class User(AbstractUser):
     is_paid = models.BooleanField(_('paid'), default=False)
     paid_until = models.DateTimeField(_('paid until'), null=True, blank=True)
     access_type = models.CharField(_('access type'), max_length=10, choices=ACCESS_CHOICES, default='free')
+    license_categories = models.JSONField(default=list_with_b_default)
     default_meet_url = models.URLField(_('default meeting link'), blank=True, help_text='Permanent Zoom/Meet link for teachers')
     created_at = models.DateTimeField(auto_now_add=True)
 

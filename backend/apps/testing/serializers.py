@@ -5,7 +5,8 @@ from .models import TestCategory, Question, Answer, TestAttempt, AttemptAnswer
 class TestCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = TestCategory
-        fields = ['id', 'name', 'slug', 'order', 'question_count']
+        fields = ['id', 'name', 'slug', 'order', 'question_count', 'license_groups']
+        read_only_fields = ['license_groups']
 
 
 class AnswerSerializer(serializers.ModelSerializer):

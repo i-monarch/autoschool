@@ -6,7 +6,7 @@ import { create } from 'zustand'
 interface ToastItem {
   id: number
   message: string
-  type: 'success' | 'error' | 'info'
+  type: 'success' | 'error' | 'info' | 'warning'
 }
 
 interface ToastState {
@@ -42,6 +42,7 @@ function ToastItem({ toast }: { toast: ToastItem }) {
     success: 'alert-success',
     error: 'alert-error',
     info: 'alert-info',
+    warning: 'alert-warning',
   }
 
   return (

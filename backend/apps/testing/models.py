@@ -8,6 +8,7 @@ class TestCategory(models.Model):
     slug = models.SlugField(max_length=200, unique=True)
     order = models.PositiveIntegerField(default=0)
     question_count = models.PositiveIntegerField(default=0)
+    license_groups = models.JSONField(default=list)
 
     class Meta:
         ordering = ['order']

@@ -27,8 +27,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (data) => {
     set({ loading: true, error: null })
     try {
-      const res = await api.post('/auth/login/', data)
-      set({ user: res.data, loading: false, checked: true })
+      const res = await api.post<User>('/auth/login/', data)
+      set({ user: normalizeUser(res.data), loading: false, checked: true })
     } catch (err: unknown) {
       const message = extractError(err)
       set({ error: message, loading: false })
@@ -39,8 +39,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (data) => {
     set({ loading: true, error: null })
     try {
-      const res = await api.post('/auth/register/', data)
-      set({ user: res.data, loading: false, checked: true })
+      const res = await api.post<User>('/auth/register/', data)
+      set({ user: normalizeUser(res.data), loading: false, checked: true })
     } catch (err: unknown) {
       const message = extractError(err)
       set({ error: message, loading: false })
@@ -61,8 +61,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (useAuthStore.getState().user) return
     set({ loading: true })
     try {
-      const res = await api.get('/users/me/')
-      set({ user: res.data, loading: false, checked: true })
+      const res = await api.get<User>('/users/me/')
+      set({ user: normalizeUser(res.data), loading: false, checked: true })
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
       if (status === 401 || status === 403) {
@@ -77,17 +77,25 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   refreshMe: async () => {
     try {
-      const res = await api.get('/users/me/')
-      set({ user: res.data })
+      const res = await api.get<User>('/users/me/')
+      set({ user: normalizeUser(res.data) })
     } catch {
       // ignore
     }
   },
 
-  setUser: (user) => set({ user }),
+  setUser: (user) => set({ user: normalizeUser(user) }),
 
   clearError: () => set({ error: null }),
 }))
+
+function normalizeUser(user: User): User {
+  const categories = Array.isArray(user.license_categories) ? user.license_categories : []
+  return {
+    ...user,
+    license_categories: categories.length > 0 ? categories : ['B'],
+  }
+}
 
 function extractError(err: unknown): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {

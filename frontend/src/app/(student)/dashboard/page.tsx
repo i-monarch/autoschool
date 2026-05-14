@@ -17,6 +17,7 @@ import AchievementsList from '@/components/dashboard/AchievementsList'
 interface CategoryStat {
   category_id: number
   category_name: string
+  attempts: number
   percent: number
 }
 
@@ -83,7 +84,7 @@ export default function DashboardPage() {
   useEffect(() => { fetchData() }, [])
 
   const recentAttempts = attempts.slice(0, 5)
-  const weakCategories = stats?.by_category.filter(c => c.percent < 80) ?? []
+  const weakCategories = stats?.by_category.filter(c => c.attempts > 0 && c.percent < 80) ?? []
 
   return (
     <div>

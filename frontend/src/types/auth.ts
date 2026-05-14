@@ -12,6 +12,7 @@ export interface User {
   is_paid: boolean
   paid_until: string | null
   access_type: 'free' | 'trial' | 'paid'
+  license_categories: string[]
   created_at: string
 }
 

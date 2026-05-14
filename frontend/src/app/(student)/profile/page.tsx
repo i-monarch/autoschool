@@ -5,6 +5,9 @@ import { Camera, LogOut, Mail, Monitor, Phone, Shield, User } from 'lucide-react
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/components/ui/Toast'
+import { InfoField } from './ProfileInfoField'
+import { LicenseCategoriesCard } from './LicenseCategoriesCard'
+import { ProfileStatsCard } from './ProfileStatsCard'
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024
 
@@ -55,6 +58,7 @@ export default function ProfilePage() {
   const fullName = user?.first_name
     ? `${user.first_name} ${user.last_name || ''}`.trim()
     : user?.username
+  const licenseCategories = user?.license_categories?.length ? user.license_categories : ['B']
 
   return (
     <div>
@@ -93,6 +97,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          <ProfileStatsCard />
+
           {/* Security */}
           <div className="card bg-base-100 border border-base-300/60">
             <div className="card-body p-5">
@@ -120,6 +126,8 @@ export default function ProfilePage() {
 
         {/* Right column */}
         <div className="space-y-6">
+          <LicenseCategoriesCard categories={licenseCategories} />
+
           {/* Avatar card */}
           <div className="card bg-base-100 border border-base-300/60">
             <div className="card-body p-5 items-center text-center">
@@ -204,26 +212,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function InfoField({
-  label,
-  value,
-  icon,
-}: {
-  label: string
-  value: string
-  icon?: React.ReactNode
-}) {
-  return (
-    <div>
-      <p className="text-xs text-base-content/50 mb-1">{label}</p>
-      <p className="text-sm font-medium flex items-center gap-1.5">
-        {icon && <span className="text-base-content/40">{icon}</span>}
-        {value}
-      </p>
     </div>
   )
 }
