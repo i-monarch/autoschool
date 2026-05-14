@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2, Play, Target } from 'lucide-react'
+import { Info, Loader2, Play, Target } from 'lucide-react'
 import api from '@/lib/api'
 import type { TestCategory } from '@/types/testing'
 
@@ -56,6 +56,16 @@ export function TopicMultiSelect({ categories, isPaid }: TopicMultiSelectProps) 
   return (
     <>
       <div className={!isPaid ? 'opacity-50 pointer-events-none' : ''}>
+        <div className="flex items-start gap-3 p-3.5 mb-4 rounded-xl bg-info/5 border border-info/20">
+          <Info className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-base-content/70 leading-relaxed">
+            Оберіть одну або кілька тем — тест буде складено з питань
+            <strong className="text-base-content"> лише обраних тем</strong>.
+            Якщо позначите всі — отримаєте випадкові питання з усіх розділів ПДР.
+            Усього в тесті — близько 20 питань (рівномірно з ваших тем).
+          </div>
+        </div>
+
         <div className="flex items-center gap-2 mb-3">
           <button
             type="button"
