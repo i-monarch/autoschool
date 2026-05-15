@@ -7,4 +7,7 @@ urlpatterns = [
     path('tariffs/<int:pk>/', views.AdminTariffDetailView.as_view()),
     path('tariffs/reorder/', views.AdminTariffReorderView.as_view()),
     path('tariffs/stats/', views.AdminTariffStatsView.as_view()),
+    path('subscriptions/', views.AdminSubscriptionListView.as_view()),
+    path('subscriptions/<int:pk>/mark-paid/', views.AdminSubscriptionMarkPaidView.as_view()),
+    path('subscriptions/<int:pk>/cancel/', views.AdminSubscriptionCancelView.as_view()),
 ]

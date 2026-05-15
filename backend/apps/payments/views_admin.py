@@ -1,10 +1,19 @@
 from rest_framework import generics, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.permissions import IsAdmin
-from .models import Tariff
-from .serializers_admin import AdminTariffSerializer, AdminTariffReorderSerializer
+from .models import Subscription, Tariff
+from .serializers_admin import (
+    AdminSubscriptionSerializer,
+    AdminTariffSerializer,
+    AdminTariffReorderSerializer,
+)
+
+
+class StandardPagination(PageNumberPagination):
+    page_size = 20
 
 
 class AdminTariffListCreateView(generics.ListCreateAPIView):
@@ -42,3 +51,43 @@ class AdminTariffStatsView(APIView):
             'total': tariffs.count(),
             'active': tariffs.filter(is_active=True).count(),
         })
+
+
+class AdminSubscriptionListView(generics.ListAPIView):
+    permission_classes = [IsAdmin]
+    serializer_class = AdminSubscriptionSerializer
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        qs = Subscription.objects.select_related('user', 'tariff')
+        payment_status = self.request.query_params.get('payment_status')
+        if payment_status in Subscription.PaymentStatus.values:
+            qs = qs.filter(payment_status=payment_status)
+        return qs
+
+
+class AdminSubscriptionMarkPaidView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        subscription = Subscription.objects.filter(pk=pk).select_related('user', 'tariff').first()
+        if not subscription:
+            return Response({'error': 'not_found'}, status=status.HTTP_404_NOT_FOUND)
+
+        subscription.payment_status = Subscription.PaymentStatus.PAID
+        subscription.is_active = True
+        subscription.save(update_fields=['payment_status', 'is_active', 'updated_at'])
+        return Response(AdminSubscriptionSerializer(subscription).data)
+
+
+class AdminSubscriptionCancelView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        subscription = Subscription.objects.filter(pk=pk).select_related('user', 'tariff').first()
+        if not subscription:
+            return Response({'error': 'not_found'}, status=status.HTTP_404_NOT_FOUND)
+
+        subscription.is_active = False
+        subscription.save(update_fields=['is_active', 'updated_at'])
+        return Response(AdminSubscriptionSerializer(subscription).data)

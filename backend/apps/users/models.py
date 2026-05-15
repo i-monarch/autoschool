@@ -47,6 +47,17 @@ class User(AbstractUser):
     def __str__(self):
         return self.get_full_name() or self.username
 
+    @property
+    def has_active_subscription(self):
+        from django.utils import timezone
+        from apps.payments.models import Subscription
+
+        return self.subscriptions.filter(
+            is_active=True,
+            payment_status=Subscription.PaymentStatus.PAID,
+            expires_at__gt=timezone.now(),
+        ).exists()
+
 
 class UserDevice(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
