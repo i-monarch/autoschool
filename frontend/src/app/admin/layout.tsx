@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, ClipboardCheck, Users,
-  CreditCard, LogOut, User, Bell, Calendar, Building2,
+  CreditCard, LogOut, User, Bell, Calendar,
   ChevronLeft, Menu, GraduationCap, MapPin, Video, MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -21,7 +21,8 @@ const navItems = [
   { href: '/admin/tests', label: 'Тести', icon: ClipboardCheck },
   { href: '/admin/routes', label: 'Маршрути', icon: MapPin },
   { href: '/admin/schedule', label: 'Розклад', icon: Calendar },
-  { href: '/admin/partners', label: 'Автошколи', icon: Building2 },
+  { href: '/admin/instructors', label: 'Інструктори', icon: GraduationCap },
+  { href: '/admin/cities', label: 'Міста', icon: MapPin },
   { href: '/admin/students', label: 'Учні', icon: Users },
   { href: '/admin/chat', label: 'Повідомлення', icon: MessageCircle },
   { href: '/admin/payments', label: 'Платежі', icon: CreditCard },

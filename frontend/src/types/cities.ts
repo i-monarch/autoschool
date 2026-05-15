@@ -3,4 +3,6 @@ export interface City {
   name: string
   slug: string
   region: string
+  is_active: boolean
+  order: number
 }

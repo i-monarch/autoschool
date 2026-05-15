@@ -7,7 +7,7 @@ export interface User {
   phone: string | null
   first_name: string
   last_name: string
-  role: 'student' | 'teacher' | 'admin'
+  role: 'student' | 'teacher' | 'instructor' | 'admin'
   avatar: string | null
   language: string
   is_phone_verified: boolean

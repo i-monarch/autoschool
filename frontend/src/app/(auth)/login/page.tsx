@@ -33,6 +33,8 @@ export default function LoginPage() {
         router.push('/admin/dashboard')
       } else if (user?.role === 'teacher') {
         router.push('/teacher/dashboard')
+      } else if (user?.role === 'instructor') {
+        router.push('/instructor/dashboard')
       } else {
         router.push('/dashboard')
       }

@@ -44,7 +44,12 @@ export default function RegisterPage() {
     clearError()
     try {
       await signUp(data)
-      router.push('/dashboard')
+      const user = useAuthStore.getState().user
+      if (user?.role === 'instructor') {
+        router.push('/instructor/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
     } catch {
       // error displayed from store
     }
