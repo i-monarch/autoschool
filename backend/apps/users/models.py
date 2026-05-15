@@ -11,6 +11,7 @@ class User(AbstractUser):
     ROLE_CHOICES = [
         ('student', _('Student')),
         ('teacher', _('Teacher')),
+        ('instructor', _('Instructor')),
         ('admin', _('Admin')),
     ]
     ACCESS_CHOICES = [
