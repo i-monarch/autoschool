@@ -86,15 +86,15 @@ export default function StudentLayout({
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-base-100 border-r border-base-300/60 h-screen sticky top-0 overflow-y-auto">
         {/* Logo */}
-        <div className="p-5 pb-2">
-          <Link href="/dashboard" className="flex items-center">
+        <div className="relative flex items-center justify-center h-24 px-2 border-b border-base-300/60">
+          <Link href="/dashboard" className="flex items-center justify-center">
             <Image
               src="/logo.png"
               alt="logicpdd"
               width={1000}
               height={367}
               priority
-              className="h-10 w-auto"
+              className="h-16 w-auto"
             />
           </Link>
         </div>
