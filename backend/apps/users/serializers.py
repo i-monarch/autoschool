@@ -19,11 +19,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    role = serializers.ChoiceField(
+        choices=[('student', 'student'), ('instructor', 'instructor')],
+        default='student',
+        required=False,
+    )
 
     class Meta:
         model = User
         fields = ('username', 'email', 'phone', 'password', 'password_confirm',
-                  'first_name', 'last_name', 'city_id')
+                  'first_name', 'last_name', 'city_id', 'role')
 
     def validate(self, attrs):
         if attrs['password'] != attrs.pop('password_confirm'):

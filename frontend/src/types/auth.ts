@@ -33,6 +33,7 @@ export interface RegisterData {
   first_name: string
   last_name: string
   city_id?: number
+  role?: 'student' | 'instructor'
 }
 
 export interface ApiError {

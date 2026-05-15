@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, UserPlus, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, AlertCircle, GraduationCap, Car } from 'lucide-react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { useAuthStore } from '@/stores/auth'
@@ -24,10 +24,15 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     trigger,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { role: 'student' },
   })
+
+  const selectedRole = watch('role')
 
   useEffect(() => {
     getCities()
@@ -97,6 +102,33 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {step === 1 && (
           <>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setValue('role', 'student', { shouldValidate: true })}
+                className={`flex flex-col items-center gap-1.5 py-3 px-3 rounded-lg border-2 transition-colors ${
+                  selectedRole !== 'instructor'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-base-300 text-base-content/60 hover:border-base-content/30'
+                }`}
+              >
+                <GraduationCap className="w-5 h-5" />
+                <span className="text-sm font-medium">Я студент</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setValue('role', 'instructor', { shouldValidate: true })}
+                className={`flex flex-col items-center gap-1.5 py-3 px-3 rounded-lg border-2 transition-colors ${
+                  selectedRole === 'instructor'
+                    ? 'border-warning bg-warning/5 text-warning'
+                    : 'border-base-300 text-base-content/60 hover:border-base-content/30'
+                }`}
+              >
+                <Car className="w-5 h-5" />
+                <span className="text-sm font-medium">Я інструктор</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Ім'я"

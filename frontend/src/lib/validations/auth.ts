@@ -10,6 +10,7 @@ export const loginSchema = z.object({
 })
 
 export const registerSchema = z.object({
+  role: z.enum(['student', 'instructor']).default('student'),
   first_name: z
     .string()
     .min(2, 'Мінімум 2 символи')
