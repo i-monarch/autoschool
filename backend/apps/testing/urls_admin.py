@@ -13,6 +13,8 @@ urlpatterns = [
     # Questions
     path('questions/', views.AdminQuestionListView.as_view()),
     path('questions/create/', views.AdminQuestionCreateView.as_view()),
+    path('questions/bulk-hard/', views.AdminQuestionBulkHardView.as_view()),
+    path('questions/hard-stats/', views.AdminHardQuestionStatsView.as_view()),
     path('questions/<int:pk>/', views.AdminQuestionDetailView.as_view()),
     path('questions/<int:pk>/image/', views.AdminQuestionImageUploadView.as_view()),
 

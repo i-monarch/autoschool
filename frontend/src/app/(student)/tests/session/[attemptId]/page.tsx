@@ -22,6 +22,7 @@ interface Question {
   number: number
   text: string
   image: string | null
+  is_hard: boolean
   answers: AnswerOption[]
 }
 

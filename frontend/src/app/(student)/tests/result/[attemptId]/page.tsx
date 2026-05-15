@@ -31,6 +31,7 @@ interface AttemptResult {
       text: string
       image: string | null
       explanation: string | null
+      is_hard: boolean
       answers: Array<{ id: number; text: string; is_correct: boolean }>
     }
     selected_answer_id: number | null

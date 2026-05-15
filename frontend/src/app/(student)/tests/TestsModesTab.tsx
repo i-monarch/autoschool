@@ -1,7 +1,17 @@
-import { ChevronRight, ClipboardCheck, Lock, Trophy } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { ChevronRight, ClipboardCheck, Flame, Loader2, Lock, Trophy } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import api from '@/lib/api'
 import { TopicMultiSelect } from '@/components/testing/TopicMultiSelect'
 import type { TestCategory, TestStats } from '@/types/testing'
+
+interface StartTestResponse {
+  attempt_id: number
+  [key: string]: unknown
+}
 
 export function TestsModesTab({
   categories,
@@ -14,9 +24,29 @@ export function TestsModesTab({
   hasStats: boolean
   stats: TestStats | null
 }) {
+  const router = useRouter()
+  const [startingHard, setStartingHard] = useState(false)
+  const [hardError, setHardError] = useState<string | null>(null)
+
+  const startHardTest = async () => {
+    if (!isPaid || startingHard) return
+
+    setStartingHard(true)
+    setHardError(null)
+
+    try {
+      const res = await api.post<StartTestResponse>('/tests/start/', { test_type: 'hard' })
+      sessionStorage.setItem(`test_${res.data.attempt_id}`, JSON.stringify(res.data))
+      router.push(`/tests/session/${res.data.attempt_id}`)
+    } catch {
+      setHardError('Не вдалося розпочати тест. Спробуйте ще раз.')
+      setStartingHard(false)
+    }
+  }
+
   return (
     <>
-      <div className="grid sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Link href="/tests/exam" className="group relative overflow-hidden card bg-gradient-to-br from-red-50 to-base-100 border-2 border-red-200/60 hover:border-red-400/60 hover:shadow-lg transition-all">
           <div className="absolute -top-3 -right-3 opacity-[0.07]" aria-hidden>
             <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
@@ -61,6 +91,40 @@ export function TestsModesTab({
           </Link>
         ) : (
           <LockedModeCard title="Марафон" />
+        )}
+
+        {isPaid ? (
+          <div className="group relative overflow-hidden card bg-gradient-to-br from-orange-50 to-base-100 border-2 border-orange-200/60 hover:border-orange-400/60 hover:shadow-lg transition-all">
+            <div className="absolute -top-2 -right-2 opacity-[0.07]" aria-hidden>
+              <Flame className="w-24 h-24 text-orange-500" strokeWidth={1.5} />
+            </div>
+            <div className="card-body p-5 relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 border border-orange-200">
+                  <Flame className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base">100 складних питань</h3>
+                  <span className="text-xs text-orange-600/70 font-medium">без ліміту</span>
+                </div>
+              </div>
+              <p className="text-sm text-base-content/60">Найскладніші питання, відібрані адміністратором</p>
+              <button
+                type="button"
+                className="btn btn-sm btn-warning mt-4 w-full"
+                onClick={startHardTest}
+                disabled={startingHard}
+              >
+                {startingHard && <Loader2 className="w-4 h-4 animate-spin" />}
+                Розпочати
+              </button>
+              {hardError && (
+                <p className="text-xs text-error mt-2">{hardError}</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <LockedModeCard title="100 складних питань" />
         )}
 
         <Link href="/tests/history" className="group relative overflow-hidden card bg-gradient-to-br from-emerald-50 to-base-100 border-2 border-emerald-200/60 hover:border-emerald-400/60 hover:shadow-lg transition-all">

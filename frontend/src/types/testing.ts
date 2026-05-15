@@ -21,6 +21,7 @@ export interface QuestionListItem {
   image: string | null
   category: number
   category_name: string
+  is_hard: boolean
   answers_count: number
   has_image: boolean
 }
@@ -33,6 +34,7 @@ export interface QuestionDetail {
   explanation: string | null
   category: number
   category_name: string
+  is_hard: boolean
   answers: Answer[]
 }
 
@@ -47,6 +49,11 @@ export interface AdminTestStats {
   total_questions: number
   total_categories: number
   categories: TestCategory[]
+}
+
+export interface AdminHardQuestionStats {
+  hard_questions: number
+  total_questions: number
 }
 
 export interface TestWeakestTopic {

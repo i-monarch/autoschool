@@ -4,11 +4,12 @@ import { useEffect, useState, useCallback } from 'react'
 import {
   Search, Plus, Trash2, FolderInput, Image, ChevronLeft,
   ChevronRight, Check, X, MoreVertical, Pencil, FolderPlus,
+  Flame,
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
 import type {
-  TestCategory, QuestionListItem, PaginatedResponse, AdminTestStats,
+  TestCategory, QuestionListItem, PaginatedResponse, AdminTestStats, AdminHardQuestionStats,
 } from '@/types/testing'
 import QuestionModal from './QuestionModal'
 import CategoryManager from './CategoryManager'
@@ -18,6 +19,7 @@ export default function AdminTestsPage() {
   const toast = useToast()
 
   const [stats, setStats] = useState<AdminTestStats | null>(null)
+  const [hardStats, setHardStats] = useState<AdminHardQuestionStats | null>(null)
   const [categories, setCategories] = useState<TestCategory[]>([])
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [questions, setQuestions] = useState<QuestionListItem[]>([])
@@ -30,14 +32,19 @@ export default function AdminTestsPage() {
   const [creating, setCreating] = useState(false)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
   const [showBulkMove, setShowBulkMove] = useState(false)
+  const [hardUpdating, setHardUpdating] = useState<Set<number>>(new Set())
 
   const pageSize = 50
 
   const fetchStats = useCallback(async () => {
     try {
-      const { data } = await api.get<AdminTestStats>('/admin/tests/stats/')
-      setStats(data)
-      setCategories(data.categories)
+      const [statsResponse, hardStatsResponse] = await Promise.all([
+        api.get<AdminTestStats>('/admin/tests/stats/'),
+        api.get<AdminHardQuestionStats>('/admin/tests/questions/hard-stats/'),
+      ])
+      setStats(statsResponse.data)
+      setHardStats(hardStatsResponse.data)
+      setCategories(statsResponse.data.categories)
     } catch {
       toast.add('Помилка завантаження статистики', 'error')
     }
@@ -112,6 +119,37 @@ export default function AdminTestsPage() {
     }
   }
 
+  const toggleHardQuestion = async (question: QuestionListItem) => {
+    if (hardUpdating.has(question.id)) return
+
+    const nextValue = !question.is_hard
+    setHardUpdating(prev => new Set(prev).add(question.id))
+
+    try {
+      const { data } = await api.patch<{ is_hard: boolean }>(
+        `/admin/tests/questions/${question.id}/`,
+        { is_hard: nextValue },
+      )
+      setQuestions(prev => prev.map(item => (
+        item.id === question.id ? { ...item, is_hard: data.is_hard } : item
+      )))
+      setHardStats(prev => prev ? {
+        ...prev,
+        hard_questions: prev.hard_questions + (
+          data.is_hard === question.is_hard ? 0 : data.is_hard ? 1 : -1
+        ),
+      } : prev)
+    } catch {
+      toast.add('Помилка оновлення позначки складного питання', 'error')
+    } finally {
+      setHardUpdating(prev => {
+        const next = new Set(prev)
+        next.delete(question.id)
+        return next
+      })
+    }
+  }
+
   const handleQuestionSaved = () => {
     setEditingId(null)
     setCreating(false)
@@ -140,6 +178,12 @@ export default function AdminTestsPage() {
           <h1 className="text-2xl font-bold">Тести</h1>
           <p className="text-base-content/60 text-sm mt-1">
             {stats ? `${stats.total_questions} питань у ${stats.total_categories} категоріях` : 'Завантаження...'}
+          </p>
+          <p className="text-base-content/60 text-sm mt-1 flex items-center gap-1.5">
+            <Flame className="w-4 h-4 text-warning" />
+            {hardStats
+              ? `Позначено складними: ${hardStats.hard_questions} з ${hardStats.total_questions}`
+              : 'Позначено складними: завантаження...'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -257,6 +301,9 @@ export default function AdminTestsPage() {
                   <th className="w-14">#</th>
                   <th>Питання</th>
                   <th className="w-48 hidden md:table-cell">Категорія</th>
+                  <th className="w-10 text-center">
+                    <Flame className="w-4 h-4 mx-auto" />
+                  </th>
                   <th className="w-10 text-center hidden sm:table-cell">
                     <Image className="w-4 h-4 mx-auto" />
                   </th>
@@ -266,13 +313,13 @@ export default function AdminTestsPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-12">
+                    <td colSpan={7} className="text-center py-12">
                       <span className="loading loading-spinner loading-md" />
                     </td>
                   </tr>
                 ) : questions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-base-content/50">
+                    <td colSpan={7} className="text-center py-12 text-base-content/50">
                       {search ? 'Нічого не знайдено' : 'Немає питань'}
                     </td>
                   </tr>
@@ -293,6 +340,21 @@ export default function AdminTestsPage() {
                         <span className="badge badge-ghost badge-sm truncate max-w-full block">
                           {q.category_name}
                         </span>
+                      </td>
+                      <td className="text-center">
+                        <button
+                          type="button"
+                          className={`btn btn-ghost btn-xs btn-square ${q.is_hard ? 'text-warning' : 'text-base-content/25'}`}
+                          onClick={() => toggleHardQuestion(q)}
+                          disabled={hardUpdating.has(q.id)}
+                          title={q.is_hard ? 'Прибрати зі складних' : 'Позначити складним'}
+                        >
+                          {hardUpdating.has(q.id) ? (
+                            <span className="loading loading-spinner loading-xs" />
+                          ) : (
+                            <Flame className={`w-4 h-4 ${q.is_hard ? 'fill-current' : ''}`} />
+                          )}
+                        </button>
                       </td>
                       <td className="text-center hidden sm:table-cell">
                         {q.has_image ? (

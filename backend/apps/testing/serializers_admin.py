@@ -48,7 +48,7 @@ class AdminQuestionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ['id', 'number', 'text', 'image', 'category', 'category_name',
-                  'answers_count', 'has_image']
+                  'is_hard', 'answers_count', 'has_image']
 
     def get_has_image(self, obj):
         return bool(obj.image)
@@ -62,7 +62,7 @@ class AdminQuestionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ['id', 'number', 'text', 'image', 'explanation', 'category',
-                  'category_name', 'answers']
+                  'category_name', 'is_hard', 'answers']
 
     def validate_answers(self, value):
         if len(value) < 2:

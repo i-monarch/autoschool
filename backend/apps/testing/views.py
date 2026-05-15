@@ -40,8 +40,8 @@ class StartTestView(APIView):
         category_ids = list(dict.fromkeys(ser.validated_data.get('category_ids') or []))
         attempt_category_id = category_id
 
-        # paywall: topic and marathon require paid subscription
-        if test_type in ('topic', 'marathon') and not request.user.is_paid:
+        # paywall: topic, marathon and hard require paid subscription
+        if test_type in ('topic', 'marathon', 'hard') and not request.user.is_paid:
             return Response(
                 {'error': 'payment_required', 'message': 'Цей режим доступний лише для оплачених акаунтів'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -86,9 +86,16 @@ class StartTestView(APIView):
             question_ids = list(
                 user_questions_queryset(request.user).order_by('?').values_list('id', flat=True)[:20]
             )
-        else:  # marathon
+        elif test_type == 'marathon':
             question_ids = list(
                 user_questions_queryset(request.user).order_by('?').values_list('id', flat=True)[:100]
+            )
+        elif test_type == 'hard':
+            question_ids = list(
+                user_questions_queryset(request.user)
+                .filter(is_hard=True)
+                .order_by('?')
+                .values_list('id', flat=True)[:100]
             )
 
         attempt = TestAttempt.objects.create(

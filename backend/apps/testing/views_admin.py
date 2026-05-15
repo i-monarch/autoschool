@@ -155,6 +155,32 @@ class AdminQuestionImageUploadView(APIView):
         return Response(status=204)
 
 
+class AdminQuestionBulkHardView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        question_ids = request.data.get('question_ids', [])
+        is_hard = request.data.get('is_hard', True)
+
+        if not isinstance(question_ids, list):
+            return Response({'error': 'invalid_question_ids'}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(is_hard, bool):
+            return Response({'error': 'invalid_is_hard'}, status=status.HTTP_400_BAD_REQUEST)
+
+        updated = Question.objects.filter(id__in=question_ids).update(is_hard=is_hard)
+        return Response({'updated': updated, 'is_hard': is_hard})
+
+
+class AdminHardQuestionStatsView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        return Response({
+            'hard_questions': Question.objects.filter(is_hard=True).count(),
+            'total_questions': Question.objects.count(),
+        })
+
+
 # --- Bulk operations ---
 
 class AdminBulkMoveView(APIView):

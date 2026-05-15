@@ -27,7 +27,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'number', 'text', 'image', 'category', 'category_name', 'answers']
+        fields = ['id', 'number', 'text', 'image', 'category', 'category_name', 'is_hard', 'answers']
 
 
 class QuestionWithExplanationSerializer(serializers.ModelSerializer):
@@ -36,7 +36,7 @@ class QuestionWithExplanationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'number', 'text', 'image', 'explanation', 'category', 'category_name', 'answers']
+        fields = ['id', 'number', 'text', 'image', 'explanation', 'category', 'category_name', 'is_hard', 'answers']
 
 
 class SubmitAnswerSerializer(serializers.Serializer):
@@ -45,7 +45,7 @@ class SubmitAnswerSerializer(serializers.Serializer):
 
 
 class StartTestSerializer(serializers.Serializer):
-    test_type = serializers.ChoiceField(choices=['topic', 'exam', 'marathon'])
+    test_type = serializers.ChoiceField(choices=['topic', 'exam', 'marathon', 'hard'])
     category_id = serializers.IntegerField(required=False, allow_null=True)
     category_ids = serializers.ListField(
         child=serializers.IntegerField(),

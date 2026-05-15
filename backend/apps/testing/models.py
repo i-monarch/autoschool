@@ -24,6 +24,7 @@ class Question(models.Model):
     text = models.TextField()
     image = models.URLField(blank=True, null=True)
     explanation = models.TextField(blank=True, null=True)
+    is_hard = models.BooleanField(_('hard question'), default=False, db_index=True)
 
     class Meta:
         ordering = ['number']
@@ -51,6 +52,7 @@ class Test(models.Model):
         TOPIC = 'topic', _('За темою')
         EXAM = 'exam', _('Екзамен')
         MARATHON = 'marathon', _('Марафон')
+        HARD = 'hard', _('100 складних')
 
     title = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TestType.choices)
