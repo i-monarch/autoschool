@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from apps.cities.models import City
+from apps.cities.serializers import CityListSerializer
 from apps.testing.services import ALL_USER_CATS
 
 User = get_user_model()
@@ -10,11 +12,18 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
+    city_id = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.filter(is_active=True),
+        source='city',
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = User
         fields = ('username', 'email', 'phone', 'password', 'password_confirm',
-                  'first_name', 'last_name')
+                  'first_name', 'last_name', 'city_id')
 
     def validate(self, attrs):
         if attrs['password'] != attrs.pop('password_confirm'):
@@ -26,13 +35,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    city = CityListSerializer(read_only=True)
+
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'phone', 'first_name', 'last_name',
                   'role', 'avatar', 'language', 'is_phone_verified', 'is_paid', 'paid_until',
-                  'access_type', 'license_categories', 'created_at')
+                  'access_type', 'license_categories', 'city', 'created_at')
         read_only_fields = ('id', 'role', 'is_phone_verified', 'is_paid', 'paid_until',
-                            'access_type', 'created_at')
+                            'access_type', 'city', 'created_at')
 
     def validate_license_categories(self, value):
         if not value:

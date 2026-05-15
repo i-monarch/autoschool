@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -9,13 +9,16 @@ import { Eye, EyeOff, UserPlus, AlertCircle } from 'lucide-react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { useAuthStore } from '@/stores/auth'
+import { getCities } from '@/lib/api'
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth'
+import type { City } from '@/types/cities'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { register: signUp, loading, error, clearError } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [step, setStep] = useState<1 | 2>(1)
+  const [cities, setCities] = useState<City[]>([])
 
   const {
     register,
@@ -26,8 +29,14 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   })
 
+  useEffect(() => {
+    getCities()
+      .then(setCities)
+      .catch(() => setCities([]))
+  }, [])
+
   const goToStep2 = async () => {
-    const valid = await trigger(['first_name', 'last_name', 'phone', 'email'])
+    const valid = await trigger(['first_name', 'last_name', 'phone', 'email', 'city_id'])
     if (valid) setStep(2)
   }
 
@@ -119,6 +128,31 @@ export default function RegisterPage() {
               error={errors.email?.message}
               {...register('email')}
             />
+
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Місто</span>
+              </label>
+              <select
+                className={`select select-bordered w-full ${errors.city_id ? 'select-error' : ''}`}
+                defaultValue=""
+                {...register('city_id', { valueAsNumber: true })}
+              >
+                <option value="" disabled>
+                  Виберіть місто
+                </option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+              {errors.city_id?.message && (
+                <label className="label">
+                  <span className="label-text-alt text-error">{errors.city_id.message}</span>
+                </label>
+              )}
+            </div>
 
             <Button type="button" fullWidth onClick={goToStep2}>
               Далі

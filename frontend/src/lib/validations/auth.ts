@@ -26,6 +26,13 @@ export const registerSchema = z.object({
   email: z
     .string()
     .email('Невірний формат email'),
+  city_id: z.coerce
+    .number({
+      required_error: 'Виберіть місто',
+      invalid_type_error: 'Виберіть місто',
+    })
+    .int('Виберіть місто')
+    .positive('Виберіть місто'),
   phone: z
     .string()
     .regex(/^\+380\d{9}$/, 'Формат: +380XXXXXXXXX'),

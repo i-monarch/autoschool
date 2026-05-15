@@ -1,3 +1,5 @@
+import type { City } from './cities'
+
 export interface User {
   id: number
   username: string
@@ -13,6 +15,7 @@ export interface User {
   paid_until: string | null
   access_type: 'free' | 'trial' | 'paid'
   license_categories: string[]
+  city?: City | null
   created_at: string
 }
 
@@ -29,6 +32,7 @@ export interface RegisterData {
   password_confirm: string
   first_name: string
   last_name: string
+  city_id?: number
 }
 
 export interface ApiError {

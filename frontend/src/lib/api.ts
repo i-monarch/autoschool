@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { City } from '@/types/cities'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
@@ -67,5 +68,10 @@ api.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+export async function getCities(): Promise<City[]> {
+  const response = await api.get<City[]>('/cities/')
+  return response.data
+}
 
 export default api
